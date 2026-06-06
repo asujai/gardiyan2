@@ -2,20 +2,57 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0A0A">
+    android:background="#090D16"> <!-- Deep premium dark slate background -->
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="24dp"
+        android:background="@drawable/lock_card_bg"
         android:orientation="vertical"
-        android:padding="32dp">
+        android:padding="28dp"
+        android:gravity="center">
 
+        <!-- Brand Header -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🛡️"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="GARDİYAN"
+                android:textColor="#2EC4B6"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15" />
+        </LinearLayout>
+
+        <!-- Circular App Icon Container -->
         <FrameLayout
             android:id="@+id/emojiContainer"
-            android:layout_width="180dp"
-            android:layout_height="180dp"
-            android:background="@drawable/emoji_container_bg">
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/emoji_container_bg"
+            android:padding="12dp">
+
+            <ImageView
+                android:id="@+id/emojiImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Uygulama İkonu"
+                android:scaleType="fitCenter" />
 
             <TextView
                 android:id="@+id/emojiText"
@@ -23,89 +60,100 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="🚫"
-                android:textSize="120sp" />
-
-            <ImageView
-                android:id="@+id/emojiImage"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:contentDescription="Kilitleme görseli"
-                android:scaleType="fitCenter"
+                android:textSize="36sp"
                 android:visibility="gone" />
         </FrameLayout>
 
+        <!-- App Name -->
         <TextView
             android:id="@+id/targetAppText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:gravity="center"
-            android:paddingHorizontal="16dp"
-            android:text="Bu uygulama için günlük süren doldu."
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
+        <!-- Status Message -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:gravity="center"
-            android:paddingHorizontal="16dp"
-            android:text="Kilit ekranı döngüde kalır. İptal yalnızca Gardiyan uygulamasından 5 saniye basılı tutarak yapılabilir."
-            android:textColor="#BBBBBB"
-            android:textSize="12sp" />
+            android:text="@string/overlay_limit_over"
+            android:textColor="#EF4444"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
-        <FrameLayout
+        <!-- Explanations -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:background="@drawable/countdown_card_bg"
-            android:padding="24dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="monospace"
-                    android:letterSpacing="0.1"
-                    android:text="BU DÖNGÜNÜN KALAN SÜRESİ"
-                    android:textColor="#FFFFFF"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/countdownText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:fontFamily="monospace"
-                    android:text="00:10"
-                    android:textColor="#FF1744"
-                    android:textSize="56sp"
-                    android:textStyle="bold" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="6dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/progress_track_bg" />
-            </LinearLayout>
-        </FrameLayout>
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:paddingHorizontal="8dp"
+            android:text="@string/overlay_protected_by_gardiyan"
+            android:textColor="#94A3B8"
+            android:textSize="12sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:alpha="0.6"
+            android:layout_marginTop="4dp"
             android:gravity="center"
-            android:text="Bu ekranı kapatamazsın. Döngü bittiğinde sayaç tekrar başlar."
-            android:textColor="#FFFFFF"
+            android:paddingHorizontal="8dp"
+            android:text="@string/overlay_explanation"
+            android:textColor="#64748B"
             android:textSize="10sp" />
+
+        <!-- Countdown Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/countdown_card_bg"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BU DÖNGÜNÜN KALAN SÜRESİ"
+                android:textColor="#94A3B8"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08" />
+
+            <TextView
+                android:id="@+id/countdownText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="monospace"
+                android:text="00:10"
+                android:textColor="#2EC4B6"
+                android:textSize="38sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Divider Line -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="20dp"
+            android:background="#334155" />
+
+        <!-- Guide Footer -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="@string/overlay_return_to_home"
+            android:textColor="#64748B"
+            android:textSize="11sp" />
+
     </LinearLayout>
 </FrameLayout>

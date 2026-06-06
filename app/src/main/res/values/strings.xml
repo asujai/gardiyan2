@@ -1,6 +1,20 @@
 <resources>
     <string name="app_name">Gardiyan</string>
-    <string name="accessibility_service_description">Gardiyan kilit ekranı, seçilen hedef uygulamalara girildiğinde bloke eder. Yalnızca hedef uygulama öne geçtiğinde tetiklenir.</string>
-    <string name="notification_channel_service">Gardiyan İzleme Servisi</string>
-    <string name="notification_channel_service_desc">Hedef uygulamalar arka planda izleniyor</string>
+    <string name="accessibility_service_description">Gardiyan, bu izni yalnızca belirlediğiniz dijital sınırları ve uygulama limitlerini uygulamak amacıyla, kısıtlı bir uygulama açıldığında bunu algılamak için kullanır. Tüm veriler cihazınızda yerel olarak işlenir, hiçbir veri toplanmaz veya dışarıya aktarılmaz. Arka plan izlemesi sadece sizin seçtiğiniz engelleme kurallarını yürütmek içindir.</string>
+    <string name="notification_channel_service">Gardiyan Koruma Servisi</string>
+    <string name="notification_channel_service_desc">Korumayı aktif tutmak ve belirlediğiniz limitleri yerel olarak uygulamak için çalışır. Verileriniz tamamen cihazınızda kalır.</string>
+    <string name="overlay_limit_over">Bugünlük limitin doldu.</string>
+    <string name="overlay_protected_by_gardiyan">Gardiyan bu uygulamayı koruma altında tutuyor.</string>
+    <string name="overlay_return_to_home">Devam etmek için ana ekrana geri dönün.</string>
+    <string name="overlay_explanation">Bu ekran, belirlediğiniz sınırı korumak için gösteriliyor.</string>
+    <string name="perm_usage_access_title">Kullanım Erişimi</string>
+    <string name="perm_usage_access_desc">Seçtiğiniz uygulamalarda ne kadar süre geçirdiğinizi yerel olarak hesaplamak ve sınırları kontrol etmek için gereklidir.</string>
+    <string name="perm_accessibility_title">Erişilebilirlik Hizmeti</string>
+    <string name="perm_accessibility_desc">Kısıtlanmış bir uygulama açıldığında bunu anında algılamak ve belirlediğiniz dijital sınırları uygulamak için kullanılır.</string>
+    <string name="perm_overlay_title">Diğer Uygulamaların Üzerinde Çizim</string>
+    <string name="perm_overlay_desc">Günlük limitiniz dolduğunda koruma ekranını uygulamanın üzerinde göstermek için gereklidir.</string>
+    <string name="perm_battery_title">Pil Optimizasyonu Muafiyeti</string>
+    <string name="perm_battery_desc">Gardiyan koruma motorunun sistem tarafından sonlandırılmadan arka planda güvenle çalışabilmesi için gereklidir.</string>
+    <string name="perm_notification_title">Bildirim İzni</string>
+    <string name="perm_notification_desc">Koruma motorunun o an aktif olduğunu ve çalıştığını gösteren kalıcı bir durum bildirimi göstermek için kullanılır.</string>
 </resources>

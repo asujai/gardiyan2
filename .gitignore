@@ -16,3 +16,11 @@
 local.properties
 .env
 debug.keystore
+
+# Gecici dogrulama ve test dosyalari
+*.verify_backup
+*.verify_test
+*.current_verify
+guardian_db*
+screenshot.png
+verify_pkg_*.png

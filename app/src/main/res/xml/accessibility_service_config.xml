@@ -7,4 +7,4 @@
     android:description="@string/accessibility_service_description"
     android:notificationTimeout="50"
     android:packageNames="@null"
-    android:settingsActivity="com.example.MainActivity" />
+    android:settingsActivity="com.gardiyan.app.MainActivity" />
