@@ -19,6 +19,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -30,8 +31,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
+import com.gardiyan.app.data.repository.GuardianRepository
 import com.gardiyan.app.ui.components.AppIconView
 import com.gardiyan.app.ui.components.ModernRestrictionCard
+import com.gardiyan.app.ui.components.DurationWheelPicker
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import kotlinx.coroutines.delay
@@ -119,7 +122,7 @@ fun ProtectedAppsScreen(
                         items(ProtectedFilter.values()) { filter ->
                             val isSelected = selectedFilter == filter
                             val chipBg = if (isSelected) PureBlack else DarkCharcoal
-                            val chipText = if (isSelected) Color.White else PureBlack
+                            val chipText = if (isSelected) OnPureBlack else PureBlack
                             val chipBorder = if (isSelected) PureBlack else BorderGray
 
                             Box(
@@ -169,14 +172,14 @@ fun ProtectedAppsScreen(
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = "No protected apps yet.",
+                                    text = "Henüz korunan bir uygulama yok.",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PureBlack
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "Use the \"Start New Restriction\" card on the Home screen to add your first app.",
+                                    text = "İlk uygulamanızı eklemek için Ana Ekrandaki \"Yeni Kısıtlama Ekle\" kartını kullanın.",
                                     fontSize = 11.sp,
                                     color = MutedGray,
                                     textAlign = TextAlign.Center,
@@ -206,7 +209,8 @@ fun ProtectedAppsScreen(
         selectedAppForManagement?.let { app ->
             val latestApp = restrictedApps.firstOrNull { it.id == app.id } ?: app
 
-            var limitMinutes by remember(app.id) { mutableStateOf(latestApp.dailyLimitMinutes) }
+            var limitHours by remember(app.id) { mutableStateOf(latestApp.dailyLimitMinutes / 60) }
+            var limitMinsOnly by remember(app.id) { mutableStateOf(latestApp.dailyLimitMinutes % 60) }
             val daysOfWeek = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
             var selectedDays by remember(app.id) {
                 val shownDays = latestApp.nextDayActiveDays.ifEmpty { latestApp.activeDays }
@@ -385,6 +389,11 @@ fun ProtectedAppsScreen(
                             val totalSecs = latestApp.remainingSecondsToday.coerceAtLeast(0)
                             val isLocked = totalSecs <= 0
 
+                            val durationText = buildString {
+                                if (limitHours > 0) append("$limitHours saat ")
+                                append("$limitMinsOnly dakika")
+                            }
+
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -407,7 +416,7 @@ fun ProtectedAppsScreen(
                                             color = PureBlack
                                         )
                                         Text(
-                                            text = "$limitMinutes dk",
+                                            text = durationText,
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = PureBlack
@@ -416,67 +425,29 @@ fun ProtectedAppsScreen(
 
                                     Spacer(modifier = Modifier.height(12.dp))
 
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .clip(CircleShape)
-                                                .background(DarkCharcoal)
-                                                .clickable { if (limitMinutes > 5) limitMinutes -= 5 }
-                                                .border(1.dp, BorderGray, CircleShape),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("-", color = PureBlack, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                                        }
-
-                                        Slider(
-                                            value = limitMinutes.toFloat(),
-                                            onValueChange = { 
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .alpha(if (isLocked) 0.5f else 1f)
+                                            .pointerInput(isLocked) {
                                                 if (isLocked) {
-                                                    if (it.toInt() <= latestApp.dailyLimitMinutes) {
-                                                        limitMinutes = it.toInt()
+                                                    awaitPointerEventScope {
+                                                        while (true) {
+                                                            val event = awaitPointerEvent()
+                                                            event.changes.forEach { it.consume() }
+                                                        }
                                                     }
-                                                } else {
-                                                    limitMinutes = it.toInt()
                                                 }
+                                            }
+                                    ) {
+                                        DurationWheelPicker(
+                                            initialHours = limitHours,
+                                            initialMinutes = limitMinsOnly,
+                                            onDurationChanged = { h, m ->
+                                                limitHours = h
+                                                limitMinsOnly = m
                                             },
-                                            valueRange = 5f..180f,
-                                            steps = 34,
-                                            enabled = !isLocked,
-                                            colors = SliderDefaults.colors(
-                                                thumbColor = PureBlack,
-                                                activeTrackColor = PureBlack,
-                                                inactiveTrackColor = BorderGray,
-                                                disabledThumbColor = MutedGray,
-                                                disabledActiveTrackColor = BorderGray
-                                            ),
-                                            modifier = Modifier.weight(1f)
-                                        )
-
-                                        Box(
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .clip(CircleShape)
-                                                .background(DarkCharcoal)
-                                                .clickable(enabled = !isLocked) { if (limitMinutes < 180) limitMinutes += 5 }
-                                                .border(1.dp, if (isLocked) BorderGray.copy(alpha = 0.5f) else BorderGray, CircleShape),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("+", color = if (isLocked) MutedGray else PureBlack, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                                        }
-                                    }
-
-                                    if (limitMinutes > latestApp.dailyLimitMinutes) {
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
-                                            text = "Limit increases will take effect from tomorrow.",
-                                            color = MutedGray,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            textAlign = TextAlign.Center
+                                            modifier = Modifier.fillMaxWidth()
                                         )
                                     }
                                 }
@@ -526,7 +497,7 @@ fun ProtectedAppsScreen(
                                                     text = day,
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = if (isSelected) Color.White else PureBlack
+                                                    color = if (isSelected) OnPureBlack else PureBlack
                                                 )
                                             }
                                         }
@@ -563,11 +534,22 @@ fun ProtectedAppsScreen(
                     Button(
                         onClick = {
                             val daysStr = selectedDays.joinToString(",")
-                            viewModel.updateRestrictionSettings(latestApp.id, limitMinutes, daysStr)
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Değişiklikler başarıyla kaydedildi.")
+                            val newLimitRaw = limitHours * 60 + limitMinsOnly
+                            val newLimit = if (newLimitRaw <= 0) 5 else newLimitRaw
+                            
+                            if (newLimit > latestApp.dailyLimitMinutes) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        "Günlük limiti mevcut süreden daha yükseğe çıkaramazsınız."
+                                    )
+                                }
+                            } else {
+                                viewModel.updateRestrictionSettings(latestApp.id, newLimit, daysStr)
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Değişiklikler başarıyla kaydedildi.")
+                                }
+                                selectedAppForManagement = null
                             }
-                            selectedAppForManagement = null
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = Color.White),
                         shape = RoundedCornerShape(16.dp),

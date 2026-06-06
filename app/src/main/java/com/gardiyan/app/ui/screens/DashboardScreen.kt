@@ -2,38 +2,103 @@ package com.gardiyan.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.gardiyan.app.ui.theme.*
+import com.gardiyan.app.data.model.AppUsageSummary
+import com.gardiyan.app.data.model.UsagePeriod
+import com.gardiyan.app.ui.components.UsageRankingSection
+import com.gardiyan.app.ui.theme.DashboardBorder as BorderGray
+import com.gardiyan.app.ui.theme.DashboardCard as DarkCharcoal
+import com.gardiyan.app.ui.theme.DashboardDanger as DangerRed
+import com.gardiyan.app.ui.theme.DashboardInk as PureBlack
+import com.gardiyan.app.ui.theme.DashboardIvory as MatteSurface
+import com.gardiyan.app.ui.theme.DashboardMuted as MutedGray
+import com.gardiyan.app.ui.theme.DashboardSoftDanger as SoftDangerRed
+import com.gardiyan.app.ui.theme.DashboardSuccess as SuccessGreen
+import com.gardiyan.app.ui.theme.CopperAccent
+import com.gardiyan.app.ui.theme.SoftCopper
+import com.gardiyan.app.ui.theme.WarmGray
+import com.gardiyan.app.ui.theme.WineAccent
 import com.gardiyan.app.viewmodel.GuardianViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DashboardScreen(
     viewModel: GuardianViewModel,
     onNavigateToSetup: () -> Unit,
-    onNavigateToProtected: () -> Unit
+    onNavigateToProtected: () -> Unit,
+    onNavigateToUsageDetails: () -> Unit = {}
 ) {
     val session by viewModel.userSession.collectAsState()
     val restrictedApps by viewModel.restrictedApps.collectAsState()
     val activeApps = remember(restrictedApps) { restrictedApps.filter { it.isActive } }
-    val isMonitoring by viewModel.isMonitoringActive.collectAsState()
+    val appLimits = remember(activeApps) { activeApps.associate { it.packageName to it.dailyLimitMinutes } }
 
+    val totalSavedMillis by produceState<Long>(initialValue = 0L, key1 = restrictedApps) {
+        value = withContext(Dispatchers.IO) {
+            val averageList = viewModel.getUsageRanking(UsagePeriod.AVERAGE)
+            val averageMap = averageList.associate { it.packageName to it.usageMillis }
+
+            activeApps.sumOf { app ->
+                val avgUsage = averageMap[app.packageName] ?: 0L
+                val limitMillis = app.dailyLimitMinutes * 60_000L
+                (avgUsage - limitMillis).coerceAtLeast(0L)
+            }
+        }
+    }
+
+    var selectedPeriod by remember { mutableStateOf(UsagePeriod.DAILY) }
+    val periodUsage by produceState<List<AppUsageSummary>>(
+        initialValue = emptyList(),
+        key1 = selectedPeriod
+    ) {
+        value = withContext(Dispatchers.IO) { viewModel.getUsageRanking(selectedPeriod) }
+    }
+    val dailyUsage by produceState<List<AppUsageSummary>>(initialValue = emptyList()) {
+        value = withContext(Dispatchers.IO) { viewModel.getUsageRanking(UsagePeriod.DAILY) }
+    }
+
+    val dailyUsageByPackage = remember(dailyUsage) { dailyUsage.associateBy { it.packageName } }
+    val exceededCount = remember(activeApps, dailyUsageByPackage) {
+        activeApps.count { app ->
+            (dailyUsageByPackage[app.packageName]?.usageMillis ?: 0L) > app.dailyLimitMinutes * 60_000L
+        }
+    }
     val levelName = when (session?.level ?: 1) {
         1 -> "Çaylak"
         2 -> "Disiplinli"
@@ -41,160 +106,252 @@ fun DashboardScreen(
         else -> "Çaylak"
     }
 
-    val streak = session?.consecutiveSuccessDays ?: 0
-    val level = session?.level ?: 1
-    val protectedCount = activeApps.size
-
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(MatteSurface)
             .padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        item { Spacer(modifier = Modifier.height(4.dp)) }
+        item {
+            DashboardHeader()
+        }
+        item {
+            TodayOverviewCard(
+                totalSavedMillis = totalSavedMillis,
+                protectedCount = activeApps.size,
+                exceededCount = exceededCount,
+                onAddRestriction = onNavigateToSetup
+            )
+        }
+        item {
+            UsageRankingSection(
+                selectedPeriod = selectedPeriod,
+                onPeriodSelected = { selectedPeriod = it },
+                usageItems = periodUsage,
+                appLimits = appLimits,
+                onSeeAll = onNavigateToUsageDetails
+            )
+        }
+        item {
+            DisciplineSummary(
+                levelName = levelName,
+                streak = session?.consecutiveSuccessDays ?: 0,
+                protectedCount = activeApps.size,
+                onProtectedClick = onNavigateToProtected
+            )
+        }
+        item { Spacer(modifier = Modifier.height(12.dp)) }
+    }
+}
 
-        // — HEADER AREA —
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+@Composable
+private fun DashboardHeader() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = "GARDİYAN",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Black,
+                color = PureBlack,
+                letterSpacing = 1.sp
+            )
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                text = "Bugün kontrol sende.",
+                fontSize = 13.sp,
+                color = MutedGray
+            )
+        }
+    }
+}
+
+@Composable
+private fun TodayOverviewCard(
+    totalSavedMillis: Long,
+    protectedCount: Int,
+    exceededCount: Int,
+    onAddRestriction: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, BorderGray, RoundedCornerShape(22.dp)),
+        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+        shape = RoundedCornerShape(22.dp)
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "BUGÜNKÜ ÖZET",
+                        color = WineAccent,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.9.sp
+                    )
+                    Spacer(modifier = Modifier.height(7.dp))
+                    if (totalSavedMillis > 0L) {
+                        Text(
+                             text = formatSavedDuration(totalSavedMillis),
+                             color = PureBlack,
+                             fontSize = 30.sp,
+                             fontWeight = FontWeight.Black
+                        )
+                        Text(
+                             text = "Bugünkü kazanım",
+                             color = MutedGray,
+                             fontSize = 11.sp
+                        )
+                    } else {
+                        Text(
+                            text = "Henüz kazanım yok",
+                            color = PureBlack,
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                        Text(
+                            text = "Kısıtlamalar gün sonunda hesaplanır",
+                            color = MutedGray,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(SoftCopper),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = null,
-                        tint = PureWhite,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Text(
-                        text = "GARDİYAN",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black,
-                        color = PureBlack,
-                        letterSpacing = 1.sp
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Dijital Güvenlik ve Sınır Koruması",
-                    fontSize = 13.sp,
-                    color = MutedGray
-                )
-            }
-
-            // Small "Active" status badge
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isMonitoring) SuccessGreen.copy(alpha = 0.1f) else BorderGray)
-                    .padding(horizontal = 14.dp, vertical = 8.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(if (isMonitoring) SuccessGreen else MutedGray)
-                    )
-                    Text(
-                        text = if (isMonitoring) "AKTİF" else "PASİF",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.SansSerif,
-                        color = if (isMonitoring) SuccessGreen else MutedGray
+                        tint = CopperAccent,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
-        }
 
-        // — MAIN ACTION CARD —
-        Card(
-            onClick = onNavigateToSetup,
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, PureWhite.copy(alpha = 0.15f), RoundedCornerShape(20.dp)),
-            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-            shape = RoundedCornerShape(20.dp)
-        ) {
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(
+                OverviewMetric(
+                    label = "Aktif koruma",
+                    value = "$protectedCount uygulama",
+                    modifier = Modifier.weight(1f)
+                )
+                OverviewMetric(
+                    label = "Limit durumu",
+                    value = if (exceededCount > 0) "$exceededCount aşım" else "Aşım yok",
+                    isWarning = exceededCount > 0,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            if (exceededCount > 0) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Limitini aşan uygulamalar var. Sıralamadan kontrol edebilirsin.",
                     modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(PureWhite.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = null,
-                        tint = PureWhite,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Yeni Kısıtlama Başlat",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PureBlack
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Uygulamaları seç, bir süre sınırı ayarla ve koru",
-                        fontSize = 12.sp,
-                        color = MutedGray,
-                        lineHeight = 16.sp
-                    )
-                }
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(SoftDangerRed)
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    color = DangerRed,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+            Button(
+                onClick = onAddRestriction,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PureBlack,
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(14.dp)
+            ) {
                 Icon(
-                    Icons.Default.KeyboardArrowRight,
+                    imageVector = Icons.Default.Add,
                     contentDescription = null,
-                    tint = MutedGray,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(17.dp)
+                )
+                Spacer(modifier = Modifier.size(7.dp))
+                Text(
+                    text = "Yeni Kısıtlama Ekle",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
+    }
+}
 
-        // — COMPACT SUMMARY CARDS —
+@Composable
+private fun OverviewMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    isWarning: Boolean = false
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(13.dp))
+            .background(if (isWarning) SoftDangerRed else WarmGray)
+            .padding(horizontal = 11.dp, vertical = 10.dp)
+    ) {
+        Text(text = label, color = MutedGray, fontSize = 9.sp, fontWeight = FontWeight.Medium)
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            text = value,
+            color = if (isWarning) DangerRed else PureBlack,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun DisciplineSummary(
+    levelName: String,
+    streak: Int,
+    protectedCount: Int,
+    onProtectedClick: () -> Unit
+) {
+    Column {
+        Text(
+            text = "Disiplin Özeti",
+            color = PureBlack,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Black
+        )
+        Spacer(modifier = Modifier.height(10.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            SummaryCard(title = "Rütbe", value = levelName, modifier = Modifier.weight(1f))
+            SummaryCard(title = "Seri", value = "$streak gün", modifier = Modifier.weight(1f))
             SummaryCard(
-                title = "RÜTBE",
-                value = levelName,
-                subValue = "Level $level",
-                icon = "🛡️",
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                title = "SERİ",
-                value = "$streak Gün",
-                subValue = "Ardışık Başarı",
-                icon = "🔥",
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                title = "KORUNAN",
-                value = "$protectedCount Hedef",
-                subValue = "Uygulama",
-                icon = "🔒",
+                title = "Korunan",
+                value = "$protectedCount hedef",
                 modifier = Modifier.weight(1f),
-                onClick = onNavigateToProtected
+                onClick = onProtectedClick
             )
         }
     }
@@ -204,8 +361,6 @@ fun DashboardScreen(
 private fun SummaryCard(
     title: String,
     value: String,
-    subValue: String,
-    icon: String,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
@@ -213,46 +368,32 @@ private fun SummaryCard(
         onClick = onClick ?: {},
         enabled = onClick != null,
         modifier = modifier
-            .height(110.dp)
-            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+            .height(72.dp)
+            .border(1.dp, BorderGray, RoundedCornerShape(16.dp)),
         colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(10.dp),
+            verticalArrangement = Arrangement.Center
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = title,
-                    fontSize = 8.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Bold,
-                    color = MutedGray,
-                    letterSpacing = 0.5.sp
-                )
-                Text(text = icon, fontSize = 14.sp)
-            }
-            Column {
-                Text(
-                    text = value,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Black,
-                    color = PureBlack
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = subValue,
-                    fontSize = 9.sp,
-                    color = MutedGray
-                )
-            }
+            Text(text = title, color = MutedGray, fontSize = 9.sp, fontWeight = FontWeight.Medium)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = value, color = PureBlack, fontSize = 12.sp, fontWeight = FontWeight.Black)
         }
+    }
+}
+
+fun formatSavedDuration(savedMillis: Long): String {
+    val totalMinutes = savedMillis / 60_000L
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+    return buildString {
+        if (hours > 0) {
+            append("${hours}sa ")
+        }
+        append("${minutes}dk kazanıldı")
     }
 }

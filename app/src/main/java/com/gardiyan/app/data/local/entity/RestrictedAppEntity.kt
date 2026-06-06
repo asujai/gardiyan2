@@ -21,5 +21,7 @@ data class RestrictedAppEntity(
     val lastResetDate: String = "",
     val createdAtMillis: Long = System.currentTimeMillis(),
     val nextDayLimitMinutes: Int = 0,
-    val nextDayActiveDays: String = ""
+    val nextDayActiveDays: String = "",
+    val lastLimitUpdateDate: String = "",
+    val todayMinLimitMinutes: Int = 0
 )

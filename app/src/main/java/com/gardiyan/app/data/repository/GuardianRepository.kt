@@ -121,7 +121,9 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                     activeDays = activeDays,
                     lastResetDate = today,
                     nextDayLimitMinutes = 0,
-                    nextDayActiveDays = ""
+                    nextDayActiveDays = "",
+                    lastLimitUpdateDate = today,
+                    todayMinLimitMinutes = dailyLimitMinutes
                 )
             )
             existing.id
@@ -136,7 +138,9 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                     isActive = true,
                     isFailed = false,
                     activeDays = activeDays,
-                    lastResetDate = today
+                    lastResetDate = today,
+                    lastLimitUpdateDate = today,
+                    todayMinLimitMinutes = dailyLimitMinutes
                 )
             )
         }
@@ -227,7 +231,9 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                         activeDays = newActiveDays,
                         lastResetDate = today,
                         nextDayLimitMinutes = 0,
-                        nextDayActiveDays = ""
+                        nextDayActiveDays = "",
+                        lastLimitUpdateDate = "",
+                        todayMinLimitMinutes = 0
                     )
                 )
             }

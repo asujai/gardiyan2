@@ -108,4 +108,32 @@ class GuardianRepositoryRegressionTest {
         assertTrue(success)
         assertEquals(1, database.guardianDao().getAllLogsSync().count { it.eventType == "SUCCESS_DAY" })
     }
+
+    @Test
+    fun `upsertRestrictedApp sets lastLimitUpdateDate and todayMinLimitMinutes`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 45)
+        val result = repository.getRestrictedAppByIdSync(id)!!
+        
+        assertEquals(GuardianRepository.todayKey(), result.lastLimitUpdateDate)
+        assertEquals(45, result.todayMinLimitMinutes)
+    }
+
+    @Test
+    fun `resetDailyCountersIfNeeded clears limit update tracking`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 45)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        
+        // Mock a past reset date to simulate day change
+        repository.updateRestrictedApp(
+            app.copy(
+                lastResetDate = "2000-01-01"
+            )
+        )
+        
+        repository.resetDailyCountersIfNeeded()
+        
+        val result = repository.getRestrictedAppByIdSync(id)!!
+        assertEquals("", result.lastLimitUpdateDate)
+        assertEquals(0, result.todayMinLimitMinutes)
+    }
 }

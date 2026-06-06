@@ -127,10 +127,10 @@ fun SetupTargetScreen(
                                     modifier = Modifier
                                         .size(32.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(PureWhite.copy(alpha = 0.1f)),
+                                        .background(PureBlack.copy(alpha = 0.1f)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.Phone, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Phone, contentDescription = null, tint = PureBlack, modifier = Modifier.size(16.dp))
                                 }
                                 Text(
                                     text = "UYGULAMA SEÇİN",
@@ -207,10 +207,10 @@ fun SetupTargetScreen(
                                     modifier = Modifier
                                         .size(32.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(PureWhite.copy(alpha = 0.1f)),
+                                        .background(PureBlack.copy(alpha = 0.1f)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.List, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.List, contentDescription = null, tint = PureBlack, modifier = Modifier.size(16.dp))
                                 }
                                 Text(
                                     text = "GÜNLÜK KULLANIM LİMİTİ",
@@ -234,8 +234,8 @@ fun SetupTargetScreen(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(999.dp))
-                                            .background(if (isSelected) PureWhite else MatteSurface)
-                                            .border(1.dp, if (isSelected) PureWhite else BorderGray, RoundedCornerShape(999.dp))
+                                            .background(if (isSelected) PureBlack else MatteSurface)
+                                            .border(1.dp, if (isSelected) PureBlack else BorderGray, RoundedCornerShape(999.dp))
                                             .clickable {
                                                 selectedDurationPreset = choice.second
                                                 customDurationText = ""
@@ -247,7 +247,7 @@ fun SetupTargetScreen(
                                             text = choice.first,
                                             fontSize = 12.sp,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isSelected) Color.White else PureBlack
+                                            color = if (isSelected) OnPureBlack else PureBlack
                                         )
                                     }
                                 }
@@ -292,10 +292,10 @@ fun SetupTargetScreen(
                                     modifier = Modifier
                                         .size(32.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(PureWhite.copy(alpha = 0.1f)),
+                                        .background(PureBlack.copy(alpha = 0.1f)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.DateRange, contentDescription = null, tint = PureWhite, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.DateRange, contentDescription = null, tint = PureBlack, modifier = Modifier.size(16.dp))
                                 }
                                 Text(
                                     text = "KORUMA GÜNLERİ",
@@ -319,8 +319,8 @@ fun SetupTargetScreen(
                                         modifier = Modifier
                                             .size(42.dp)
                                             .clip(CircleShape)
-                                            .background(if (isSelected) PureWhite else MatteSurface)
-                                            .border(1.dp, if (isSelected) PureWhite else BorderGray, CircleShape)
+                                            .background(if (isSelected) PureBlack else MatteSurface)
+                                            .border(1.dp, if (isSelected) PureBlack else BorderGray, CircleShape)
                                             .clickable {
                                                 selectedDays = if (isSelected) {
                                                     selectedDays - day
@@ -334,7 +334,7 @@ fun SetupTargetScreen(
                                             text = day,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isSelected) Color.White else PureBlack
+                                            color = if (isSelected) OnPureBlack else PureBlack
                                         )
                                     }
                                 }
@@ -379,7 +379,7 @@ fun SetupTargetScreen(
                                 onCompleted()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = PureWhite, contentColor = Color.White),
+                        colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()

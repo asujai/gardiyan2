@@ -143,8 +143,8 @@ fun PermissionsScreen(
             onClick = { onNavigateToDashboard() },
             enabled = hasAllPermissions,
             colors = ButtonDefaults.buttonColors(
-                containerColor = PureWhite,
-                contentColor = Color.White,
+                containerColor = PureBlack,
+                contentColor = OnPureBlack,
                 disabledContainerColor = BorderGray,
                 disabledContentColor = MutedGray.copy(alpha = 0.5f)
             ),

@@ -142,9 +142,9 @@ fun MainNavigationContent(
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = PureWhite,
-                            selectedTextColor = PureWhite,
-                            indicatorColor = SoftDangerRed,
+                            selectedIconColor = PureBlack,
+                            selectedTextColor = PureBlack,
+                            indicatorColor = CopperAccent.copy(alpha = 0.15f),
                             unselectedTextColor = MutedGray,
                             unselectedIconColor = MutedGray
                         )
@@ -164,9 +164,9 @@ fun MainNavigationContent(
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = PureWhite,
-                            selectedTextColor = PureWhite,
-                            indicatorColor = SoftDangerRed,
+                            selectedIconColor = PureBlack,
+                            selectedTextColor = PureBlack,
+                            indicatorColor = CopperAccent.copy(alpha = 0.15f),
                             unselectedTextColor = MutedGray,
                             unselectedIconColor = MutedGray
                         )
@@ -186,9 +186,9 @@ fun MainNavigationContent(
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = PureWhite,
-                            selectedTextColor = PureWhite,
-                            indicatorColor = SoftDangerRed,
+                            selectedIconColor = PureBlack,
+                            selectedTextColor = PureBlack,
+                            indicatorColor = CopperAccent.copy(alpha = 0.15f),
                             unselectedTextColor = MutedGray,
                             unselectedIconColor = MutedGray
                         )

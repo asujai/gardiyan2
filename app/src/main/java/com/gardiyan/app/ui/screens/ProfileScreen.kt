@@ -44,6 +44,7 @@ fun ProfileScreen(
 
     var selectedFilter by remember { mutableStateOf(LogFilter.ALL) }
     var isSettingsVisible by remember { mutableStateOf(false) }
+    var isTimelineVisible by remember { mutableStateOf(false) }
 
     // 1. Temel Hesaplamalar
     val totalSuccessDays = remember(logs) {
@@ -206,7 +207,11 @@ fun ProfileScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isSettingsVisible) "AYARLAR & SAĞLIK" else "KORUMA PROFİLİ",
+                    text = when {
+                        isTimelineVisible -> "ZAMAN TÜNELİ"
+                        isSettingsVisible -> "AYARLAR"
+                        else -> "KORUMA PROFİLİ"
+                    },
                     fontSize = 18.sp,
                     fontFamily = FontFamily.SansSerif,
                     fontWeight = FontWeight.Black,
@@ -214,21 +219,251 @@ fun ProfileScreen(
                     letterSpacing = 0.5.sp
                 )
                 IconButton(
-                    onClick = { isSettingsVisible = !isSettingsVisible }
+                    onClick = {
+                        if (isTimelineVisible) {
+                            isTimelineVisible = false
+                        } else {
+                            isSettingsVisible = !isSettingsVisible
+                        }
+                    }
                 ) {
                     Icon(
-                        imageVector = if (isSettingsVisible) Icons.Default.Close else Icons.Default.Settings,
-                        contentDescription = "Ayarlar",
+                        imageVector = if (isTimelineVisible || isSettingsVisible) Icons.Default.Close else Icons.Default.Settings,
+                        contentDescription = "Kapat",
                         tint = PureBlack
                     )
                 }
             }
         }
 
-        if (isSettingsVisible) {
+        if (isTimelineVisible) {
+            // Zaman Tüneli Filtreleri ve Başlığı
+            item {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(LogFilter.entries.toTypedArray()) { filter ->
+                            val isSelected = selectedFilter == filter
+                            val chipBg = if (isSelected) PureBlack else DarkCharcoal
+                            val chipText = if (isSelected) OnPureBlack else PureBlack
+                            val chipBorder = if (isSelected) PureBlack else BorderGray
+
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(chipBg)
+                                    .border(1.dp, chipBorder, RoundedCornerShape(12.dp))
+                                    .clickable { selectedFilter = filter }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = filter.displayName,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = chipText
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            val timeFormat = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+
+            if (groupedLogs.isEmpty()) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, BorderGray.copy(alpha = 0.7f), RoundedCornerShape(20.dp)),
+                        colors = CardDefaults.cardColors(containerColor = MatteSurface),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp)
+                        ) {
+                            Text(
+                                text = if (isNoDataYet) "Zaman tüneli kaydı henüz bulunmuyor." else "Bu filtre için gösterilecek kayıt bulunmuyor.",
+                                fontSize = 12.sp,
+                                color = MutedGray,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            } else {
+                groupedLogs.forEach { (groupName, groupLogs) ->
+                    item {
+                        Text(
+                            text = groupName.uppercase(),
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.SansSerif,
+                            color = MutedGray,
+                            letterSpacing = 0.5.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 4.dp, top = 8.dp, bottom = 4.dp)
+                        )
+                    }
+
+                    items(groupLogs.size) { index ->
+                        val log = groupLogs[index]
+                        val timeStr = timeFormat.format(java.util.Date(log.timestamp))
+
+                        val title = when (log.eventType) {
+                            "RESTRICTION_ADDED" -> "Kısıtlama Eklendi"
+                            "RESTRICTION_REMOVED" -> "Kısıtlama Kaldırıldı"
+                            "RESTRICTION_DELETED" -> "Kısıtlama Silindi"
+                            "QUICK_TEST_STARTED" -> "Hızlı Test Başladı"
+                            "RESTRICTION_RESET" -> "Kısıtlama Sıfırlandı"
+                            "RESET_HOLD_5S" -> "Tüm Kısıtlamalar Kaldırıldı"
+                            "FAILURE", "DAILY_FAILURE", "VIOLATION" -> "Kısıtlama İhlali"
+                            "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY" -> "Gün Başarıyla Tamamlandı"
+                            "LIMIT_CHANGED" -> "Limit Değiştirildi"
+                            "DAYS_CHANGED", "ACTIVE_DAYS_CHANGED" -> "Aktif Günler Değiştirildi"
+                            "OVERLAY_SHOWN", "OVERLAY_TRIGGERED" -> "Uygulama Kilitlendi"
+                            "SERVICE_STARTED" -> "Koruma Başlatıldı"
+                            "SERVICE_RESTARTED" -> "Koruma Yeniden Başlatıldı"
+                            "SERVICE_STOPPED" -> "Koruma Durduruldu"
+                            "SUSPICIOUS_STATE_DETECTED" -> "Koruma Denetimi Hızlandırıldı"
+                            "ENGINE_RESYNCED" -> "Koruma Senkronize Edildi"
+                            "A11Y_EVENT_RECEIVED" -> "Uygulama Girişi Algılandı"
+                            "USAGE_STATS_FALLBACK" -> "Yedek Motor Denetimi"
+                            "SESSION_STARTED" -> "Oturum Başladı"
+                            "SESSION_UPDATED" -> "Oturum Güncellendi"
+                            "SESSION_CLOSED" -> "Oturum Sonlandırıldı"
+                            "STALE_SESSION_CLEANED" -> "Bayat Oturum Temizlendi"
+                            "USAGE_PROCESSED" -> "Kullanım Süresi İşlendi"
+                            "CRITICAL_ACTION_STARTED" -> "Kritik İşlem Başlatıldı"
+                            "CRITICAL_ACTION_COMPLETED" -> "Kritik İşlem Tamamlandı"
+                            "PERMISSION_CHANGED" -> "Sistem İzin Değişikliği"
+                            else -> log.eventType
+                        }
+
+                        val friendlyDetails = when (log.eventType) {
+                            "RESTRICTION_ADDED" -> "${log.appName} için günlük limit kısıtlaması eklendi."
+                            "RESTRICTION_REMOVED" -> "${log.appName} kısıtlaması kaldırıldı."
+                            "RESTRICTION_DELETED" -> "${log.appName} kısıtlaması tamamen silindi."
+                            "QUICK_TEST_STARTED" -> "${log.appName} için hızlı koruma testi başlatıldı."
+                            "RESTRICTION_RESET" -> "${log.appName} için günlük sayaç sıfırlandı."
+                            "RESET_HOLD_5S" -> "5 saniye basılı tutularak tüm kısıtlamalar kaldırıldı."
+                            "FAILURE", "DAILY_FAILURE", "VIOLATION" -> "${log.appName} kısıtlama limiti aşıldığı için kilit ekranı açıldı."
+                            "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY" -> "Bugünün hedefi başarıyla tamamlandı. Rütbeniz korundu!"
+                            "LIMIT_CHANGED" -> if (log.details.isNotEmpty()) log.details else "${log.appName} günlük limiti güncellendi."
+                            "DAYS_CHANGED", "ACTIVE_DAYS_CHANGED" -> if (log.details.isNotEmpty()) log.details else "${log.appName} aktif günleri güncellendi."
+                            "OVERLAY_SHOWN", "OVERLAY_TRIGGERED" -> "${log.appName} kilitlendi, kilit ekranı gösterildi."
+                            "SERVICE_STARTED" -> "Gardiyan koruma motoru başarıyla başlatıldı."
+                            "SERVICE_RESTARTED" -> "Gardiyan koruma motoru yeniden başlatıldı."
+                            "SERVICE_STOPPED" -> "Gardiyan koruma motoru durduruldu."
+                            "SUSPICIOUS_STATE_DETECTED" -> "Şüpheli durum algılandı, koruma motoru denetimi hızlandırıldı."
+                            "ENGINE_RESYNCED" -> "Koruma motoru durumu senkronize edildi. Normal moda dönüldü."
+                            "A11Y_EVENT_RECEIVED" -> "Erişilebilirlik servisi tarafından ${log.appName} girişi algılandı."
+                            "USAGE_STATS_FALLBACK" -> "Yedek denetim motoru: ${log.appName} için ön plan doğrulaması yapıldı."
+                            "SESSION_STARTED" -> "${log.appName} koruma oturumu başlatıldı."
+                            "SESSION_UPDATED" -> "${log.appName} koruma oturumu güncellendi."
+                            "SESSION_CLOSED" -> "${log.appName} koruma oturumu sonlandırıldı."
+                            "STALE_SESSION_CLEANED" -> "${log.appName} bayat oturumu temizlendi."
+                            "USAGE_PROCESSED" -> "${log.appName} için kullanım süresi işlendi."
+                            "CRITICAL_ACTION_STARTED" -> "${log.appName} silme işlemi basılı tutularak başlatıldı."
+                            "CRITICAL_ACTION_COMPLETED" -> "${log.appName} silme işlemi onaylandı."
+                            "PERMISSION_CHANGED" -> log.details
+                            else -> log.details
+                        }
+
+                        val statusIcon = when (log.eventType) {
+                            "FAILURE", "RESET_HOLD_5S", "DAILY_FAILURE", "CRITICAL_ACTION_STARTED", "VIOLATION" -> "⚠️"
+                            "CRITICAL_ACTION_COMPLETED", "RESTRICTION_DELETED" -> "🗑️"
+                            "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY" -> "🏆"
+                            "RESTRICTION_ADDED", "QUICK_TEST_STARTED" -> "➕"
+                            "SERVICE_STARTED", "SERVICE_RESTARTED", "SESSION_STARTED" -> "🚀"
+                            "SERVICE_STOPPED", "SESSION_CLOSED" -> "🛑"
+                            "SUSPICIOUS_STATE_DETECTED", "USAGE_STATS_FALLBACK", "SESSION_UPDATED" -> "🔍"
+                            "ENGINE_RESYNCED" -> "🔄"
+                            "OVERLAY_SHOWN", "OVERLAY_TRIGGERED" -> "🔒"
+                            "STALE_SESSION_CLEANED" -> "🧹"
+                            "USAGE_PROCESSED" -> "⏳"
+                            "PERMISSION_CHANGED" -> "🔑"
+                            else -> "ℹ️"
+                        }
+
+                        val statusColor = when (log.eventType) {
+                            "FAILURE", "RESET_HOLD_5S", "DAILY_FAILURE", "CRITICAL_ACTION_STARTED", "VIOLATION" -> DangerRed
+                            "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY", "SERVICE_STARTED", "SERVICE_RESTARTED", "ENGINE_RESYNCED", "SESSION_STARTED" -> SuccessGreen
+                            "CRITICAL_ACTION_COMPLETED", "RESTRICTION_DELETED", "SESSION_CLOSED", "STALE_SESSION_CLEANED", "PERMISSION_CHANGED" -> DangerRed.copy(alpha = 0.8f)
+                            else -> MutedGray
+                        }
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(1.dp, BorderGray, RoundedCornerShape(16.dp)),
+                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(14.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(statusColor.copy(alpha = 0.08f))
+                                ) {
+                                    Text(text = statusIcon, fontSize = 16.sp)
+                                }
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = title,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = PureBlack,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            text = timeStr,
+                                            fontSize = 9.sp,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = MutedGray
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = friendlyDetails,
+                                        fontSize = 10.sp,
+                                        color = MutedGray,
+                                        lineHeight = 14.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (isSettingsVisible) {
             item {
                 val context = LocalContext.current
                 val allOk = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted && isNotificationsEnabled
+                var isHealthExpanded by remember { mutableStateOf(false) }
+                
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -242,675 +477,569 @@ fun ProfileScreen(
                             .padding(16.dp)
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { isHealthExpanded = !isHealthExpanded },
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "Sistem Sağlığı",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = PureBlack
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(if (allOk) SuccessGreen else DangerRed)
+                                )
+                            }
+                            Text(
+                                text = if (isHealthExpanded) "▲" else "▼",
+                                fontSize = 10.sp,
+                                color = MutedGray
+                            )
+                        }
+                        
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = isHealthExpanded
+                        ) {
+                            Column {
+                                Spacer(modifier = Modifier.height(14.dp))
+                                HealthRow(name = "Kullanım Erişimi", isOk = isUsageEnabled, onClick = { viewModel.openUsageStatsSettings(context) })
+                                Spacer(modifier = Modifier.height(6.dp))
+                                HealthRow(name = "Erişilebilirlik Servisi", isOk = isAccessibilityEnabled, onClick = { viewModel.openAccessibilitySettings(context) })
+                                Spacer(modifier = Modifier.height(6.dp))
+                                HealthRow(name = "Diğer Uygulamaların Üzerinde Çizim", isOk = isOverlayEnabled, onClick = { viewModel.openOverlaySettings(context) })
+                                Spacer(modifier = Modifier.height(6.dp))
+                                HealthRow(name = "Pil Optimizasyonu Muafiyeti", isOk = isBatteryExempted, onClick = { viewModel.requestBatteryOptimizationIgnore(context) })
+                                Spacer(modifier = Modifier.height(6.dp))
+                                HealthRow(name = "Bildirim İzni", isOk = isNotificationsEnabled, onClick = { viewModel.openNotificationSettings(context) })
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Tema Ayarları
+            item {
+                val context = LocalContext.current
+                var isThemeExpanded by remember { mutableStateOf(false) }
+                val currentMode = currentThemeMode.value
+                val currentPalette = currentThemePalette.value
+                val currentModeLabel = when (currentMode) {
+                    AppThemeMode.SYSTEM -> "Sistem Varsayılanı"
+                    AppThemeMode.LIGHT -> "Açık Tema"
+                    AppThemeMode.DARK -> "Koyu Tema"
+                }
+                val currentPaletteLabel = when (currentPalette) {
+                    AppThemePalette.BLUE -> "Mavi Tema"
+                    AppThemePalette.MONOCHROME -> "Siyah & Beyaz"
+                    AppThemePalette.RED -> "Kırmızı Tema"
+                    AppThemePalette.PREMIUM_DARK -> "Premium Koyu"
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { isThemeExpanded = !isThemeExpanded },
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "SİSTEM SAĞLIĞI",
-                                fontSize = 10.sp,
-                                fontFamily = FontFamily.SansSerif,
+                                text = "Tema Ayarları",
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MutedGray,
-                                letterSpacing = 0.5.sp
+                                color = PureBlack
                             )
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(if (allOk) SuccessGreen else DangerRed)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = "$currentModeLabel - $currentPaletteLabel",
+                                    fontSize = 11.sp,
+                                    color = MutedGray,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = if (isThemeExpanded) "▲" else "▼",
+                                    fontSize = 10.sp,
+                                    color = MutedGray
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(10.dp))
-                        
-                        HealthRow(name = "Kullanım Erişimi", isOk = isUsageEnabled, onClick = { viewModel.openUsageStatsSettings(context) })
-                        HealthRow(name = "Erişilebilirlik Servisi", isOk = isAccessibilityEnabled, onClick = { viewModel.openAccessibilitySettings(context) })
-                        HealthRow(name = "Diğer Uygulamaların Üzerinde Çizim", isOk = isOverlayEnabled, onClick = { viewModel.openOverlaySettings(context) })
-                        HealthRow(name = "Pil Optimizasyonu Muafiyeti", isOk = isBatteryExempted, onClick = { viewModel.requestBatteryOptimizationIgnore(context) })
-                        HealthRow(name = "Bildirim İzni", isOk = isNotificationsEnabled, onClick = { viewModel.openNotificationSettings(context) })
+
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = isThemeExpanded
+                        ) {
+                            Column {
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Text(
+                                    text = "GÖRÜNÜM MODU",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MutedGray,
+                                    letterSpacing = 0.5.sp
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                ThemeOptionRow(
+                                    label = "Sistem varsayılanı",
+                                    isSelected = currentMode == AppThemeMode.SYSTEM,
+                                    onClick = {
+                                        updateThemeMode(context, AppThemeMode.SYSTEM)
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                ThemeOptionRow(
+                                    label = "Açık tema",
+                                    isSelected = currentMode == AppThemeMode.LIGHT,
+                                    onClick = {
+                                        updateThemeMode(context, AppThemeMode.LIGHT)
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                ThemeOptionRow(
+                                    label = "Koyu tema",
+                                    isSelected = currentMode == AppThemeMode.DARK,
+                                    onClick = {
+                                        updateThemeMode(context, AppThemeMode.DARK)
+                                    }
+                                )
+
+                                Spacer(modifier = Modifier.height(14.dp))
+                                HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                Text(
+                                    text = "RENK TEMASI",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MutedGray,
+                                    letterSpacing = 0.5.sp
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                ThemeOptionRow(
+                                    label = "Mavi Tema",
+                                    isSelected = currentPalette == AppThemePalette.BLUE,
+                                    onClick = {
+                                        updateThemePalette(context, AppThemePalette.BLUE)
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                ThemeOptionRow(
+                                    label = "Siyah & Beyaz",
+                                    isSelected = currentPalette == AppThemePalette.MONOCHROME,
+                                    onClick = {
+                                        updateThemePalette(context, AppThemePalette.MONOCHROME)
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                ThemeOptionRow(
+                                    label = "Kırmızı Tema",
+                                    isSelected = currentPalette == AppThemePalette.RED,
+                                    onClick = {
+                                        updateThemePalette(context, AppThemePalette.RED)
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                ThemeOptionRow(
+                                    label = "Premium Koyu",
+                                    isSelected = currentPalette == AppThemePalette.PREMIUM_DARK,
+                                    onClick = {
+                                        updateThemePalette(context, AppThemePalette.PREMIUM_DARK)
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
             }
 
-
+            // Zaman Tüneli Butonu
+            item {
+                Button(
+                    onClick = { isTimelineVisible = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PureBlack,
+                        contentColor = OnPureBlack
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = "ZAMAN TÜNELİ",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+            }
         } else {
             // 1. Profil Hub (Görsel Avatar & XP Bar)
             item {
-            val levelName = when (level) {
-                1 -> "Çaylak"
-                2 -> "Disiplinli"
-                3 -> "Usta"
-                else -> "Çaylak"
-            }
-            val shieldEmoji = when (level) {
-                1 -> "🛡️"
-                2 -> "🥈"
-                3 -> "👑"
-                else -> "🛡️"
-            }
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, BorderGray, RoundedCornerShape(24.dp)),
-                colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                shape = RoundedCornerShape(24.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Avatar Dairesi
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(PureWhite.copy(alpha = 0.05f))
-                            .border(1.5.dp, PureWhite.copy(alpha = 0.15f), CircleShape)
-                    ) {
-                        Text(text = shieldEmoji, fontSize = 32.sp)
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "LEVEL $level",
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MutedGray,
-                        letterSpacing = 1.sp
-                    )
-                    Text(
-                        text = levelName.uppercase(),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Black,
-                        color = PureBlack,
-                        letterSpacing = 0.5.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // XP / Telafi Barı (Gerçek verilere bağlı)
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = progressLabel, fontSize = 10.sp, color = MutedGray)
-                            Text(
-                                text = progressText,
-                                fontSize = 10.sp,
-                                color = MutedGray,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        LinearProgressIndicator(
-                            progress = { progress },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(3.dp)),
-                            color = progressColor,
-                            trackColor = MatteSurface
-                        )
-                    }
+                val levelName = when (level) {
+                    1 -> "Çaylak"
+                    2 -> "Disiplinli"
+                    3 -> "Usta"
+                    else -> "Çaylak"
                 }
-            }
-        }
-
-        // 2. Kalkan Sağlığı / Utanç Rozeti Durumu
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        width = 1.2.dp,
-                        color = if (hasBadge) DangerRed.copy(alpha = 0.3f) else SuccessGreen.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(24.dp)
-                    ),
-                colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                shape = RoundedCornerShape(24.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (hasBadge) DangerRed.copy(alpha = 0.08f) else SuccessGreen.copy(alpha = 0.08f))
-                    ) {
-                        Text(text = if (hasBadge) "⚠️" else "🛡️", fontSize = 22.sp)
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = if (hasBadge) "KALKAN HASARLI" else "GÜVENLİK MAKSİMUM",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.SansSerif,
-                            color = if (hasBadge) DangerRed else SuccessGreen,
-                            letterSpacing = 0.5.sp
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = if (hasBadge) {
-                                "Denge sürecinin tamamlanması ve kalkanın tamamen onarılmasına $activeRedemptionDaysLeft gün kaldı."
-                            } else {
-                                "Sistem koruması aktif. Herhangi bir koruma uyarısı bulunmamaktadır."
-                            },
-                            fontSize = 11.sp,
-                            color = MutedGray,
-                            lineHeight = 16.sp
-                        )
-                    }
-                }
-            }
-        }
-
-        // 3. Asimetrik Bento Kutuları (Bugünün Durumu & Başarı İstatistikleri)
-        item {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Bugünün Durumu Bento Kartı
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(90.dp)
-                            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(14.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "BUGÜNÜN DURUMU",
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MutedGray
-                                )
-                                Text(text = todayStatusIcon, fontSize = 14.sp)
-                            }
-                            Text(
-                                text = todayStatusText,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Black,
-                                color = todayStatusColor
-                            )
-                        }
-                    }
-
-                    // Ardışık Seri Bento Kartı
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(90.dp)
-                            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(14.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "ARDIŞIK SERİ",
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MutedGray
-                                )
-                                Text(text = "🔥", fontSize = 14.sp)
-                            }
-                            Text(
-                                text = "$consecutiveSuccessDays Gün",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Black,
-                                color = PureBlack
-                            )
-                        }
-                    }
+                val shieldEmoji = when (level) {
+                    1 -> "🛡️"
+                    2 -> "🥈"
+                    3 -> "👑"
+                    else -> "🛡️"
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Toplam Başarı Bento Kartı
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(90.dp)
-                            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(14.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "TOPLAM BAŞARI",
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MutedGray
-                                )
-                                Text(text = "🏆", fontSize = 14.sp)
-                            }
-                            Text(
-                                text = "$totalSuccessDays Başarı",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Black,
-                                color = PureBlack
-                            )
-                        }
-                    }
-
-                    // Korumadaki Uygulamalar Bento Kartı
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(90.dp)
-                            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(14.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "KORUNAN HEDEF",
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MutedGray
-                                )
-                                Text(text = "🔒", fontSize = 14.sp)
-                            }
-                            Text(
-                                text = "${activeApps.size} Uygulama",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Black,
-                                color = PureBlack
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // 4. Tarih Bilgileri ve Motivasyon Kartı
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text(
-                        text = "İSTATİSTİK DETAYLARI",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MutedGray,
-                        letterSpacing = 0.5.sp
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = "Son Başarılı Gün:", fontSize = 12.sp, color = MutedGray)
-                        Text(text = lastSuccessDateStr, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PureBlack)
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = "Son İhlal / Kilit:", fontSize = 12.sp, color = MutedGray)
-                        Text(text = lastViolationDateStr, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DangerRed)
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-                    HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = motivationMessage,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = PureBlack,
-                        lineHeight = 18.sp
-                    )
-                }
-            }
-        }
-
-        // 5. Dostane Boş Veri Bildirimleri (Gerekirse)
-        if (isNoDataYet || consecutiveSuccessDays == 0 || todayStatusText == "Devam Ediyor") {
-            item {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, BorderGray.copy(alpha = 0.7f), RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = MatteSurface),
-                    shape = RoundedCornerShape(20.dp)
+                        .border(1.dp, BorderGray, RoundedCornerShape(24.dp)),
+                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                    shape = RoundedCornerShape(24.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = "GARDİYAN İPUCU 💡",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MutedGray
-                        )
-                        val tipText = when {
-                            isNoDataYet -> "Başarı veriniz henüz bulunmuyor. Gardiyan ile kısıtladığınız uygulamalara sadık kalarak ilk gününüzü başarıyla tamamlayın."
-                            consecutiveSuccessDays == 0 -> "İlk başarılı gününüzün ardından rütbe ilerlemeniz ve seriniz burada görünmeye başlayacaktır."
-                            todayStatusText == "Devam Ediyor" -> "Bugünün koruması hala aktif ve devam ediyor. Günü ihlal yapmadan bitirdiğinizde ardışık seriniz artacaktır!"
-                            else -> "Korumayı sürdürerek seviyenizi artırabilir ve yeni rütbeler kazanabilirsiniz."
-                        }
-                        Text(
-                            text = tipText,
-                            fontSize = 11.sp,
-                            color = MutedGray,
-                            lineHeight = 16.sp
-                        )
-                    }
-                }
-            }
-        }
-
-        // 4. Zaman Tüneli Başlığı ve Filtreler
-        item {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "ZAMAN TÜNELİ",
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    color = MutedGray,
-                    letterSpacing = 0.5.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                )
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(LogFilter.values()) { filter ->
-                        val isSelected = selectedFilter == filter
-                        val chipBg = if (isSelected) PureBlack else DarkCharcoal
-                        val chipText = if (isSelected) Color.White else PureBlack
-                        val chipBorder = if (isSelected) PureBlack else BorderGray
-
+                        // Avatar Dairesi
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(chipBg)
-                                .border(1.dp, chipBorder, RoundedCornerShape(12.dp))
-                                .clickable { selectedFilter = filter }
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .background(PureWhite.copy(alpha = 0.05f))
+                                .border(1.5.dp, PureWhite.copy(alpha = 0.15f), CircleShape)
                         ) {
-                            Text(
-                                text = filter.displayName,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = chipText
+                            Text(text = shieldEmoji, fontSize = 32.sp)
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "LEVEL $level",
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MutedGray,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = levelName.uppercase(),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Black,
+                            color = PureBlack,
+                            letterSpacing = 0.5.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // XP / Telafi Barı (Gerçek verilere bağlı)
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = progressLabel, fontSize = 10.sp, color = MutedGray)
+                                Text(
+                                    text = progressText,
+                                    fontSize = 10.sp,
+                                    color = MutedGray,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            LinearProgressIndicator(
+                                progress = { progress },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp)),
+                                color = progressColor,
+                                trackColor = MatteSurface
                             )
                         }
                     }
                 }
             }
-        }
 
-        val timeFormat = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
 
-        if (groupedLogs.isEmpty()) {
+
+            // 3. Asimetrik Bento Kutuları (Bugünün Durumu & Başarı İstatistikleri)
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray.copy(alpha = 0.7f), RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = MatteSurface),
-                    shape = RoundedCornerShape(20.dp)
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = if (isNoDataYet) "Zaman tüneli kaydı henüz bulunmuyor." else "Bu filtre için gösterilecek kayıt bulunmuyor.",
-                            fontSize = 12.sp,
-                            color = MutedGray,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-        } else {
-            groupedLogs.forEach { (groupName, groupLogs) ->
-                item {
-                    Text(
-                        text = groupName.uppercase(),
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.SansSerif,
-                        color = MutedGray,
-                        letterSpacing = 0.5.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 4.dp, top = 8.dp, bottom = 4.dp)
-                    )
-                }
-
-                items(groupLogs.size) { index ->
-                    val log = groupLogs[index]
-                    val timeStr = timeFormat.format(java.util.Date(log.timestamp))
-
-                    val title = when (log.eventType) {
-                        "RESTRICTION_ADDED" -> "Kısıtlama Eklendi"
-                        "RESTRICTION_REMOVED" -> "Kısıtlama Kaldırıldı"
-                        "RESTRICTION_DELETED" -> "Kısıtlama Silindi"
-                        "QUICK_TEST_STARTED" -> "Hızlı Test Başladı"
-                        "RESTRICTION_RESET" -> "Kısıtlama Sıfırlandı"
-                        "RESET_HOLD_5S" -> "Tüm Kısıtlamalar Kaldırıldı"
-                        "FAILURE", "DAILY_FAILURE", "VIOLATION" -> "Kısıtlama İhlali"
-                        "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY" -> "Gün Başarıyla Tamamlandı"
-                        "LIMIT_CHANGED" -> "Limit Değiştirildi"
-                        "DAYS_CHANGED", "ACTIVE_DAYS_CHANGED" -> "Aktif Günler Değiştirildi"
-                        "OVERLAY_SHOWN", "OVERLAY_TRIGGERED" -> "Uygulama Kilitlendi"
-                        "SERVICE_STARTED" -> "Koruma Başlatıldı"
-                        "SERVICE_RESTARTED" -> "Koruma Yeniden Başlatıldı"
-                        "SERVICE_STOPPED" -> "Koruma Durduruldu"
-                        "SUSPICIOUS_STATE_DETECTED" -> "Koruma Denetimi Hızlandırıldı"
-                        "ENGINE_RESYNCED" -> "Koruma Senkronize Edildi"
-                        "A11Y_EVENT_RECEIVED" -> "Uygulama Girişi Algılandı"
-                        "USAGE_STATS_FALLBACK" -> "Yedek Motor Denetimi"
-                        "SESSION_STARTED" -> "Oturum Başladı"
-                        "SESSION_UPDATED" -> "Oturum Güncellendi"
-                        "SESSION_CLOSED" -> "Oturum Sonlandırıldı"
-                        "STALE_SESSION_CLEANED" -> "Bayat Oturum Temizlendi"
-                        "USAGE_PROCESSED" -> "Kullanım Süresi İşlendi"
-                        "CRITICAL_ACTION_STARTED" -> "Kritik İşlem Başlatıldı"
-                        "CRITICAL_ACTION_COMPLETED" -> "Kritik İşlem Tamamlandı"
-                        "PERMISSION_CHANGED" -> "Sistem İzin Değişikliği"
-                        else -> log.eventType
-                    }
-
-                    val friendlyDetails = when (log.eventType) {
-                        "RESTRICTION_ADDED" -> "${log.appName} için günlük limit kısıtlaması eklendi."
-                        "RESTRICTION_REMOVED" -> "${log.appName} kısıtlaması kaldırıldı."
-                        "RESTRICTION_DELETED" -> "${log.appName} kısıtlaması tamamen silindi."
-                        "QUICK_TEST_STARTED" -> "${log.appName} için hızlı koruma testi başlatıldı."
-                        "RESTRICTION_RESET" -> "${log.appName} için günlük sayaç sıfırlandı."
-                        "RESET_HOLD_5S" -> "5 saniye basılı tutularak tüm kısıtlamalar kaldırıldı."
-                        "FAILURE", "DAILY_FAILURE", "VIOLATION" -> "${log.appName} kısıtlama limiti aşıldığı için kilit ekranı açıldı."
-                        "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY" -> "Bugünün hedefi başarıyla tamamlandı. Rütbeniz korundu!"
-                        "LIMIT_CHANGED" -> if (log.details.isNotEmpty()) log.details else "${log.appName} günlük limiti güncellendi."
-                        "DAYS_CHANGED", "ACTIVE_DAYS_CHANGED" -> if (log.details.isNotEmpty()) log.details else "${log.appName} aktif günleri güncellendi."
-                        "OVERLAY_SHOWN", "OVERLAY_TRIGGERED" -> "${log.appName} kilitlendi, kilit ekranı gösterildi."
-                        "SERVICE_STARTED" -> "Gardiyan koruma motoru başarıyla başlatıldı."
-                        "SERVICE_RESTARTED" -> "Gardiyan koruma motoru yeniden başlatıldı."
-                        "SERVICE_STOPPED" -> "Gardiyan koruma motoru durduruldu."
-                        "SUSPICIOUS_STATE_DETECTED" -> "Şüpheli durum algılandı, koruma motoru denetimi hızlandırıldı."
-                        "ENGINE_RESYNCED" -> "Koruma motoru durumu senkronize edildi. Normal moda dönüldü."
-                        "A11Y_EVENT_RECEIVED" -> "Erişilebilirlik servisi tarafından ${log.appName} girişi algılandı."
-                        "USAGE_STATS_FALLBACK" -> "Yedek denetim motoru: ${log.appName} için ön plan doğrulaması yapıldı."
-                        "SESSION_STARTED" -> "${log.appName} koruma oturumu başlatıldı."
-                        "SESSION_UPDATED" -> "${log.appName} koruma oturumu güncellendi."
-                        "SESSION_CLOSED" -> "${log.appName} koruma oturumu sonlandırıldı."
-                        "STALE_SESSION_CLEANED" -> "${log.appName} bayat oturumu temizlendi."
-                        "USAGE_PROCESSED" -> "${log.appName} için kullanım süresi işlendi."
-                        "CRITICAL_ACTION_STARTED" -> "${log.appName} silme işlemi basılı tutularak başlatıldı."
-                        "CRITICAL_ACTION_COMPLETED" -> "${log.appName} silme işlemi onaylandı."
-                        "PERMISSION_CHANGED" -> log.details
-                        else -> log.details
-                    }
-
-                    val statusIcon = when (log.eventType) {
-                        "FAILURE", "DAILY_FAILURE", "VIOLATION" -> "⚠️"
-                        "RESET_HOLD_5S", "CRITICAL_ACTION_STARTED" -> "🔓"
-                        "CRITICAL_ACTION_COMPLETED", "RESTRICTION_DELETED" -> "🗑️"
-                        "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY" -> "🏆"
-                        "RESTRICTION_ADDED", "QUICK_TEST_STARTED" -> "➕"
-                        "SERVICE_STARTED", "SERVICE_RESTARTED", "SESSION_STARTED" -> "🚀"
-                        "SERVICE_STOPPED", "SESSION_CLOSED" -> "🛑"
-                        "SUSPICIOUS_STATE_DETECTED", "USAGE_STATS_FALLBACK", "SESSION_UPDATED" -> "🔍"
-                        "ENGINE_RESYNCED" -> "🔄"
-                        "OVERLAY_SHOWN", "OVERLAY_TRIGGERED" -> "🔒"
-                        "STALE_SESSION_CLEANED" -> "🧹"
-                        "USAGE_PROCESSED" -> "⏳"
-                        "PERMISSION_CHANGED" -> "🔑"
-                        else -> "ℹ️"
-                    }
-
-                    val statusColor = when (log.eventType) {
-                        "FAILURE", "RESET_HOLD_5S", "DAILY_FAILURE", "CRITICAL_ACTION_STARTED", "VIOLATION" -> DangerRed
-                        "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY", "SERVICE_STARTED", "SERVICE_RESTARTED", "ENGINE_RESYNCED", "SESSION_STARTED" -> SuccessGreen
-                        "CRITICAL_ACTION_COMPLETED", "RESTRICTION_DELETED", "SESSION_CLOSED", "STALE_SESSION_CLEANED", "PERMISSION_CHANGED" -> DangerRed.copy(alpha = 0.8f)
-                        else -> MutedGray
-                    }
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, BorderGray, RoundedCornerShape(16.dp)),
-                        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Row(
+                        // Bugünün Durumu Bento Kartı
+                        Card(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                .weight(1f)
+                                .height(90.dp)
+                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                            shape = RoundedCornerShape(20.dp)
                         ) {
-                            Box(
-                                contentAlignment = Alignment.Center,
+                            Column(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(statusColor.copy(alpha = 0.08f))
+                                    .fillMaxSize()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = statusIcon, fontSize = 16.sp)
-                            }
-
-                            Column(modifier = Modifier.weight(1f)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = title,
-                                        fontSize = 12.sp,
+                                        text = "BUGÜNÜN DURUMU",
+                                        fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = PureBlack,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(
-                                        text = timeStr,
-                                        fontSize = 9.sp,
-                                        fontFamily = FontFamily.Monospace,
                                         color = MutedGray
                                     )
+                                    Text(text = todayStatusIcon, fontSize = 14.sp)
                                 }
-                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = friendlyDetails,
-                                    fontSize = 10.sp,
-                                    color = MutedGray,
-                                    lineHeight = 14.sp
+                                    text = todayStatusText,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = todayStatusColor
+                                )
+                            }
+                        }
+
+                        // Ardışık Seri Bento Kartı
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(90.dp)
+                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                            shape = RoundedCornerShape(20.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "ARDIŞIK SERİ",
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MutedGray
+                                    )
+                                    Text(text = "🔥", fontSize = 14.sp)
+                                }
+                                Text(
+                                    text = "$consecutiveSuccessDays Gün",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = PureBlack
+                                )
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Toplam Başarı Bento Kartı
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(90.dp)
+                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                            shape = RoundedCornerShape(20.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "TOPLAM BAŞARI",
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MutedGray
+                                    )
+                                    Text(text = "🏆", fontSize = 14.sp)
+                                }
+                                Text(
+                                    text = "$totalSuccessDays Başarı",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = PureBlack
+                                )
+                            }
+                        }
+
+                        // Korumadaki Uygulamalar Bento Kartı
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(90.dp)
+                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                            shape = RoundedCornerShape(20.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "KORUNAN HEDEF",
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MutedGray
+                                    )
+                                    Text(text = "🔒", fontSize = 14.sp)
+                                }
+                                Text(
+                                    text = "${activeApps.size} Uygulama",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = PureBlack
                                 )
                             }
                         }
                     }
                 }
             }
-        }
 
+            // 4. Tarih Bilgileri ve Motivasyon Kartı
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "İSTATİSTİK DETAYLARI",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MutedGray,
+                            letterSpacing = 0.5.sp
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Son Başarılı Gün:", fontSize = 12.sp, color = MutedGray)
+                            Text(text = lastSuccessDateStr, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Son İhlal / Kilit:", fontSize = 12.sp, color = MutedGray)
+                            Text(text = lastViolationDateStr, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DangerRed)
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = motivationMessage,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = PureBlack,
+                            lineHeight = 18.sp
+                        )
+                    }
+                }
+            }
         }
 
         item {
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
+
+@Composable
+private fun ThemeOptionRow(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = PureBlack
+        )
+        RadioButton(
+            selected = isSelected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = PureBlack,
+                unselectedColor = MutedGray
+            )
+        )
     }
 }
 

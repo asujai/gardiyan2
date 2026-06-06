@@ -108,7 +108,7 @@ fun ModernRestrictionCard(
                     CircularProgressIndicator(
                         progress = { dailyProgress },
                         modifier = Modifier.size(56.dp),
-                        color = if (isLocked) DangerRed else PureWhite,
+                        color = if (isLocked) DangerRed else PureBlack,
                         trackColor = if (isLocked) DangerRed.copy(alpha = 0.1f) else BorderGray,
                         strokeWidth = 3.5.dp
                     )
@@ -200,7 +200,7 @@ fun ModernRestrictionCard(
                         .weight(1f)
                         .height(8.dp)
                         .clip(RoundedCornerShape(4.dp)),
-                    color = if (isLocked) DangerRed else PureWhite,
+                    color = if (isLocked) DangerRed else PureBlack,
                     trackColor = BorderGray
                 )
                 Text(

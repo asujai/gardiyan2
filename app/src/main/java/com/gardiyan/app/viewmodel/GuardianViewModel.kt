@@ -1,6 +1,7 @@
 package com.gardiyan.app.viewmodel
 
 import android.app.AppOpsManager
+import android.app.usage.UsageStatsManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -15,6 +16,8 @@ import com.gardiyan.app.data.local.database.GuardianDatabase
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.data.local.entity.StatusLogEntity
 import com.gardiyan.app.data.local.entity.UserSessionEntity
+import com.gardiyan.app.data.model.AppUsageSummary
+import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.data.repository.GuardianRepository
 import com.gardiyan.app.service.AppBlockAccessibilityService
 import com.gardiyan.app.service.BlockOverlayService
@@ -22,6 +25,7 @@ import com.gardiyan.app.service.KeepAliveScheduler
 import com.gardiyan.app.service.DailySuccessScheduler
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class GuardianViewModel(context: Context) : ViewModel() {
 
@@ -53,7 +57,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
     private val _setupStep = MutableStateFlow(1)
     val setupStep: StateFlow<Int> = _setupStep.asStateFlow()
 
-    private val _shameMessage = MutableStateFlow("\u00DCzg\u00FCn\u00FCm, bug\u00FCn irademe yenildim ve Instagram'da s\u00F6rf yaparken Gardiyan'a yakaland\u0131m. Bu mesaj utanc\u0131m\u0131n kan\u0131t\u0131d\u0131r.")
+    private val _shameMessage = MutableStateFlow("Üzgünüm, bugün irademe yenildim ve Instagram'da sörf yaparken Gardiyan'a yakalandım. Bu mesaj utancımın kanıtıdır.")
     val shameMessage: StateFlow<String> = _shameMessage.asStateFlow()
 
     private val _isMonitoringActive = MutableStateFlow(BlockOverlayService.isServiceRunning.get())
@@ -141,51 +145,40 @@ class GuardianViewModel(context: Context) : ViewModel() {
     fun updateRestrictionSettings(id: Long, newLimitMinutes: Int, newActiveDays: String) {
         viewModelScope.launch {
             val app = repository.getRestrictedAppByIdSync(id) ?: return@launch
+            
+            // Limit artışını engelle (ViewModel koruması)
+            if (newLimitMinutes > app.dailyLimitMinutes) {
+                return@launch
+            }
+
             val isLimitChanged = app.dailyLimitMinutes != newLimitMinutes
             val effectiveScheduledDays = app.nextDayActiveDays.ifEmpty { app.activeDays }
             val isActiveDaysChanged = effectiveScheduledDays != newActiveDays
             
             if (!isLimitChanged && !isActiveDaysChanged) return@launch
 
-            val isLimitIncrease = newLimitMinutes > app.dailyLimitMinutes
-            val isLocked = app.remainingSecondsToday <= 0
-
             var updatedApp = app
 
             if (isLimitChanged) {
-                if (isLimitIncrease) {
-                    if (isLocked) {
-                        return@launch
-                    }
-                    updatedApp = updatedApp.copy(
-                        nextDayLimitMinutes = newLimitMinutes,
-                        nextDayActiveDays = if (isActiveDaysChanged) newActiveDays else updatedApp.nextDayActiveDays
-                    )
-                    repository.insertLog(
-                        eventType = "LIMIT_CHANGED",
-                        appName = app.appName,
-                        details = "The limit change for ${app.appName} will take effect tomorrow."
-                    )
-                } else {
-                    val oldLimitSecs = app.dailyLimitMinutes * 60
-                    val usedSecs = (oldLimitSecs - app.remainingSecondsToday).coerceAtLeast(0)
-                    val newLimitSecs = newLimitMinutes * 60
-                    val newRemainingSecs = (newLimitSecs - usedSecs).coerceAtLeast(0)
+                // Sadece limit azaltma veya eşitlik durumu buraya gelebilir
+                val oldLimitSecs = app.dailyLimitMinutes * 60
+                val usedSecs = (oldLimitSecs - app.remainingSecondsToday).coerceAtLeast(0)
+                val newLimitSecs = newLimitMinutes * 60
+                val newRemainingSecs = (newLimitSecs - usedSecs).coerceAtLeast(0)
 
-                    updatedApp = updatedApp.copy(
-                        dailyLimitMinutes = newLimitMinutes,
-                        nextDayLimitMinutes = newLimitMinutes,
-                        remainingMinutesToday = (newRemainingSecs + 59) / 60,
-                        remainingSecondsToday = newRemainingSecs,
-                        nextDayActiveDays = if (isActiveDaysChanged) newActiveDays else updatedApp.nextDayActiveDays,
-                        isFailed = newRemainingSecs <= 0
-                    )
-                    repository.insertLog(
-                        eventType = "LIMIT_CHANGED",
-                        appName = app.appName,
-                        details = "${app.appName} günlük limiti düşürüldü: $newLimitMinutes dk."
-                    )
-                }
+                updatedApp = updatedApp.copy(
+                    dailyLimitMinutes = newLimitMinutes,
+                    nextDayLimitMinutes = newLimitMinutes,
+                    remainingMinutesToday = (newRemainingSecs + 59) / 60,
+                    remainingSecondsToday = newRemainingSecs,
+                    nextDayActiveDays = if (isActiveDaysChanged) newActiveDays else updatedApp.nextDayActiveDays,
+                    isFailed = newRemainingSecs <= 0
+                )
+                repository.insertLog(
+                    eventType = "LIMIT_CHANGED",
+                    appName = app.appName,
+                    details = "${app.appName} günlük limiti düşürüldü: $newLimitMinutes dk."
+                )
             } else if (isActiveDaysChanged) {
                 updatedApp = updatedApp.copy(nextDayActiveDays = newActiveDays)
                 repository.insertLog(
@@ -523,5 +516,116 @@ class GuardianViewModel(context: Context) : ViewModel() {
         val otherList = list.filter { !popularPackages.contains(it.second) }.sortedBy { it.first.uppercase() }
 
         return popularList + otherList
+    }
+
+    private fun getUsageRankingForInterval(startTime: Long, endTime: Long): List<AppUsageSummary> {
+        if (!hasUsageStatsPermission(appContext)) return emptyList()
+        val usageStatsManager = appContext.getSystemService(Context.USAGE_STATS_SERVICE)
+            as? UsageStatsManager ?: return emptyList()
+        val packageManager = appContext.packageManager
+
+        val launcherIntent = Intent(Intent.ACTION_MAIN, null).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
+        }
+        val launcherPackages = runCatching {
+            packageManager.queryIntentActivities(launcherIntent, 0)
+                .mapTo(mutableSetOf()) { it.activityInfo.packageName }
+        }.getOrDefault(emptySet())
+
+        return runCatching {
+            usageStatsManager.queryAndAggregateUsageStats(startTime, endTime)
+                .values
+                .asSequence()
+                .filter { it.packageName != appContext.packageName }
+                .filter { it.packageName in launcherPackages }
+                .filter { it.totalTimeInForeground > 0L }
+                .map { stat ->
+                    val appName = runCatching {
+                        packageManager.getApplicationLabel(
+                            packageManager.getApplicationInfo(stat.packageName, 0)
+                        ).toString()
+                    }.getOrDefault(stat.packageName)
+                    AppUsageSummary(
+                        packageName = stat.packageName,
+                        appName = appName,
+                        usageMillis = stat.totalTimeInForeground
+                    )
+                }
+                .sortedByDescending { it.usageMillis }
+                .toList()
+        }.getOrDefault(emptyList())
+    }
+
+    fun getUsageRanking(period: UsagePeriod): List<AppUsageSummary> {
+        if (!hasUsageStatsPermission(appContext)) return emptyList()
+
+        if (period == UsagePeriod.AVERAGE) {
+            val endTime = System.currentTimeMillis()
+            
+            // Son 7 günün ve son 30 günün başlangıç saatleri (kayan pencere / rolling window)
+            // Gün sınırlarına hizalanmış son 7 ve 30 gün verisi çekilir
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val todayStart = calendar.timeInMillis
+            val sevenDaysAgoStart = todayStart - 7 * 24 * 60 * 60 * 1000L
+            val thirtyDaysAgoStart = todayStart - 30L * 24 * 60 * 60 * 1000L
+
+            val weeklyList = getUsageRankingForInterval(sevenDaysAgoStart, endTime)
+            val monthlyList = getUsageRankingForInterval(thirtyDaysAgoStart, endTime)
+
+            val weeklyMap = weeklyList.associateBy { it.packageName }
+            val monthlyMap = monthlyList.associateBy { it.packageName }
+
+            val allPackages = weeklyMap.keys + monthlyMap.keys
+            return allPackages.map { pkg ->
+                val wUsage = weeklyMap[pkg]?.usageMillis ?: 0L
+                val mUsage = monthlyMap[pkg]?.usageMillis ?: 0L
+
+                val wAvg = wUsage / 7L
+                val mAvg = mUsage / 30L
+
+                val avgUsage = when {
+                    wAvg > 0L && mAvg > 0L -> (wAvg + mAvg) / 2L
+                    wAvg > 0L -> wAvg
+                    mAvg > 0L -> mAvg
+                    else -> 0L
+                }
+
+                val appName = weeklyMap[pkg]?.appName ?: monthlyMap[pkg]?.appName ?: pkg
+
+                AppUsageSummary(
+                    packageName = pkg,
+                    appName = appName,
+                    usageMillis = avgUsage
+                )
+            }.filter { it.usageMillis > 0L }
+             .sortedByDescending { it.usageMillis }
+        }
+
+        val endTime = System.currentTimeMillis()
+        val startTime = getUsagePeriodStart(period)
+        return getUsageRankingForInterval(startTime, endTime)
+    }
+
+    private fun getUsagePeriodStart(period: UsagePeriod): Long {
+        return Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            when (period) {
+                UsagePeriod.DAILY -> Unit
+                UsagePeriod.WEEKLY -> {
+                    firstDayOfWeek = Calendar.MONDAY
+                    set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+                }
+                UsagePeriod.MONTHLY -> set(Calendar.DAY_OF_MONTH, 1)
+                UsagePeriod.AVERAGE -> Unit
+            }
+        }.timeInMillis
     }
 }
