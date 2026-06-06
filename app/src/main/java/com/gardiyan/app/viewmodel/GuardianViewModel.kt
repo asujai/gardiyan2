@@ -314,6 +314,34 @@ class GuardianViewModel(context: Context) : ViewModel() {
         }
     }
 
+    fun clearAllUserData(context: Context) {
+        viewModelScope.launch {
+            repository.clearAllRestrictedApps()
+            repository.clearLogs()
+            val defaultSession = UserSessionEntity(
+                id = 1,
+                username = "GardiyanUser",
+                level = 1,
+                hasRedBadge = false,
+                isActive = false,
+                consecutiveSuccessDays = 0,
+                activeRedemptionDaysLeft = 0,
+                redemptionStreakGoal = 2
+            )
+            repository.saveSession(defaultSession)
+
+            if (BlockOverlayService.isServiceRunning.get()) {
+                val serviceIntent = Intent(context, BlockOverlayService::class.java)
+                context.stopService(serviceIntent)
+                _isMonitoringActive.value = false
+            }
+            if (BlockOverlayService.isLockOverlayVisible.get()) {
+                BlockOverlayService.hideLockOverlay()
+            }
+            repository.insertLog("DATA_CLEARED", "", "Tüm kullanıcı verileri ve kısıtlamaları temizlendi.")
+        }
+    }
+
     fun hasUsageStatsPermission(context: Context): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager ?: return false
         val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -506,6 +534,24 @@ class GuardianViewModel(context: Context) : ViewModel() {
             pm.queryIntentActivities(launcherIntent, 0).forEach { resolveInfo ->
                 val pkgName = resolveInfo.activityInfo.packageName
                 if (pkgName == context.packageName) return@forEach
+
+                // Gereksiz sistem uygulamalarını filtrele (sadece ana önemli launcher sistem uygulamaları kalacak)
+                val isSystem = (resolveInfo.activityInfo.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+                val isImportantSystem = pkgName == "com.google.android.youtube" || 
+                                       pkgName == "com.android.chrome" || 
+                                       pkgName == "com.google.android.apps.photos" ||
+                                       pkgName == "com.google.android.apps.maps"
+                if (isSystem && !isImportantSystem && (
+                    pkgName.startsWith("com.android.") || 
+                    pkgName.startsWith("com.google.android.inputmethod") || 
+                    pkgName.startsWith("com.sec.android.") || 
+                    pkgName.contains("overlay") || 
+                    pkgName.contains("launcher") || 
+                    pkgName.contains("system")
+                )) {
+                    return@forEach
+                }
+
                 val label = resolveInfo.loadLabel(pm).toString()
                 list.add(Pair(label, pkgName))
             }

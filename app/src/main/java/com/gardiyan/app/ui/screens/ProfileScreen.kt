@@ -48,6 +48,9 @@ fun ProfileScreen(
     var isSettingsVisible by remember { mutableStateOf(false) }
     var isTimelineVisible by remember { mutableStateOf(false) }
 
+    var showDeleteDataDialog by remember { mutableStateOf(false) }
+    var showDataUsageDialog by remember { mutableStateOf(false) }
+
     // 1. Temel Hesaplamalar
     val totalSuccessDays = remember(logs) {
         logs.count { it.eventType == "DAILY_SUCCESS" || it.eventType == "SUCCESS" || it.eventType == "SUCCESS_DAY" }
@@ -192,6 +195,88 @@ fun ProfileScreen(
     }
 
     val isNoDataYet = logs.isEmpty()
+    val context = LocalContext.current
+
+    if (showDeleteDataDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDataDialog = false },
+            title = {
+                Text(
+                    text = "Veriler temizlensin mi?",
+                    fontWeight = FontWeight.Bold,
+                    color = PureBlack,
+                    fontSize = 16.sp
+                )
+            },
+            text = {
+                Text(
+                    text = "Kısıtlama geçmişi, kullanım istatistikleri ve uygulama içi tercihler temizlenecek. Bu işlem geri alınamaz.",
+                    color = MutedGray,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDataDialog = false
+                        viewModel.clearAllUserData(context)
+                        android.widget.Toast.makeText(context, "Veriler temizlendi.", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = DangerRed, contentColor = OnPureBlack),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Temizle", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDataDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
+                ) {
+                    Text("Vazgeç")
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showDataUsageDialog) {
+        AlertDialog(
+            onDismissRequest = { showDataUsageDialog = false },
+            title = {
+                Text(
+                    text = "Veri Kullanımı ve Gizlilik",
+                    fontWeight = FontWeight.Bold,
+                    color = PureBlack,
+                    fontSize = 16.sp
+                )
+            },
+            text = {
+                Text(
+                    text = "• Gardiyan, seçtiğiniz uygulamaların ne kadar süre kullanıldığını hesaplamak için kullanım erişimini kullanır.\n\n" +
+                           "• Seçilen uygulama bilgileri, süre sınırına ulaşıldığında kilit ekranını göstermek (erişilebilirlik ve overlay ile) amacıyla kullanılır.\n\n" +
+                           "• Tüm verileriniz cihazınızda yerel olarak saklanır ve işlenir. Sunucuya gönderilmez veya dışarı paylaşılmaz.\n\n" +
+                           "• Dilediğiniz zaman 'Verilerimi Temizle' seçeneğiyle tüm geçmişinizi silebilirsiniz.",
+                    color = MutedGray,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showDataUsageDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Anladım", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -490,7 +575,7 @@ fun ProfileScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Sistem Sağlığı",
+                                    text = "İzin Durumu",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PureBlack
@@ -514,15 +599,40 @@ fun ProfileScreen(
                         ) {
                             Column {
                                 Spacer(modifier = Modifier.height(14.dp))
-                                HealthRow(name = "Kullanım Erişimi", isOk = isUsageEnabled, onClick = { viewModel.openUsageStatsSettings(context) })
+                                HealthRow(
+                                    name = "Kullanım Erişimi",
+                                    description = "Uygulamaların kullanım süresini ölçmek için gereklidir.",
+                                    isOk = isUsageEnabled,
+                                    onClick = { viewModel.openUsageStatsSettings(context) }
+                                )
                                 Spacer(modifier = Modifier.height(6.dp))
-                                HealthRow(name = "Erişilebilirlik Servisi", isOk = isAccessibilityEnabled, onClick = { viewModel.openAccessibilitySettings(context) })
+                                HealthRow(
+                                    name = "Erişilebilirlik Servisi",
+                                    description = "Uygulama açılışını saptamak ve kilit ekranını getirmek için gereklidir.",
+                                    isOk = isAccessibilityEnabled,
+                                    onClick = { viewModel.openAccessibilitySettings(context) }
+                                )
                                 Spacer(modifier = Modifier.height(6.dp))
-                                HealthRow(name = "Diğer Uygulamaların Üzerinde Çizim", isOk = isOverlayEnabled, onClick = { viewModel.openOverlaySettings(context) })
+                                HealthRow(
+                                    name = "Diğer Uygulamaların Üzerinde Çizim",
+                                    description = "Kilit ekranını uygulamanın üzerinde göstermek için gereklidir.",
+                                    isOk = isOverlayEnabled,
+                                    onClick = { viewModel.openOverlaySettings(context) }
+                                )
                                 Spacer(modifier = Modifier.height(6.dp))
-                                HealthRow(name = "Pil Optimizasyonu Muafiyeti", isOk = isBatteryExempted, onClick = { viewModel.requestBatteryOptimizationIgnore(context) })
+                                HealthRow(
+                                    name = "Pil Optimizasyonu Muafiyeti",
+                                    description = "Arka plan servisinin işletim sistemi tarafından sonlandırılmasını önler.",
+                                    isOk = isBatteryExempted,
+                                    onClick = { viewModel.requestBatteryOptimizationIgnore(context) }
+                                )
                                 Spacer(modifier = Modifier.height(6.dp))
-                                HealthRow(name = "Bildirim İzni", isOk = isNotificationsEnabled, onClick = { viewModel.openNotificationSettings(context) })
+                                HealthRow(
+                                    name = "Bildirim İzni",
+                                    description = "Kalıcı bildirim ve kısıtlama uyarılarını göstermek için gereklidir.",
+                                    isOk = isNotificationsEnabled,
+                                    onClick = { viewModel.openNotificationSettings(context) }
+                                )
                             }
                         }
                     }
@@ -678,7 +788,6 @@ fun ProfileScreen(
 
             // Destek ve Geri Bildirim
             item {
-                val context = LocalContext.current
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -731,6 +840,211 @@ fun ProfileScreen(
                             tint = MutedGray,
                             modifier = Modifier.size(20.dp)
                         )
+                    }
+                }
+            }
+
+            // Gizlilik Politikası
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                    shape = RoundedCornerShape(20.dp),
+                    onClick = {
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://gardiyan-app.github.io/privacy-policy"))
+                        runCatching {
+                            context.startActivity(intent)
+                        }.onFailure {
+                            android.widget.Toast.makeText(context, "İnternet tarayıcısı bulunamadı.", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(PureBlack.copy(alpha = 0.08f))
+                        ) {
+                            Text(text = "📄", fontSize = 16.sp)
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Gizlilik Politikası",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PureBlack
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Veri kullanımı kuralları ve gizlilik beyanını inceleyin.",
+                                fontSize = 10.sp,
+                                color = MutedGray,
+                                lineHeight = 14.sp
+                            )
+                        }
+
+                        Text(
+                            text = "Açıklama",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = SuccessGreen,
+                            modifier = Modifier
+                                .clickable { showDataUsageDialog = true }
+                                .border(0.8.dp, SuccessGreen, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            }
+
+            // Verilerimi Temizle
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, DangerRed.copy(alpha = 0.2f), RoundedCornerShape(20.dp)),
+                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                    shape = RoundedCornerShape(20.dp),
+                    onClick = { showDeleteDataDialog = true }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(DangerRed.copy(alpha = 0.08f))
+                        ) {
+                            Text(text = "🗑️", fontSize = 16.sp)
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Verilerimi Temizle",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DangerRed
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Kısıtlama geçmişi, süre limitleri ve logları sıfırlayın.",
+                                fontSize = 10.sp,
+                                color = MutedGray,
+                                lineHeight = 14.sp
+                            )
+                        }
+
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MutedGray,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            // Hakkında & Sürüm Bilgisi
+            item {
+                val appVersion = runCatching {
+                    val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                    pInfo.versionName ?: "1.0.0"
+                }.getOrDefault("1.0.0")
+
+                val appVersionCode = runCatching {
+                    val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                        pInfo.longVersionCode.toString()
+                    } else {
+                        @Suppress("DEPRECATION")
+                        pInfo.versionCode.toString()
+                    }
+                }.getOrDefault("1")
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "HAKKINDA",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MutedGray,
+                            letterSpacing = 0.5.sp
+                        )
+
+                        Text(
+                            text = "Gardiyan, seçtiğiniz uygulamalara sağlıklı kullanım sınırları koymanıza yardımcı olan bir dijital denge uygulamasıdır.",
+                            fontSize = 12.sp,
+                            color = PureBlack,
+                            lineHeight = 18.sp
+                        )
+
+                        HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Uygulama Adı:", fontSize = 11.sp, color = MutedGray)
+                            Text(text = "Gardiyan", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Sürüm (Version Name):", fontSize = 11.sp, color = MutedGray)
+                            Text(text = appVersion, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Sürüm Kodu (Version Code):", fontSize = 11.sp, color = MutedGray)
+                            Text(text = appVersionCode, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Android Sürümü:", fontSize = 11.sp, color = MutedGray)
+                            Text(text = android.os.Build.VERSION.RELEASE, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Geliştirici İletişim:", fontSize = 11.sp, color = MutedGray)
+                            Text(text = "lumoriapdf@gmail.com", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        }
                     }
                 }
             }
@@ -1107,82 +1421,95 @@ private fun ThemeOptionRow(
 private fun launchEmailIntent(context: android.content.Context) {
     val appVersion = runCatching {
         val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-        pInfo.versionName
+        pInfo.versionName ?: "Bilinmiyor"
     }.getOrDefault("Bilinmiyor")
 
     val androidVersion = android.os.Build.VERSION.RELEASE
     val deviceModel = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"
 
     val emailBody = """
-        Hello Gardiyan team,
+        Merhaba Gardiyan ekibi,
 
-        My issue / suggestion:
+        Sorunum / önerim:
 
         ---
-        App: Gardiyan
-        Version: $appVersion
+        Uygulama: Gardiyan
+        Versiyon: $appVersion
         Android: $androidVersion
-        Device: $deviceModel
+        Cihaz: $deviceModel
     """.trimIndent()
 
     val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
         data = android.net.Uri.parse("mailto:")
         putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf("lumoriapdf@gmail.com"))
-        putExtra(android.content.Intent.EXTRA_SUBJECT, "Gardiyan Support and Feedback")
+        putExtra(android.content.Intent.EXTRA_SUBJECT, "Gardiyan Destek ve Öneri")
         putExtra(android.content.Intent.EXTRA_TEXT, emailBody)
     }
 
     runCatching {
         context.startActivity(intent)
     }.onFailure {
-        android.widget.Toast.makeText(context, "E-posta uygulaması bulunamadı.", android.widget.Toast.LENGTH_SHORT).show()
+        android.widget.Toast.makeText(context, "Mail gönderebilecek bir uygulama bulunamadı.", android.widget.Toast.LENGTH_SHORT).show()
     }
 }
 
 @Composable
 private fun HealthRow(
     name: String,
+    description: String,
     isOk: Boolean,
     onClick: () -> Unit
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = !isOk) { onClick() }
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 6.dp)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = if (isOk) "🟢" else "🔴", fontSize = 10.sp)
-            Text(
-                text = name,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                color = PureBlack
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(text = if (isOk) "🟢" else "🔴", fontSize = 10.sp)
+                Text(
+                    text = name,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PureBlack
+                )
+            }
+            if (!isOk) {
+                Text(
+                    text = "İzin Ver",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DangerRed,
+                    modifier = Modifier
+                        .border(0.8.dp, DangerRed, RoundedCornerShape(4.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            } else {
+                Text(
+                    text = "Aktif",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = SuccessGreen
+                )
+            }
         }
-        if (!isOk) {
-            Text(
-                text = "Düzelt",
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                color = DangerRed,
-                modifier = Modifier
-                    .border(0.8.dp, DangerRed, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
-            )
-        } else {
-            Text(
-                text = "Aktif",
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                color = SuccessGreen
-            )
-        }
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = description,
+            fontSize = 10.sp,
+            color = MutedGray,
+            modifier = Modifier.padding(start = 18.dp),
+            lineHeight = 14.sp
+        )
     }
 }
 
