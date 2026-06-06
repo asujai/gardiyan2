@@ -21,7 +21,7 @@ import com.gardiyan.app.data.local.entity.UserSessionEntity
         RestrictedAppEntity::class,
         ActiveUsageSessionEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class GuardianDatabase : RoomDatabase() {
@@ -38,7 +38,7 @@ abstract class GuardianDatabase : RoomDatabase() {
                     GuardianDatabase::class.java,
                     "guardian_db"
                 )
-                .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                 .build()
                 INSTANCE = instance
                 instance
@@ -71,6 +71,12 @@ abstract class GuardianDatabase : RoomDatabase() {
         private val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE restricted_apps ADD COLUMN nextDayLimitMinutes INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE restricted_apps ADD COLUMN nextDayActiveDays TEXT NOT NULL DEFAULT ''")
             }
         }
     }

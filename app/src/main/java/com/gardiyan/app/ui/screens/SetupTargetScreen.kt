@@ -36,7 +36,7 @@ fun SetupTargetScreen(
     onCompleted: () -> Unit
 ) {
     val context = LocalContext.current
-    val availableApps = remember { viewModel.getInstalledApps(context) }
+    val installedApps = remember { viewModel.getInstalledApps(context) }
     var selectedApps by remember { mutableStateOf<Set<Pair<String, String>>>(emptySet()) }
     
     var selectedDurationPreset by remember { mutableStateOf(60) }
@@ -49,6 +49,12 @@ fun SetupTargetScreen(
     var searchQuery by remember { mutableStateOf("") }
     
     val restrictedApps by viewModel.restrictedApps.collectAsState()
+    val activeRestrictedPackages = remember(restrictedApps) {
+        restrictedApps.filter { it.isActive }.mapTo(mutableSetOf()) { it.packageName }
+    }
+    val availableApps = remember(installedApps, activeRestrictedPackages) {
+        installedApps.filterNot { it.second in activeRestrictedPackages }
+    }
 
     val presetChoices = listOf(
         Pair("Test (10sn)", 0),

@@ -19,6 +19,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Çoklu uygulama + event-driven ön plan tespiti ve zamanlayıcı.
@@ -75,6 +77,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
     private val a11yJob = SupervisorJob()
     private val a11yScope = CoroutineScope(Dispatchers.IO + a11yJob)
+    private val foregroundMutex = Mutex()
 
     // Kısıtlı uygulamada kalındığı sürece overlay'i tetikleyecek bekleyen coroutine.
     // Her girişte iptal edilip yeniden başlatılır.
@@ -103,6 +106,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     currentTrackedPackage = openSession.packageName
                     currentTrackedAppId = openSession.appId
                     Log.i(TAG, "Restored active session from DB: ${openSession.packageName}")
+
+                    queryForegroundEvent()?.let { event ->
+                        handleForegroundChange(event.packageName)
+                    }
                 }
 
                 val activeApps = repository.getActiveRestrictedAppsSync()
@@ -200,7 +207,6 @@ class AppBlockAccessibilityService : AccessibilityService() {
             Log.d(TAG, "Ignoring transient self foreground event from lock overlay")
             return
         }
-        currentForegroundPackage = foregroundPackage
         lastAccessibilityForegroundAt = now
 
         handleForegroundChange(foregroundPackage)
@@ -229,7 +235,9 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
             while (isActive) {
                 try {
-                    currentTrackedPackage?.let { pkg ->
+                    currentTrackedPackage
+                        ?.takeIf { it == currentForegroundPackage }
+                        ?.let { pkg ->
                         withContext(Dispatchers.IO) {
                             repository.updateSessionLastSeen(pkg)
                         }
@@ -374,98 +382,67 @@ class AppBlockAccessibilityService : AccessibilityService() {
         }
 
         a11yScope.launch {
-            try {
-                currentForegroundPackage = foregroundPackage
+            foregroundMutex.withLock {
+                try {
+                    currentForegroundPackage = foregroundPackage
 
-                val db = GuardianDatabase.getDatabase(applicationContext)
-                val repository = GuardianRepository(db.guardianDao())
-                val activeApps = withContext(Dispatchers.IO) {
-                    repository.getActiveRestrictedAppsForTodaySync()
-                }
-
-                if (activeApps.isEmpty()) {
-                    if (BlockOverlayService.isLockOverlayVisible.get()) {
-                        BlockOverlayService.hideLockOverlay()
+                    val db = GuardianDatabase.getDatabase(applicationContext)
+                    val repository = GuardianRepository(db.guardianDao())
+                    val activeApps = withContext(Dispatchers.IO) {
+                        repository.getActiveRestrictedAppsForTodaySync()
                     }
-                    clearTrackingState()
-                    return@launch
-                }
 
-                val matchingApp = activeApps.firstOrNull { it.packageName == foregroundPackage }
-
-                if (currentTrackedPackage != null && currentTrackedPackage != foregroundPackage) {
-                    handleExit(repository, activeApps, System.currentTimeMillis())
-                }
-
-                if (matchingApp == null) {
-                    if (BlockOverlayService.isLockOverlayVisible.get()) {
-                        Log.d(TAG, "Hiding lock overlay because foreground package is unrelated: $foregroundPackage")
-                        BlockOverlayService.hideLockOverlay()
-                    }
-                    return@launch
-                }
-
-                // Kısıtlı uygulamaya GİRİLDİ
-                if (currentTrackedPackage != matchingApp.packageName) {
-                    entryTimeMillis = System.currentTimeMillis()
-                    currentTrackedPackage = matchingApp.packageName
-                    currentTrackedAppId = matchingApp.id
-                    Log.d(TAG, "Target app entered: ${matchingApp.appName} (${matchingApp.packageName}) at $entryTimeMillis")
-                    withContext(Dispatchers.IO) {
-                        repository.startSession(matchingApp)
-                        repository.insertLog(
-                            eventType = "A11Y_EVENT_RECEIVED",
-                            appName = matchingApp.appName,
-                            details = "Erişilebilirlik olayı alındı: ${matchingApp.appName} açıldı."
-                        )
-                    }
-                } else {
-                    withContext(Dispatchers.IO) {
-                        repository.updateSessionLastSeen(matchingApp.packageName)
-                    }
-                }
-
-                if (matchingApp.remainingSecondsToday <= 0 || matchingApp.isFailed) {
-                    tickJob?.cancel()
-                    tickJob = null
-                    entryTimeMillis = 0L
-                    repository.failRestrictedApp(matchingApp.id)
-                    if (!BlockOverlayService.isLockOverlayFor(matchingApp.packageName)) {
-                        ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
-                        BlockOverlayService.showLockOverlay(
-                            applicationContext,
-                            matchingApp.appName,
-                            matchingApp.packageName
-                        )
+                    if (activeApps.isEmpty()) {
+                        if (BlockOverlayService.isLockOverlayVisible.get()) {
+                            BlockOverlayService.hideLockOverlay()
+                        }
                         withContext(Dispatchers.IO) {
-                            repository.closeActiveSession("Kısıtlama süresi dolduğu için kilitlendi")
-                            val lockReason = if (matchingApp.remainingSecondsToday <= 0) "Günlük kullanım limiti doldu" else "Kısıtlama kuralı veya ihlal gereği"
+                            repository.closeActiveSession("Bugün için aktif kısıtlama kalmadı")
+                        }
+                        clearTrackingState()
+                        return@withLock
+                    }
+
+                    val matchingApp = activeApps.firstOrNull { it.packageName == foregroundPackage }
+
+                    if (currentTrackedPackage != null && currentTrackedPackage != foregroundPackage) {
+                        handleExit(repository, activeApps)
+                    }
+
+                    if (matchingApp == null) {
+                        if (BlockOverlayService.isLockOverlayVisible.get()) {
+                            Log.d(TAG, "Hiding lock overlay because foreground package is unrelated: $foregroundPackage")
+                            BlockOverlayService.hideLockOverlay()
+                        }
+                        return@withLock
+                    }
+
+                    // Kısıtlı uygulamaya GİRİLDİ
+                    if (currentTrackedPackage != matchingApp.packageName) {
+                        entryTimeMillis = System.currentTimeMillis()
+                        currentTrackedPackage = matchingApp.packageName
+                        currentTrackedAppId = matchingApp.id
+                        Log.d(TAG, "Target app entered: ${matchingApp.appName} (${matchingApp.packageName}) at $entryTimeMillis")
+                        withContext(Dispatchers.IO) {
+                            repository.startSession(matchingApp)
                             repository.insertLog(
-                                eventType = "OVERLAY_SHOWN",
+                                eventType = "A11Y_EVENT_RECEIVED",
                                 appName = matchingApp.appName,
-                                details = "${matchingApp.appName} için kilit ekranı gösterildi. Gerekçe: $lockReason."
+                                details = "Erişilebilirlik olayı alındı: ${matchingApp.appName} açıldı."
                             )
                         }
+                    } else {
+                        withContext(Dispatchers.IO) {
+                            repository.updateSessionLastSeen(matchingApp.packageName)
+                        }
                     }
-                } else {
-                    val remaining = matchingApp.remainingSecondsToday
-                    tickJob?.cancel()
-                    tickJob = a11yScope.launch {
-                        try {
-                            delay(remaining * 1000L)
-                            if (currentForegroundPackage != matchingApp.packageName) {
-                                Log.d(TAG, "Tick ignored because foreground changed to $currentForegroundPackage")
-                                return@launch
-                            }
-                            Log.d(TAG, "Tick fired: ${matchingApp.appName} remaining=$remaining reached zero")
-                            repository.updateRestrictedApp(
-                                matchingApp.copy(
-                                    remainingSecondsToday = 0,
-                                    remainingMinutesToday = 0
-                                )
-                            )
-                            entryTimeMillis = 0L
-                            repository.failRestrictedApp(matchingApp.id)
+
+                    if (matchingApp.remainingSecondsToday <= 0 || matchingApp.isFailed) {
+                        tickJob?.cancel()
+                        tickJob = null
+                        entryTimeMillis = 0L
+                        repository.failRestrictedApp(matchingApp.id)
+                        if (!BlockOverlayService.isLockOverlayFor(matchingApp.packageName)) {
                             ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
                             BlockOverlayService.showLockOverlay(
                                 applicationContext,
@@ -473,7 +450,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                 matchingApp.packageName
                             )
                             withContext(Dispatchers.IO) {
-                                repository.closeActiveSession("Kısıtlama süresi dolduğu için kilitlendi (tick)")
+                                repository.closeActiveSession("Kısıtlama süresi dolduğu için kilitlendi")
                                 val lockReason = if (matchingApp.remainingSecondsToday <= 0) "Günlük kullanım limiti doldu" else "Kısıtlama kuralı veya ihlal gereği"
                                 repository.insertLog(
                                     eventType = "OVERLAY_SHOWN",
@@ -481,14 +458,53 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                     details = "${matchingApp.appName} için kilit ekranı gösterildi. Gerekçe: $lockReason."
                                 )
                             }
-                        } catch (e: kotlinx.coroutines.CancellationException) {
-                            Log.d(TAG, "Tick cancelled (exited before time up)")
-                            throw e
+                        }
+                    } else {
+                        val remaining = matchingApp.remainingSecondsToday
+                        tickJob?.cancel()
+                        tickJob = a11yScope.launch {
+                            try {
+                                delay(remaining * 1000L)
+                                foregroundMutex.withLock {
+                                    if (currentForegroundPackage != matchingApp.packageName ||
+                                        currentTrackedPackage != matchingApp.packageName
+                                    ) {
+                                        Log.d(TAG, "Tick ignored because foreground changed to $currentForegroundPackage")
+                                        return@withLock
+                                    }
+                                    Log.d(TAG, "Tick fired: ${matchingApp.appName} remaining=$remaining reached zero")
+                                    repository.updateRestrictedApp(
+                                        matchingApp.copy(
+                                            remainingSecondsToday = 0,
+                                            remainingMinutesToday = 0
+                                        )
+                                    )
+                                    entryTimeMillis = 0L
+                                    repository.failRestrictedApp(matchingApp.id)
+                                    ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
+                                    BlockOverlayService.showLockOverlay(
+                                        applicationContext,
+                                        matchingApp.appName,
+                                        matchingApp.packageName
+                                    )
+                                    withContext(Dispatchers.IO) {
+                                        repository.closeActiveSession("Kısıtlama süresi dolduğu için kilitlendi (tick)")
+                                        repository.insertLog(
+                                            eventType = "OVERLAY_SHOWN",
+                                            appName = matchingApp.appName,
+                                            details = "${matchingApp.appName} için kilit ekranı gösterildi. Gerekçe: Günlük kullanım limiti doldu."
+                                        )
+                                    }
+                                }
+                            } catch (e: kotlinx.coroutines.CancellationException) {
+                                Log.d(TAG, "Tick cancelled (exited before time up)")
+                                throw e
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in handleForegroundChange: ${e.message}", e)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error in handleForegroundChange: ${e.message}", e)
             }
         }
     }
@@ -503,18 +519,23 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
     private suspend fun handleExit(
         repository: GuardianRepository,
-        activeApps: List<RestrictedAppEntity>,
-        exitTime: Long
+        activeApps: List<RestrictedAppEntity>
     ) {
         val trackedPkg = currentTrackedPackage ?: return
         val trackedApp = activeApps.firstOrNull { it.packageName == trackedPkg }
             ?: run {
-                clearTrackingState()
                 if (BlockOverlayService.isLockOverlayVisible.get()) {
                     BlockOverlayService.hideLockOverlay()
                 }
+                withContext(Dispatchers.IO) {
+                    repository.closeActiveSession("İzlenen uygulama artık bugün için aktif değil")
+                }
+                clearTrackingState()
                 return
             }
+
+        tickJob?.cancel()
+        tickJob = null
 
         if (BlockOverlayService.isLockOverlayVisible.get() &&
             (trackedApp.remainingSecondsToday <= 0 || trackedApp.isFailed)
@@ -531,9 +552,6 @@ class AppBlockAccessibilityService : AccessibilityService() {
         withContext(Dispatchers.IO) {
             repository.closeActiveSession("Uygulamadan çıkıldı")
         }
-
-        tickJob?.cancel()
-        tickJob = null
 
         if (BlockOverlayService.isLockOverlayVisible.get()) {
             BlockOverlayService.hideLockOverlay()

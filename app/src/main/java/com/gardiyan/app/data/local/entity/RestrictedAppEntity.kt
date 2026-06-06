@@ -20,5 +20,6 @@ data class RestrictedAppEntity(
     val activeDays: String = "Pzt,Sal,Çar,Per,Cum,Cmt,Paz",
     val lastResetDate: String = "",
     val createdAtMillis: Long = System.currentTimeMillis(),
-    val nextDayLimitMinutes: Int = 0
+    val nextDayLimitMinutes: Int = 0,
+    val nextDayActiveDays: String = ""
 )

@@ -142,7 +142,8 @@ class GuardianViewModel(context: Context) : ViewModel() {
         viewModelScope.launch {
             val app = repository.getRestrictedAppByIdSync(id) ?: return@launch
             val isLimitChanged = app.dailyLimitMinutes != newLimitMinutes
-            val isActiveDaysChanged = app.activeDays != newActiveDays
+            val effectiveScheduledDays = app.nextDayActiveDays.ifEmpty { app.activeDays }
+            val isActiveDaysChanged = effectiveScheduledDays != newActiveDays
             
             if (!isLimitChanged && !isActiveDaysChanged) return@launch
 
@@ -158,7 +159,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
                     }
                     updatedApp = updatedApp.copy(
                         nextDayLimitMinutes = newLimitMinutes,
-                        activeDays = newActiveDays
+                        nextDayActiveDays = if (isActiveDaysChanged) newActiveDays else updatedApp.nextDayActiveDays
                     )
                     repository.insertLog(
                         eventType = "LIMIT_CHANGED",
@@ -176,7 +177,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
                         nextDayLimitMinutes = newLimitMinutes,
                         remainingMinutesToday = (newRemainingSecs + 59) / 60,
                         remainingSecondsToday = newRemainingSecs,
-                        activeDays = newActiveDays,
+                        nextDayActiveDays = if (isActiveDaysChanged) newActiveDays else updatedApp.nextDayActiveDays,
                         isFailed = newRemainingSecs <= 0
                     )
                     repository.insertLog(
@@ -186,11 +187,11 @@ class GuardianViewModel(context: Context) : ViewModel() {
                     )
                 }
             } else if (isActiveDaysChanged) {
-                updatedApp = updatedApp.copy(activeDays = newActiveDays)
+                updatedApp = updatedApp.copy(nextDayActiveDays = newActiveDays)
                 repository.insertLog(
                     eventType = "DAYS_CHANGED",
                     appName = app.appName,
-                    details = "${app.appName} aktif günleri değiştirildi: $newActiveDays"
+                    details = "${app.appName} aktif günleri yarından itibaren değiştirilecek: $newActiveDays"
                 )
             }
 

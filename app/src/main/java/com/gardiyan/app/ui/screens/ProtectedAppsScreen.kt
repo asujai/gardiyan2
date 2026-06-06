@@ -209,7 +209,8 @@ fun ProtectedAppsScreen(
             var limitMinutes by remember(app.id) { mutableStateOf(latestApp.dailyLimitMinutes) }
             val daysOfWeek = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
             var selectedDays by remember(app.id) {
-                mutableStateOf(latestApp.activeDays.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet())
+                val shownDays = latestApp.nextDayActiveDays.ifEmpty { latestApp.activeDays }
+                mutableStateOf(shownDays.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet())
             }
 
             Box(

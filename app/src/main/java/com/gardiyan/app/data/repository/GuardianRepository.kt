@@ -107,6 +107,9 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         val today = todayKey()
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
         return if (existing != null) {
+            if (existing.isActive) {
+                return existing.id
+            }
             guardianDao.updateRestrictedApp(
                 existing.copy(
                     appName = appName,
@@ -116,7 +119,9 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                     isActive = true,
                     isFailed = false,
                     activeDays = activeDays,
-                    lastResetDate = today
+                    lastResetDate = today,
+                    nextDayLimitMinutes = 0,
+                    nextDayActiveDays = ""
                 )
             )
             existing.id
@@ -147,6 +152,9 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
         val dailyLimitMinutes = (testSeconds + 59) / 60
         return if (existing != null) {
+            if (existing.isActive) {
+                return existing.id
+            }
             guardianDao.updateRestrictedApp(
                 existing.copy(
                     appName = appName,
@@ -156,7 +164,9 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                     isActive = true,
                     isFailed = false,
                     activeDays = activeDays,
-                    lastResetDate = today
+                    lastResetDate = today,
+                    nextDayLimitMinutes = 0,
+                    nextDayActiveDays = ""
                 )
             )
             existing.id
@@ -207,14 +217,17 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
             .filter { it.lastResetDate != today }
             .forEach { app ->
                 val newLimit = if (app.nextDayLimitMinutes > 0) app.nextDayLimitMinutes else app.dailyLimitMinutes
+                val newActiveDays = app.nextDayActiveDays.ifEmpty { app.activeDays }
                 guardianDao.updateRestrictedApp(
                     app.copy(
                         dailyLimitMinutes = newLimit,
                         remainingMinutesToday = newLimit,
                         remainingSecondsToday = newLimit * 60,
                         isFailed = false,
+                        activeDays = newActiveDays,
                         lastResetDate = today,
-                        nextDayLimitMinutes = 0
+                        nextDayLimitMinutes = 0,
+                        nextDayActiveDays = ""
                     )
                 )
             }
@@ -356,10 +369,6 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
             app.isActive && isDayActive && app.createdAtMillis <= calEnd.timeInMillis
         }
 
-        if (activeAppsOnDay.isEmpty()) {
-            return false
-        }
-
         val calStart = Calendar.getInstance()
         calStart.time = date
         calStart.set(Calendar.HOUR_OF_DAY, 0)
@@ -379,7 +388,15 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
 
         val logs = guardianDao.getAllLogsSync()
         val hasViolation = logs.any { log ->
-            log.timestamp in startTime..endTime && (log.eventType == "FAILURE" || log.eventType == "RESET_HOLD_5S")
+            log.timestamp in startTime..endTime && log.eventType in setOf(
+                "FAILURE",
+                "VIOLATION",
+                "RESET_HOLD_5S",
+                "CRITICAL_ACTION_COMPLETED",
+                "RESTRICTION_REMOVED",
+                "RESTRICTION_DELETED",
+                "RESTRICTIONS_CLEARED"
+            )
         }
 
         if (hasViolation) {
@@ -403,12 +420,10 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
             }
             return false
         } else {
+            if (activeAppsOnDay.isEmpty()) {
+                return false
+            }
             succeedActiveTarget()
-            insertLog(
-                eventType = "SUCCESS_DAY",
-                appName = "",
-                details = "$dateKey tarihi kısıtlama ihlali olmadan başarıyla tamamlandı. Tebrikler!"
-            )
             return true
         }
     }
