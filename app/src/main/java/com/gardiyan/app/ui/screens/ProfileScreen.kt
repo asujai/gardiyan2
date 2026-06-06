@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -674,6 +676,65 @@ fun ProfileScreen(
                 }
             }
 
+            // Destek ve Geri Bildirim
+            item {
+                val context = LocalContext.current
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                    shape = RoundedCornerShape(20.dp),
+                    onClick = { launchEmailIntent(context) }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(PureBlack.copy(alpha = 0.08f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = null,
+                                tint = PureBlack,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Destek ve Geri Bildirim",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PureBlack
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Sorun bildirin veya özellik önerisinde bulunun.",
+                                fontSize = 10.sp,
+                                color = MutedGray,
+                                lineHeight = 14.sp
+                            )
+                        }
+
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MutedGray,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
             // Zaman Tüneli Butonu
             item {
                 Button(
@@ -1040,6 +1101,41 @@ private fun ThemeOptionRow(
                 unselectedColor = MutedGray
             )
         )
+    }
+}
+
+private fun launchEmailIntent(context: android.content.Context) {
+    val appVersion = runCatching {
+        val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        pInfo.versionName
+    }.getOrDefault("Bilinmiyor")
+
+    val androidVersion = android.os.Build.VERSION.RELEASE
+    val deviceModel = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"
+
+    val emailBody = """
+        Hello Gardiyan team,
+
+        My issue / suggestion:
+
+        ---
+        App: Gardiyan
+        Version: $appVersion
+        Android: $androidVersion
+        Device: $deviceModel
+    """.trimIndent()
+
+    val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+        data = android.net.Uri.parse("mailto:")
+        putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf("lumoriapdf@gmail.com"))
+        putExtra(android.content.Intent.EXTRA_SUBJECT, "Gardiyan Support and Feedback")
+        putExtra(android.content.Intent.EXTRA_TEXT, emailBody)
+    }
+
+    runCatching {
+        context.startActivity(intent)
+    }.onFailure {
+        android.widget.Toast.makeText(context, "E-posta uygulaması bulunamadı.", android.widget.Toast.LENGTH_SHORT).show()
     }
 }
 
