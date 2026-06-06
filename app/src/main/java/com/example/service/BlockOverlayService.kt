@@ -93,6 +93,9 @@ class BlockOverlayService : Service() {
         @Volatile
         private var pendingOverlayTarget: Pair<String, String>? = null
 
+        @Volatile
+        private var visibleOverlayPackage: String? = null
+
         /**
          * AppBlockAccessibilityService tarafından çağrılır: lock overlay'i
          * pencere yöneticisine ekle. Eğer zaten görünürse no-op.
@@ -133,6 +136,11 @@ class BlockOverlayService : Service() {
             serviceInstance?.removeLockOverlayView()
         }
 
+        @JvmStatic
+        fun isLockOverlayFor(packageName: String): Boolean {
+            return isLockOverlayVisible.get() && visibleOverlayPackage == packageName
+        }
+
         /**
          * Harici URI'den emoji yüklemek için. Property assignment kullanın:
          * `BlockOverlayService.customEmojiUri = uri` (companion var setter).
@@ -171,7 +179,7 @@ class BlockOverlayService : Service() {
         pendingOverlayTarget?.let { (name, pkg) ->
             pendingOverlayTarget = null
             mainHandler.post {
-                addLockOverlayViewInternal(name)
+                addLockOverlayViewInternal(name, pkg)
             }
         }
     }
@@ -191,6 +199,7 @@ class BlockOverlayService : Service() {
         isServiceRunning.set(false)
         serviceInstance = null
         appContextRef = null
+        visibleOverlayPackage = null
         cycleJob?.cancel()
         cycleJob = null
         removeLockOverlayView()
@@ -291,17 +300,32 @@ class BlockOverlayService : Service() {
      */
     private fun addLockOverlayView(targetAppName: String, targetAppPackage: String) {
         if (isLockOverlayVisible.get() && lockOverlayView != null) {
+            if (visibleOverlayPackage != targetAppPackage) {
+                mainHandler.post {
+                    removeLockOverlayViewInternal()
+                    addLockOverlayViewInternal(targetAppName, targetAppPackage)
+                }
+                return
+            }
             forceOverlayToFrontInternal()
             return
         }
         if (lockOverlayView != null) return
 
         mainHandler.post {
-            addLockOverlayViewInternal(targetAppName)
+            addLockOverlayViewInternal(targetAppName, targetAppPackage)
         }
     }
 
-    private fun addLockOverlayViewInternal(targetAppName: String) {
+    private fun addLockOverlayViewInternal(targetAppName: String, targetAppPackage: String) {
+        if (isLockOverlayVisible.get() || lockOverlayView != null) {
+            if (visibleOverlayPackage == targetAppPackage) {
+                forceOverlayToFrontInternal()
+                return
+            }
+            removeLockOverlayViewInternal()
+        }
+
         val wm = windowManager ?: run {
             Log.e(TAG, "WindowManager null, cannot add overlay")
             return
@@ -343,6 +367,7 @@ class BlockOverlayService : Service() {
 
             wm.addView(overlayView, params)
             lockOverlayView = overlayView
+            visibleOverlayPackage = targetAppPackage
             isLockOverlayVisible.set(true)
 
             startInfiniteLoop(countdownText, emojiText, emojiImage)
@@ -420,11 +445,18 @@ class BlockOverlayService : Service() {
         cycleJob?.cancel()
         cycleJob = null
 
-        val view = lockOverlayView ?: return
-        val wm = windowManager ?: return
+        val view = lockOverlayView
+        val wm = windowManager
+        if (view == null || wm == null) {
+            lockOverlayView = null
+            visibleOverlayPackage = null
+            isLockOverlayVisible.set(false)
+            return
+        }
 
         if (!isLockOverlayVisible.get()) {
             lockOverlayView = null
+            visibleOverlayPackage = null
             return
         }
 
@@ -435,6 +467,7 @@ class BlockOverlayService : Service() {
             Log.w(TAG, "removeView failed (already detached?): ${e.message}")
         } finally {
             lockOverlayView = null
+            visibleOverlayPackage = null
             isLockOverlayVisible.set(false)
         }
     }

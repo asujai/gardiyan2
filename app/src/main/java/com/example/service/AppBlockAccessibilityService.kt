@@ -61,6 +61,15 @@ class AppBlockAccessibilityService : AccessibilityService() {
         // Hangi restricted app'in DB satırı izleniyor (id).
         @Volatile
         var currentTrackedAppId: Long = -1L
+
+        @Volatile
+        var currentForegroundPackage: String? = null
+
+        @Volatile
+        var lastAccessibilityForegroundAt: Long = 0L
+
+        @Volatile
+        var ignoreOwnPackageEventsUntil: Long = 0L
     }
 
     private val a11yJob = SupervisorJob()
@@ -114,8 +123,20 @@ class AppBlockAccessibilityService : AccessibilityService() {
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
         val foregroundPackage = event.packageName?.toString() ?: return
-        // Kendi paketimizi yoksay
-        if (foregroundPackage == packageName) return
+
+        // Kilit ekranı aktifken kendi paketimizden gelen pencere odak olaylarını tamamen yoksay
+        if (foregroundPackage == packageName && BlockOverlayService.isLockOverlayVisible.get()) {
+            Log.d(TAG, "Ignoring own package event because overlay is visible")
+            return
+        }
+
+        val now = System.currentTimeMillis()
+        if (foregroundPackage == packageName && now < ignoreOwnPackageEventsUntil) {
+            Log.d(TAG, "Ignoring transient self foreground event from lock overlay")
+            return
+        }
+        currentForegroundPackage = foregroundPackage
+        lastAccessibilityForegroundAt = now
 
         handleForegroundChange(foregroundPackage)
     }
@@ -135,14 +156,24 @@ class AppBlockAccessibilityService : AccessibilityService() {
             Log.i(TAG, "UsageStats polling started (interval: ${USAGE_STATS_POLL_INTERVAL_MS}ms)")
             while (isActive) {
                 try {
-                    val foregroundPkg = queryForegroundPackage()
-                    if (foregroundPkg != null && foregroundPkg != packageName) {
+                    val foregroundEvent = queryForegroundEvent()
+                    if (foregroundEvent != null && foregroundEvent.timestampMillis >= lastAccessibilityForegroundAt) {
+                        val foregroundPkg = foregroundEvent.packageName
+
+                        // Kilit ekranı aktifken kendi paketimiz için poller üzerinden tetikleme yapma
+                        if (foregroundPkg == packageName && BlockOverlayService.isLockOverlayVisible.get()) {
+                            delay(USAGE_STATS_POLL_INTERVAL_MS)
+                            continue
+                        }
+
                         // Sadece AccessibilityService'in kaçırdığı değişiklikleri yakala
-                        val currentlyTracked = currentTrackedPackage
-                        if (foregroundPkg != currentlyTracked) {
-                            Log.d(TAG, "UsageStats polling detected foreground change: $foregroundPkg (tracked: $currentlyTracked)")
+                        val currentForeground = currentForegroundPackage
+                        if (foregroundPkg != currentForeground) {
+                            Log.d(TAG, "UsageStats polling detected foreground change: $foregroundPkg (foreground: $currentForeground)")
                             handleForegroundChange(foregroundPkg)
                         }
+                    } else if (foregroundEvent != null) {
+                        Log.d(TAG, "UsageStats polling ignored stale foreground event: ${foregroundEvent.packageName}")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "UsageStats polling error: ${e.message}")
@@ -156,7 +187,12 @@ class AppBlockAccessibilityService : AccessibilityService() {
      * UsageStatsManager.queryEvents() ile son 5 saniye içindeki en son
      * MOVE_TO_FOREGROUND event'ini bularak aktif foreground uygulamasını döndürür.
      */
-    private fun queryForegroundPackage(): String? {
+    private data class ForegroundEvent(
+        val packageName: String,
+        val timestampMillis: Long
+    )
+
+    private fun queryForegroundEvent(): ForegroundEvent? {
         return try {
             val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
                 ?: return null
@@ -165,22 +201,22 @@ class AppBlockAccessibilityService : AccessibilityService() {
             val startTime = endTime - 5000L // Son 5 saniye
 
             val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
-            var lastForegroundPackage: String? = null
+            var lastForegroundEvent: ForegroundEvent? = null
 
             val event = UsageEvents.Event()
             while (usageEvents.hasNextEvent()) {
                 usageEvents.getNextEvent(event)
                 if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                    lastForegroundPackage = event.packageName
+                    lastForegroundEvent = ForegroundEvent(event.packageName, event.timeStamp)
                 }
             }
 
-            lastForegroundPackage
+            lastForegroundEvent
         } catch (e: SecurityException) {
             Log.w(TAG, "UsageStats permission not granted: ${e.message}")
             null
         } catch (e: Exception) {
-            Log.e(TAG, "queryForegroundPackage error: ${e.message}")
+            Log.e(TAG, "queryForegroundEvent error: ${e.message}")
             null
         }
     }
@@ -197,8 +233,16 @@ class AppBlockAccessibilityService : AccessibilityService() {
      * Aynı paket için tekrar çağrılırsa no-op.
      */
     private fun handleForegroundChange(foregroundPackage: String) {
+        // Kilit ekranı aktifken kendi paketimiz için işlem yapmayı engelle
+        if (foregroundPackage == packageName && BlockOverlayService.isLockOverlayVisible.get()) {
+            Log.d(TAG, "handleForegroundChange: Ignored own package event because overlay is visible")
+            return
+        }
+
         a11yScope.launch {
             try {
+                currentForegroundPackage = foregroundPackage
+
                 val db = GuardianDatabase.getDatabase(applicationContext)
                 val repository = GuardianRepository(db.guardianDao())
                 val activeApps = withContext(Dispatchers.IO) {
@@ -206,15 +250,30 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 }
 
                 if (activeApps.isEmpty()) {
+                    if (BlockOverlayService.isLockOverlayVisible.get()) {
+                        BlockOverlayService.hideLockOverlay()
+                    }
+                    clearTrackingState()
                     // Aktif kısıtlama yok, hiçbir şey yapma
                     return@launch
                 }
 
                 val matchingApp = activeApps.firstOrNull { it.packageName == foregroundPackage }
 
-                when {
+                if (currentTrackedPackage != null && currentTrackedPackage != foregroundPackage) {
+                    handleExit(repository, activeApps, System.currentTimeMillis())
+                }
+
+                if (matchingApp == null) {
+                    if (BlockOverlayService.isLockOverlayVisible.get()) {
+                        Log.d(TAG, "Hiding lock overlay because foreground package is unrelated: $foregroundPackage")
+                        BlockOverlayService.hideLockOverlay()
+                    }
+                    return@launch
+                }
+
+                // Matching package; handle package-scoped timer/block below.
                     // CASE 1: Kısıtlı uygulamaya GİRİLDİ
-                    matchingApp != null -> {
                         // Önceki izlenen uygulamadan çıkışı işle (varsa ve farklıysa)
                         if (currentTrackedPackage != null && currentTrackedPackage != matchingApp.packageName) {
                             handleExit(repository, activeApps, System.currentTimeMillis())
@@ -229,21 +288,29 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         }
 
                         // remaining <= 0 ise overlay'i hemen göster; aksi halde tick coroutine başlat
-                        if (matchingApp.remainingSecondsToday <= 0) {
+                        if (matchingApp.remainingSecondsToday <= 0 || matchingApp.isFailed) {
                             tickJob?.cancel()
                             tickJob = null
+                            entryTimeMillis = 0L
                             repository.failRestrictedApp(matchingApp.id)
-                            BlockOverlayService.showLockOverlay(
-                                applicationContext,
-                                matchingApp.appName,
-                                matchingApp.packageName
-                            )
+                            if (!BlockOverlayService.isLockOverlayFor(matchingApp.packageName)) {
+                                ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
+                                BlockOverlayService.showLockOverlay(
+                                    applicationContext,
+                                    matchingApp.appName,
+                                    matchingApp.packageName
+                                )
+                            }
                         } else {
                             val remaining = matchingApp.remainingSecondsToday
                             tickJob?.cancel()
                             tickJob = a11yScope.launch {
                                 try {
                                     delay(remaining * 1000L)
+                                    if (currentForegroundPackage != matchingApp.packageName) {
+                                        Log.d(TAG, "Tick ignored because foreground changed to $currentForegroundPackage")
+                                        return@launch
+                                    }
                                     Log.d(TAG, "Tick fired: ${matchingApp.appName} remaining=$remaining reached zero")
                                     repository.updateRestrictedApp(
                                         matchingApp.copy(
@@ -251,7 +318,9 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                             remainingMinutesToday = 0
                                         )
                                     )
+                                    entryTimeMillis = 0L
                                     repository.failRestrictedApp(matchingApp.id)
+                                    ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
                                     BlockOverlayService.showLockOverlay(
                                         applicationContext,
                                         matchingApp.appName,
@@ -263,19 +332,20 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                 }
                             }
                         }
-                    }
 
                     // CASE 2: Kısıtlı olmayan bir uygulamaya geçildi
-                    else -> {
-                        if (currentTrackedPackage != null) {
-                            handleExit(repository, activeApps, System.currentTimeMillis())
-                        }
-                    }
-                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error in handleForegroundChange: ${e.message}", e)
             }
         }
+    }
+
+    private fun clearTrackingState() {
+        currentTrackedPackage = null
+        currentTrackedAppId = -1L
+        entryTimeMillis = 0L
+        tickJob?.cancel()
+        tickJob = null
     }
 
     /**
@@ -295,16 +365,21 @@ class AppBlockAccessibilityService : AccessibilityService() {
         val trackedApp = activeApps.firstOrNull { it.packageName == trackedPkg }
             ?: run {
                 // Tracked paket artık aktif listesinde yok, state'i temizle
-                currentTrackedPackage = null
-                currentTrackedAppId = -1L
-                entryTimeMillis = 0L
-                tickJob?.cancel()
-                tickJob = null
+                clearTrackingState()
                 if (BlockOverlayService.isLockOverlayVisible.get()) {
                     BlockOverlayService.hideLockOverlay()
                 }
                 return
             }
+
+        if (BlockOverlayService.isLockOverlayVisible.get() &&
+            (trackedApp.remainingSecondsToday <= 0 || trackedApp.isFailed)
+        ) {
+            Log.d(TAG, "Exited locked target ${trackedApp.appName}; hiding package-scoped overlay")
+            BlockOverlayService.hideLockOverlay()
+            clearTrackingState()
+            return
+        }
 
         val elapsedMs = exitTime - entryTimeMillis
         val elapsedSec = (elapsedMs / 1000L).toInt().coerceAtLeast(1)
@@ -334,8 +409,6 @@ class AppBlockAccessibilityService : AccessibilityService() {
             BlockOverlayService.hideLockOverlay()
         }
 
-        currentTrackedPackage = null
-        currentTrackedAppId = -1L
-        entryTimeMillis = 0L
+        clearTrackingState()
     }
 }

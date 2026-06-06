@@ -293,18 +293,53 @@ class GuardianViewModel(context: Context) : ViewModel() {
     }
 
     fun isAccessibilityServiceEnabled(context: Context): Boolean {
-        val expected = ComponentName(context, AppBlockAccessibilityService::class.java).flattenToString()
+        // 1. Yol: Servis zaten bellekte aktif ve çalışıyor durumda ise izin verilmiştir.
+        if (AppBlockAccessibilityService.isRunning && AppBlockAccessibilityService.instance != null) {
+            return true
+        }
+
+        // 2. Yol: AccessibilityManager üzerinden aktif servisler arasında bizim servisimiz var mı kontrolü.
+        val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? android.view.accessibility.AccessibilityManager
+        if (am != null) {
+            try {
+                val enabledServices = am.getEnabledAccessibilityServiceList(android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_GENERIC)
+                for (service in enabledServices) {
+                    val component = service.resolveInfo?.serviceInfo?.let {
+                        ComponentName(it.packageName, it.name)
+                    }
+                    if (component?.packageName == context.packageName && 
+                        component.className == AppBlockAccessibilityService::class.java.name) {
+                        return true
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // 3. Yol: Secure Settings üzerinden kontrol (Splitter format uyuşmazlığı olasılığına karşı ComponentName ile parse ederek)
         val enabled = Settings.Secure.getString(
             context.contentResolver,
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ) ?: return false
+
         val splitter = TextUtils.SimpleStringSplitter(':')
         splitter.setString(enabled)
+        val expectedLong = ComponentName(context, AppBlockAccessibilityService::class.java).flattenToString()
+        val expectedShort = ComponentName(context, AppBlockAccessibilityService::class.java).flattenToShortString()
         while (splitter.hasNext()) {
-            if (splitter.next().equals(expected, ignoreCase = true)) {
+            val entry = splitter.next()
+            val component = ComponentName.unflattenFromString(entry)
+            if (component != null && 
+                component.packageName == context.packageName && 
+                component.className == AppBlockAccessibilityService::class.java.name) {
+                return true
+            }
+            if (entry.equals(expectedLong, ignoreCase = true) || entry.equals(expectedShort, ignoreCase = true)) {
                 return true
             }
         }
+
         return false
     }
 
