@@ -45,6 +45,7 @@ fun PermissionsScreen(
     var showOverlayDialog by remember { mutableStateOf(false) }
 
     if (showAccessibilityDialog) {
+        var isChecked by remember { mutableStateOf(false) }
         AlertDialog(
             onDismissRequest = { showAccessibilityDialog = false },
             title = {
@@ -56,28 +57,67 @@ fun PermissionsScreen(
                 )
             },
             text = {
-                Text(
-                    text = "Gardiyan bu izni, kullanıcının belirlediği uygulamaların açılıp açılmadığını tespit etmek için kullanır.\n\nBu izin, seçilen uygulama süre sınırını aştığında engelleme ekranı göstermek için gereklidir.\n\nGardiyan bu izinle mesaj, şifre, banka bilgisi veya kişisel içerik okumaz.",
-                    color = MutedGray,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Gardiyan, seçilen uygulamaları algılamak ve zaman sınırı dolduğunda engelleme ekranını göstermek için Erişilebilirlik izni ister.\n\nGardiyan bu izinle mesaj, şifre, ödeme/banka bilgisi, yazılan metin veya kişisel içerik okumaz.\n\nVerileriniz sadece cihazda yerel olarak işlenir ve üçüncü taraflarla paylaşılmaz.",
+                        color = MutedGray,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.clickable { isChecked = !isChecked }
+                    ) {
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = { isChecked = it },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = PureBlack,
+                                uncheckedColor = MutedGray
+                            )
+                        )
+                        Text(
+                            text = "Yukarıdaki bilgilendirmeyi okudum ve onaylıyorum.",
+                            color = PureBlack,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        showAccessibilityDialog = false
-                        viewModel.openAccessibilitySettings(context)
+                        if (isChecked) {
+                            showAccessibilityDialog = false
+                            context.getSharedPreferences("gardiyan_settings", android.content.Context.MODE_PRIVATE)
+                                .edit()
+                                .putBoolean("accessibility_approved", true)
+                                .apply()
+                            viewModel.openAccessibilitySettings(context)
+                        }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack),
+                    enabled = isChecked,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PureBlack,
+                        contentColor = OnPureBlack,
+                        disabledContainerColor = BorderGray,
+                        disabledContentColor = MutedGray.copy(alpha = 0.5f)
+                    ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Anladım", fontWeight = FontWeight.Bold)
+                    Text("Anladım ve Devam Et", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAccessibilityDialog = false }) {
-                    Text("Vazgeç", color = MutedGray)
+                TextButton(
+                    onClick = { showAccessibilityDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
+                ) {
+                    Text("Vazgeç")
                 }
             },
             containerColor = DarkCharcoal,

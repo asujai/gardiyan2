@@ -24,3 +24,15 @@ debug.keystore
 guardian_db*
 screenshot.png
 verify_pkg_*.png
+
+# Google Play Yayin Ignore Kurallari
+*.jks
+*.keystore
+*.p12
+debug.keystore*
+*.aab
+*.apk
+.build-outputs/
+app/release/
+app/build/
+build/

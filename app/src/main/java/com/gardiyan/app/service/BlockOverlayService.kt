@@ -251,8 +251,8 @@ class BlockOverlayService : Service() {
         )
 
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Gardiyan koruması aktif")
-            .setContentText("Uygulama sınırları arka planda takip ediliyor.")
+            .setContentTitle("Gardiyan aktif")
+            .setContentText("Seçtiğin uygulama sınırları korunuyor.")
             .setSmallIcon(android.R.drawable.ic_lock_lock)
             .setContentIntent(pendingIntent)
             .setOngoing(true)

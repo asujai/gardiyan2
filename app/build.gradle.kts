@@ -13,7 +13,7 @@ android {
     applicationId = "com.gardiyan.app"
     minSdk = 24
     targetSdk = 36
-    versionCode = 6
+    versionCode = 7
     versionName = "1.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -40,7 +40,13 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      
+      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+      if (file(keystorePath).exists()) {
+        signingConfig = signingConfigs.getByName("release")
+      } else {
+        signingConfig = null
+      }
     }
     debug {
     }
