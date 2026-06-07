@@ -55,7 +55,8 @@ class UsageRankingVisualCheckTest {
                         appLimits = mapOf(
                             "com.instagram.android" to 60,
                             "com.google.android.youtube" to 120
-                        )
+                        ),
+                        exceededPackages = setOf("com.instagram.android")
                     )
                 }
             }

@@ -54,6 +54,7 @@ fun UsageRankingSection(
     onPeriodSelected: (UsagePeriod) -> Unit,
     usageItems: List<AppUsageSummary>,
     appLimits: Map<String, Int>,
+    exceededPackages: Set<String> = emptySet(),
     modifier: Modifier = Modifier,
     onSeeAll: () -> Unit = {}
 ) {
@@ -92,6 +93,7 @@ fun UsageRankingSection(
                     UsageRankingRow(
                         item = item,
                         limitMinutes = appLimits[item.packageName],
+                        isLimitExceeded = item.packageName in exceededPackages,
                         progress = (item.usageMillis.toFloat() / maxUsage.toFloat()).coerceIn(0f, 1f)
                     )
                 }
@@ -154,10 +156,9 @@ private fun PeriodSelector(
 private fun UsageRankingRow(
     item: AppUsageSummary,
     limitMinutes: Int?,
+    isLimitExceeded: Boolean,
     progress: Float
 ) {
-    val isLimitExceeded = limitMinutes != null && item.usageMillis > limitMinutes * 60_000L
-
     Card(
         modifier = Modifier
             .fillMaxWidth()

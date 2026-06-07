@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import com.gardiyan.app.MainActivity
 import com.gardiyan.app.data.local.database.GuardianDatabase
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.data.repository.GuardianRepository
@@ -196,6 +197,14 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
         val foregroundPackage = event.packageName?.toString() ?: return
 
+        if (
+            foregroundPackage == packageName &&
+            event.className?.toString() == MainActivity::class.java.name
+        ) {
+            handleGardiyanForeground()
+            return
+        }
+
         // Kilit ekranı aktifken kendi paketimizden gelen pencere odak olaylarını tamamen yoksay
         if (foregroundPackage == packageName && BlockOverlayService.isLockOverlayVisible.get()) {
             Log.d(TAG, "Ignoring own package event because overlay is visible")
@@ -307,7 +316,12 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     if (foregroundEvent != null) {
                         val foregroundPkg = foregroundEvent.packageName
 
-                        if (foregroundPkg != currentForegroundPackage && foregroundPkg != packageName) {
+                        if (
+                            foregroundPkg == packageName &&
+                            BlockOverlayService.isLockOverlayVisible.get()
+                        ) {
+                            handleGardiyanForeground()
+                        } else if (foregroundPkg != currentForegroundPackage && foregroundPkg != packageName) {
                             Log.w(TAG, "UsageStats fallback detected different package: $foregroundPkg (A11y had: $currentForegroundPackage)")
                             withContext(Dispatchers.IO) {
                                 repository.insertLog(
@@ -505,6 +519,25 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in handleForegroundChange: ${e.message}", e)
                 }
+            }
+        }
+    }
+
+    private fun handleGardiyanForeground() {
+        a11yScope.launch {
+            foregroundMutex.withLock {
+                currentForegroundPackage = packageName
+                tickJob?.cancel()
+                tickJob = null
+                BlockOverlayService.hideLockOverlay()
+
+                val db = GuardianDatabase.getDatabase(applicationContext)
+                val repository = GuardianRepository(db.guardianDao())
+                withContext(Dispatchers.IO) {
+                    repository.closeActiveSession("Gardiyan açıldı")
+                }
+                clearTrackingState()
+                Log.i(TAG, "Gardiyan opened; lock overlay and tracked session cleared")
             }
         }
     }

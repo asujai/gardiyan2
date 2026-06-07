@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.gardiyan.app.navigation.*
+import com.gardiyan.app.service.BlockOverlayService
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import com.gardiyan.app.viewmodel.GuardianViewModelFactory
@@ -39,6 +40,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Gardiyan her zaman kilit ekranından çıkış ve kısıtlama yönetimi yolu olmalıdır.
+        BlockOverlayService.hideLockOverlay()
     }
 }
 

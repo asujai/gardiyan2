@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gardiyan.app.data.model.AppUsageSummary
 import com.gardiyan.app.data.model.UsagePeriod
+import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.ui.components.UsageRankingSection
 import com.gardiyan.app.ui.theme.DashboardBorder as BorderGray
 import com.gardiyan.app.ui.theme.DashboardCard as DarkCharcoal
@@ -68,6 +69,7 @@ fun DashboardScreen(
     val restrictedApps by viewModel.restrictedApps.collectAsState()
     val activeApps = remember(restrictedApps) { restrictedApps.filter { it.isActive } }
     val appLimits = remember(activeApps) { activeApps.associate { it.packageName to it.dailyLimitMinutes } }
+    val exceededPackages = remember(activeApps) { getExceededPackageNames(activeApps) }
 
     val totalSavedMillis by produceState<Long>(initialValue = 0L, key1 = restrictedApps) {
         value = withContext(Dispatchers.IO) {
@@ -89,16 +91,7 @@ fun DashboardScreen(
     ) {
         value = withContext(Dispatchers.IO) { viewModel.getUsageRanking(selectedPeriod) }
     }
-    val dailyUsage by produceState<List<AppUsageSummary>>(initialValue = emptyList()) {
-        value = withContext(Dispatchers.IO) { viewModel.getUsageRanking(UsagePeriod.DAILY) }
-    }
-
-    val dailyUsageByPackage = remember(dailyUsage) { dailyUsage.associateBy { it.packageName } }
-    val exceededCount = remember(activeApps, dailyUsageByPackage) {
-        activeApps.count { app ->
-            (dailyUsageByPackage[app.packageName]?.usageMillis ?: 0L) > app.dailyLimitMinutes * 60_000L
-        }
-    }
+    val exceededCount = exceededPackages.size
     val levelName = when (session?.level ?: 1) {
         1 -> "Çaylak"
         2 -> "Disiplinli"
@@ -131,6 +124,7 @@ fun DashboardScreen(
                 onPeriodSelected = { selectedPeriod = it },
                 usageItems = periodUsage,
                 appLimits = appLimits,
+                exceededPackages = exceededPackages,
                 onSeeAll = onNavigateToUsageDetails
             )
         }
@@ -145,6 +139,12 @@ fun DashboardScreen(
         item { Spacer(modifier = Modifier.height(12.dp)) }
     }
 }
+
+internal fun getExceededPackageNames(activeApps: List<RestrictedAppEntity>): Set<String> =
+    activeApps
+        .asSequence()
+        .filter { it.remainingSecondsToday <= 0 || it.isFailed }
+        .mapTo(mutableSetOf()) { it.packageName }
 
 @Composable
 private fun DashboardHeader() {

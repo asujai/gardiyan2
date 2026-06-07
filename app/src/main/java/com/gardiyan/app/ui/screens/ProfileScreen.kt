@@ -316,7 +316,7 @@ fun ProfileScreen(
                 ) {
                     Icon(
                         imageVector = if (isTimelineVisible || isSettingsVisible) Icons.Default.Close else Icons.Default.Settings,
-                        contentDescription = "Kapat",
+                        contentDescription = if (isTimelineVisible || isSettingsVisible) "Kapat" else "Ayarlar",
                         tint = PureBlack
                     )
                 }
