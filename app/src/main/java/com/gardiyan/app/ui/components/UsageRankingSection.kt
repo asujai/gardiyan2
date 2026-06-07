@@ -21,6 +21,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
+import com.gardiyan.app.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,14 +68,14 @@ fun UsageRankingSection(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Kullanım Sıralaması",
+            text = stringResource(R.string.usage_ranking_title),
             fontSize = 21.sp,
             fontWeight = FontWeight.Black,
             color = PureBlack
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "En çok zaman geçirdiğin uygulamaları takip et.",
+            text = stringResource(R.string.usage_ranking_desc),
             fontSize = 13.sp,
             color = MutedGray
         )
@@ -103,7 +105,7 @@ fun UsageRankingSection(
         if (sortedItems.size > MAX_VISIBLE_APPS) {
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "Tümünü Gör",
+                text = stringResource(R.string.usage_see_all),
                 modifier = Modifier
                     .align(Alignment.End)
                     .clip(RoundedCornerShape(12.dp))
@@ -142,7 +144,7 @@ private fun PeriodSelector(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = period.label,
+                    text = stringResource(period.labelResId),
                     color = if (selected) OnPureBlack else MutedGray,
                     fontSize = 12.sp,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
@@ -220,14 +222,14 @@ private fun UsageRankingRow(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = limitMinutes?.let { "Limit: ${formatMinutes(it)}" } ?: "Limit tanımlı değil",
+                        text = limitMinutes?.let { stringResource(R.string.usage_limit_prefix, formatMinutes(it)) } ?: stringResource(R.string.usage_limit_not_set),
                         color = MutedGray,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium
                     )
                     if (isLimitExceeded) {
                         Text(
-                            text = "Limit aşıldı",
+                            text = stringResource(R.string.usage_limit_exceeded),
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(SoftDangerRed)
@@ -264,7 +266,7 @@ private fun AppIcon(packageName: String, appName: String) {
         if (icon != null) {
             Image(
                 bitmap = icon,
-                contentDescription = "$appName ikonu",
+                contentDescription = appName,
                 modifier = Modifier
                     .size(32.dp)
                     .clip(RoundedCornerShape(9.dp)),
@@ -305,14 +307,14 @@ private fun UsageEmptyState() {
             }
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "Bugün henüz kullanım verisi oluşmadı.",
+                text = stringResource(R.string.usage_empty_title),
                 color = PureBlack,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(3.dp))
             Text(
-                text = "Uygulamaları kullandıkça burada sıralaman görünecek.",
+                text = stringResource(R.string.usage_empty_desc),
                 color = MutedGray,
                 fontSize = 11.sp
             )
@@ -320,23 +322,29 @@ private fun UsageEmptyState() {
     }
 }
 
+@Composable
 fun formatUsageDuration(usageMillis: Long): String {
     val totalMinutes = (usageMillis / 60_000L).coerceAtLeast(0L)
     val hours = totalMinutes / 60
     val minutes = totalMinutes % 60
+    val hourUnit = stringResource(R.string.unit_hour)
+    val minuteUnit = stringResource(R.string.unit_minute)
     return when {
-        hours > 0 && minutes > 0 -> "${hours}sa ${minutes}dk"
-        hours > 0 -> "${hours}sa"
-        else -> "${minutes}dk"
+        hours > 0 && minutes > 0 -> "${hours}${hourUnit} ${minutes}${minuteUnit}"
+        hours > 0 -> "${hours}${hourUnit}"
+        else -> "${minutes}${minuteUnit}"
     }
 }
 
+@Composable
 private fun formatMinutes(totalMinutes: Int): String {
     val hours = totalMinutes / 60
     val minutes = totalMinutes % 60
+    val hourUnit = stringResource(R.string.unit_hour)
+    val minuteUnit = stringResource(R.string.unit_minute)
     return when {
-        hours > 0 && minutes > 0 -> "${hours}sa ${minutes}dk"
-        hours > 0 -> "${hours}sa"
-        else -> "${minutes}dk"
+        hours > 0 && minutes > 0 -> "${hours}${hourUnit} ${minutes}${minuteUnit}"
+        hours > 0 -> "${hours}${hourUnit}"
+        else -> "${minutes}${minuteUnit}"
     }
 }

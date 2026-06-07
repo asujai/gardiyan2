@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * 3. AppBlockAccessibilityService'ten gelen "showLockOverlay" komutuyla
  *    WindowManager.addView() kullanarak hedef uygulamanın ÜZERİNE lock overlay çizmek
  * 4. 10 saniyelik geri sayım → 0'a ulaştığında ANINDA 10'a reset → sonsuz döngü
- * 5. Kilit ekranından çıkış YOK; sadece Gardiyan MainActivity'den 5sn basılı
+ * 5. Kilit ekranından çıkış YOK; sadece Limitra MainActivity'den 5sn basılı
  *    tutarak iptal edilebilir
  *
  * KRİTİK: Sayaç 0'a ulaştığında:
@@ -251,8 +251,8 @@ class BlockOverlayService : Service() {
         )
 
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Gardiyan aktif")
-            .setContentText("Seçtiğin uygulama sınırları korunuyor.")
+            .setContentTitle(getString(R.string.overlay_active))
+            .setContentText(getString(R.string.overlay_desc))
             .setSmallIcon(android.R.drawable.ic_lock_lock)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
@@ -337,7 +337,7 @@ class BlockOverlayService : Service() {
             val emojiText = overlayView.findViewById<TextView>(R.id.emojiText)
             val emojiImage = overlayView.findViewById<ImageView>(R.id.emojiImage)
 
-            targetText.text = targetAppName.ifEmpty { "Kısıtlı Uygulama" }
+            targetText.text = targetAppName.ifEmpty { getString(R.string.overlay_restricted_app) }
 
             // Emoji / Uygulama İkonu: Önce harici URI dene, yoksa kısıtlı uygulamanın kendi ikonunu yükle
             val uri = customEmojiUri

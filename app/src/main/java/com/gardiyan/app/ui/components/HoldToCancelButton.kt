@@ -23,6 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gardiyan.app.ui.theme.*
+import com.gardiyan.app.R
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -40,7 +42,7 @@ fun FiveSecondHoldCancelButton(
 
     LaunchedEffect(completed) {
         if (completed) {
-            Toast.makeText(context, "Korumalar devre dışı bırakıldı.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.hold_to_cancel_shields_down), Toast.LENGTH_LONG).show()
             onCancelConfirmed()
         }
     }
@@ -69,7 +71,7 @@ fun FiveSecondHoldCancelButton(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "GÜVENLİK İPTALİ",
+                    text = stringResource(R.string.hold_to_cancel_title),
                     fontSize = 10.sp,
                     fontFamily = FontFamily.SansSerif,
                     color = DangerRed,
@@ -79,14 +81,14 @@ fun FiveSecondHoldCancelButton(
             }
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Tüm kısıtlamaları kaldırmak için butona 5 saniye basılı tutun.",
+                text = stringResource(R.string.hold_to_cancel_instruction),
                 fontSize = 12.sp,
                 color = MutedGray,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Ceza olarak level düşüşü ve kırmızı rozet uygulanacaktır.",
+                text = stringResource(R.string.hold_to_cancel_penalty),
                 fontSize = 10.sp,
                 fontFamily = FontFamily.SansSerif,
                 color = MutedGray.copy(alpha = 0.8f),
@@ -152,9 +154,9 @@ fun FiveSecondHoldCancelButton(
 
                 Text(
                     text = when {
-                        completed -> "✓ KİLİTLER AÇILDI"
-                        isHolding -> "BIRAKMAYIN · ${(progress * 5).toInt() + 1}s"
-                        else -> "KORUMAYI KALDIR (5sn BASILI TUT)"
+                        completed -> stringResource(R.string.protected_apps_removed)
+                        isHolding -> stringResource(R.string.protected_apps_dont_release, 5 - (progress * 5).toInt())
+                        else -> stringResource(R.string.protected_apps_remove_btn)
                     },
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,

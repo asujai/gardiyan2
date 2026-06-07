@@ -43,7 +43,7 @@
             android:enabled="true"
             android:exported="false"
             android:stopWithTask="false"
-            android:label="Gardiyan Koruma Motoru"
+            android:label="@string/notification_channel_service"
             android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Digital boundary protection and app lock overlay enforcement" />
@@ -78,6 +78,16 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <!-- AndroidX AppCompat dil desteğinin uygulama kapandıktan sonra da korunması için gerekli servis -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
     </application>
 
 </manifest>

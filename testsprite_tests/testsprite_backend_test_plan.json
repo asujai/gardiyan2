@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "getapirestrictions_should_return_current_restriction_list",
+    "description": "Verify that GET /api/restrictions returns the current list of restricted apps with status 200."
+  },
+  {
+    "id": "TC002",
+    "title": "postapirestrictions_should_add_new_restriction_with_valid_data",
+    "description": "Verify that POST /api/restrictions with a valid package name and daily limit adds a new restriction and returns status 201."
+  },
+  {
+    "id": "TC003",
+    "title": "postapirestrictions_should_reject_invalid_package_names",
+    "description": "Verify that POST /api/restrictions with invalid or empty package names returns status 400 and does not change the restriction list."
+  },
+  {
+    "id": "TC004",
+    "title": "putapirestrictionspackagename_should_update_existing_restriction",
+    "description": "Verify that PUT /api/restrictions/{packageName} updates the daily limit for the specified app and returns status 200."
+  },
+  {
+    "id": "TC005",
+    "title": "deleteapirestrictionspackagename_should_remove_restriction",
+    "description": "Verify that DELETE /api/restrictions/{packageName} removes the restriction and returns status 200."
+  },
+  {
+    "id": "TC006",
+    "title": "getapiusagecurrent_should_return_active_foreground_app_usage",
+    "description": "Verify that GET /api/usage/current returns the current foreground app package and usage state with status 200 when permissions are granted."
+  },
+  {
+    "id": "TC007",
+    "title": "getapiusagecurrent_should_return_403_when_permissions_missing",
+    "description": "Verify that GET /api/usage/current returns status 403 when usage stats or accessibility permissions are missing."
+  },
+  {
+    "id": "TC008",
+    "title": "postapiblockingcheck_should_indicate_block_needed_when_limit_reached",
+    "description": "Verify that POST /api/blocking/check returns status 200 indicating block is needed when usage exceeds daily limit."
+  },
+  {
+    "id": "TC009",
+    "title": "postapiblockingshow_should_display_overlay_when_permission_granted",
+    "description": "Verify that POST /api/blocking/show displays the blocking overlay and returns status 200 when overlay permission is granted."
+  },
+  {
+    "id": "TC010",
+    "title": "postapiunblockstart_and_confirm_should_unlock_after_five_second_hold",
+    "description": "Verify that POST /api/unblock/start followed by POST /api/unblock/confirm after a five-second hold disables monitoring and unlocks the app with status 200."
+  }
+]

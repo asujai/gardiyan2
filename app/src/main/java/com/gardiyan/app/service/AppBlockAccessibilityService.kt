@@ -118,7 +118,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 repository.insertLog(
                     eventType = if (isRestart) "SERVICE_RESTARTED" else "SERVICE_STARTED",
                     appName = "",
-                    details = if (isRestart) "Gardiyan koruma motoru yeniden başlatıldı." else "Gardiyan koruma motoru başarıyla başlatıldı."
+                    details = if (isRestart) "Limitra koruma motoru yeniden başlatıldı." else "Limitra koruma motoru başarıyla başlatıldı."
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -147,7 +147,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     repository.insertLog(
                         eventType = "SERVICE_STOPPED",
                         appName = "",
-                        details = "Gardiyan koruma motoru durduruldu (Unbind)."
+                        details = "Limitra koruma motoru durduruldu (Unbind)."
                     )
                 }
             } catch (e: Exception) {
@@ -175,7 +175,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     repository.insertLog(
                         eventType = "SERVICE_STOPPED",
                         appName = "",
-                        details = "Gardiyan koruma motoru durduruldu (Destroy)."
+                        details = "Limitra koruma motoru durduruldu (Destroy)."
                     )
                 }
             } catch (e: Exception) {
@@ -201,7 +201,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
             foregroundPackage == packageName &&
             event.className?.toString() == MainActivity::class.java.name
         ) {
-            handleGardiyanForeground()
+            handleLimitraForeground()
             return
         }
 
@@ -320,7 +320,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                             foregroundPkg == packageName &&
                             BlockOverlayService.isLockOverlayVisible.get()
                         ) {
-                            handleGardiyanForeground()
+                            handleLimitraForeground()
                         } else if (foregroundPkg != currentForegroundPackage && foregroundPkg != packageName) {
                             Log.w(TAG, "UsageStats fallback detected different package: $foregroundPkg (A11y had: $currentForegroundPackage)")
                             withContext(Dispatchers.IO) {
@@ -523,7 +523,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun handleGardiyanForeground() {
+    private fun handleLimitraForeground() {
         a11yScope.launch {
             foregroundMutex.withLock {
                 currentForegroundPackage = packageName
@@ -534,10 +534,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 val db = GuardianDatabase.getDatabase(applicationContext)
                 val repository = GuardianRepository(db.guardianDao())
                 withContext(Dispatchers.IO) {
-                    repository.closeActiveSession("Gardiyan açıldı")
+                    repository.closeActiveSession("Limitra açıldı")
                 }
                 clearTrackingState()
-                Log.i(TAG, "Gardiyan opened; lock overlay and tracked session cleared")
+                Log.i(TAG, "Limitra opened; lock overlay and tracked session cleared")
             }
         }
     }

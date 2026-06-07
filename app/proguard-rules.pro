@@ -19,3 +19,30 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Room Database Proguard Rules
+-keep class * extends androidx.room.RoomDatabase
+-keep class * implements androidx.room.RoomDatabase$Callback
+-keep class * extends androidx.room.migration.Migration
+-keepclassmembers class * extends androidx.room.RoomDatabase {
+    <init>(...);
+}
+-dontwarn androidx.room.limits.Limit
+-dontwarn androidx.room.RxRoom
+-dontwarn androidx.room.GuavaRoom
+
+# Kotlin Coroutines Proguard Rules
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepclassmembernames class kotlinx.coroutines.android.HandlerContext$ScheduledRunnable {
+    *** run();
+}
+-dontwarn kotlinx.coroutines.**
+
+# Jetpack Compose Proguard Rules
+-keepclassmembers class * extends androidx.compose.ui.platform.AbstractComposeView {
+    *** <init>(...);
+}
+-keep class androidx.compose.ui.platform.ComposeView { *; }
+-keep class * implements androidx.compose.runtime.snapshots.SnapshotStateObserver { *; }
+-dontwarn androidx.compose.**

@@ -43,73 +43,44 @@ fun PermissionsScreen(
     var showAccessibilityDialog by remember { mutableStateOf(false) }
     var showUsageDialog by remember { mutableStateOf(false) }
     var showOverlayDialog by remember { mutableStateOf(false) }
+    var showBatteryDialog by remember { mutableStateOf(false) }
 
     if (showAccessibilityDialog) {
-        var isChecked by remember { mutableStateOf(false) }
         AlertDialog(
             onDismissRequest = { showAccessibilityDialog = false },
             title = {
                 Text(
-                    text = "Erişilebilirlik İzni Gerekli",
+                    text = stringResource(R.string.disclosure_accessibility_title),
                     fontWeight = FontWeight.Bold,
                     color = PureBlack,
                     fontSize = 16.sp
                 )
             },
             text = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Gardiyan, seçilen uygulamaları algılamak ve zaman sınırı dolduğunda engelleme ekranını göstermek için Erişilebilirlik izni ister.\n\nGardiyan bu izinle mesaj, şifre, ödeme/banka bilgisi, yazılan metin veya kişisel içerik okumaz.\n\nVerileriniz sadece cihazda yerel olarak işlenir ve üçüncü taraflarla paylaşılmaz.",
-                        color = MutedGray,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.clickable { isChecked = !isChecked }
-                    ) {
-                        Checkbox(
-                            checked = isChecked,
-                            onCheckedChange = { isChecked = it },
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = PureBlack,
-                                uncheckedColor = MutedGray
-                            )
-                        )
-                        Text(
-                            text = "Yukarıdaki bilgilendirmeyi okudum ve onaylıyorum.",
-                            color = PureBlack,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
+                Text(
+                    text = stringResource(R.string.disclosure_accessibility_desc),
+                    color = MutedGray,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        if (isChecked) {
-                            showAccessibilityDialog = false
-                            context.getSharedPreferences("gardiyan_settings", android.content.Context.MODE_PRIVATE)
-                                .edit()
-                                .putBoolean("accessibility_approved", true)
-                                .apply()
-                            viewModel.openAccessibilitySettings(context)
-                        }
+                        showAccessibilityDialog = false
+                        context.getSharedPreferences("gardiyan_settings", android.content.Context.MODE_PRIVATE)
+                            .edit()
+                            .putBoolean("accessibility_approved", true)
+                            .apply()
+                        viewModel.openAccessibilitySettings(context)
                     },
-                    enabled = isChecked,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PureBlack,
-                        contentColor = OnPureBlack,
-                        disabledContainerColor = BorderGray,
-                        disabledContentColor = MutedGray.copy(alpha = 0.5f)
+                        contentColor = OnPureBlack
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Anladım ve Devam Et", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_accept_disclosure), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -117,7 +88,7 @@ fun PermissionsScreen(
                     onClick = { showAccessibilityDialog = false },
                     colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
                 ) {
-                    Text("Vazgeç")
+                    Text(stringResource(R.string.btn_deny_disclosure))
                 }
             },
             containerColor = DarkCharcoal,
@@ -130,7 +101,7 @@ fun PermissionsScreen(
             onDismissRequest = { showUsageDialog = false },
             title = {
                 Text(
-                    text = "Kullanım Erişimi İzni Gerekli",
+                    text = stringResource(R.string.disclosure_usage_title),
                     fontWeight = FontWeight.Bold,
                     color = PureBlack,
                     fontSize = 16.sp
@@ -138,7 +109,7 @@ fun PermissionsScreen(
             },
             text = {
                 Text(
-                    text = "Gardiyan, seçtiğiniz uygulamaların ne kadar süre kullanıldığını hesaplamak için kullanım erişimine ihtiyaç duyar.",
+                    text = stringResource(R.string.disclosure_usage_desc),
                     color = MutedGray,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
@@ -153,12 +124,12 @@ fun PermissionsScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("İzin Ver", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.perm_btn_grant), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showUsageDialog = false }) {
-                    Text("Vazgeç", color = MutedGray)
+                    Text(stringResource(R.string.btn_cancel), color = MutedGray)
                 }
             },
             containerColor = DarkCharcoal,
@@ -171,7 +142,7 @@ fun PermissionsScreen(
             onDismissRequest = { showOverlayDialog = false },
             title = {
                 Text(
-                    text = "Üstte Gösterme İzni Gerekli",
+                    text = stringResource(R.string.disclosure_overlay_title),
                     fontWeight = FontWeight.Bold,
                     color = PureBlack,
                     fontSize = 16.sp
@@ -179,7 +150,7 @@ fun PermissionsScreen(
             },
             text = {
                 Text(
-                    text = "Gardiyan, süre sınırı dolduğunda engelleme ekranı göstermek için bu izne ihtiyaç duyar.",
+                    text = stringResource(R.string.disclosure_overlay_desc),
                     color = MutedGray,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
@@ -191,15 +162,68 @@ fun PermissionsScreen(
                         showOverlayDialog = false
                         viewModel.openOverlaySettings(context)
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PureBlack,
+                        contentColor = OnPureBlack
+                    ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("İzin Ver", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_accept_disclosure), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showOverlayDialog = false }) {
-                    Text("Vazgeç", color = MutedGray)
+                TextButton(
+                    onClick = { showOverlayDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
+                ) {
+                    Text(stringResource(R.string.btn_deny_disclosure))
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showBatteryDialog) {
+        AlertDialog(
+            onDismissRequest = { showBatteryDialog = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.disclosure_battery_title),
+                    fontWeight = FontWeight.Bold,
+                    color = PureBlack,
+                    fontSize = 16.sp
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.disclosure_battery_desc),
+                    color = MutedGray,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showBatteryDialog = false
+                        viewModel.requestBatteryOptimizationIgnore(context)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PureBlack,
+                        contentColor = OnPureBlack
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.btn_accept_disclosure), fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showBatteryDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
+                ) {
+                    Text(stringResource(R.string.btn_deny_disclosure))
                 }
             },
             containerColor = DarkCharcoal,
@@ -236,13 +260,13 @@ fun PermissionsScreen(
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
-                text = "SİSTEM İZİNLERİ",
+                text = stringResource(R.string.perm_title_header),
                 fontWeight = FontWeight.Black,
                 fontSize = 18.sp,
                 color = PureBlack
             )
             Text(
-                text = "Gardiyan'ın çalışabilmesi için aşağıdaki izinleri aktif edin.",
+                text = stringResource(R.string.perm_desc_header),
                 fontSize = 12.sp,
                 color = MutedGray,
                 lineHeight = 18.sp
@@ -275,7 +299,7 @@ fun PermissionsScreen(
                 title = stringResource(R.string.perm_battery_title),
                 description = stringResource(R.string.perm_battery_desc),
                 isGranted = isBatteryExempted,
-                onClick = { viewModel.requestBatteryOptimizationIgnore(context) }
+                onClick = { showBatteryDialog = true }
             )
 
             ModernPermissionCard(
@@ -297,7 +321,7 @@ fun PermissionsScreen(
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth().height(54.dp)
         ) {
-            Text("BAŞLAT", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.btn_start_protection), fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -335,7 +359,7 @@ private fun ModernPermissionCard(
             }
 
             Text(
-                text = if (isGranted) "AKTİF" else "YETKİ VER",
+                text = if (isGranted) stringResource(R.string.perm_state_active) else stringResource(R.string.perm_state_grant),
                 fontSize = 9.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = if (isGranted) SuccessGreen else DangerRed

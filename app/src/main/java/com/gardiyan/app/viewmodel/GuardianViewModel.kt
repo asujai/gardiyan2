@@ -57,7 +57,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
     private val _setupStep = MutableStateFlow(1)
     val setupStep: StateFlow<Int> = _setupStep.asStateFlow()
 
-    private val _shameMessage = MutableStateFlow("Üzgünüm, bugün irademe yenildim ve Instagram'da sörf yaparken Gardiyan'a yakalandım. Bu mesaj utancımın kanıtıdır.")
+    private val _shameMessage = MutableStateFlow("Üzgünüm, bugün irademe yenildim ve Instagram'da sörf yaparken Limitra'a yakalandım. Bu mesaj utancımın kanıtıdır.")
     val shameMessage: StateFlow<String> = _shameMessage.asStateFlow()
 
     private val _isMonitoringActive = MutableStateFlow(BlockOverlayService.isServiceRunning.get())
@@ -320,7 +320,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
             repository.clearLogs()
             val defaultSession = UserSessionEntity(
                 id = 1,
-                username = "GardiyanUser",
+                username = "LimitraUser",
                 level = 1,
                 hasRedBadge = false,
                 isActive = false,

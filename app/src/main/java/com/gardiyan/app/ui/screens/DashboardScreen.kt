@@ -35,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import com.gardiyan.app.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -93,10 +95,10 @@ fun DashboardScreen(
     }
     val exceededCount = exceededPackages.size
     val levelName = when (session?.level ?: 1) {
-        1 -> "Çaylak"
-        2 -> "Disiplinli"
-        3 -> "Usta"
-        else -> "Çaylak"
+        1 -> stringResource(R.string.level_rookie)
+        2 -> stringResource(R.string.level_disciplined)
+        3 -> stringResource(R.string.level_master)
+        else -> stringResource(R.string.level_rookie)
     }
 
     LazyColumn(
@@ -155,7 +157,7 @@ private fun DashboardHeader() {
     ) {
         Column {
             Text(
-                text = "GARDİYAN",
+                text = "LİMİTRA",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Black,
                 color = PureBlack,
@@ -163,7 +165,7 @@ private fun DashboardHeader() {
             )
             Spacer(modifier = Modifier.height(3.dp))
             Text(
-                text = "Bugün kontrol sende.",
+                text = stringResource(R.string.dashboard_subtitle),
                 fontSize = 13.sp,
                 color = MutedGray
             )
@@ -193,7 +195,7 @@ private fun TodayOverviewCard(
             ) {
                 Column {
                     Text(
-                        text = "BUGÜNKÜ ÖZET",
+                        text = stringResource(R.string.dashboard_summary_title),
                         color = WineAccent,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Black,
@@ -208,21 +210,21 @@ private fun TodayOverviewCard(
                              fontWeight = FontWeight.Black
                         )
                         Text(
-                             text = "Bugünkü kazanım",
+                             text = stringResource(R.string.dashboard_today_gain),
                              color = MutedGray,
                              fontSize = 11.sp
                         )
                     } else {
                         Text(
-                            text = "Henüz kazanım yok",
-                            color = PureBlack,
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Black
+                             text = stringResource(R.string.dashboard_no_gain),
+                             color = PureBlack,
+                             fontSize = 26.sp,
+                             fontWeight = FontWeight.Black
                         )
                         Text(
-                            text = "Kısıtlamalar gün sonunda hesaplanır",
-                            color = MutedGray,
-                            fontSize = 11.sp
+                             text = stringResource(R.string.dashboard_no_gain_desc),
+                             color = MutedGray,
+                             fontSize = 11.sp
                         )
                     }
                 }
@@ -249,13 +251,13 @@ private fun TodayOverviewCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OverviewMetric(
-                    label = "Aktif koruma",
-                    value = "$protectedCount uygulama",
+                    label = stringResource(R.string.dashboard_active_protection),
+                    value = stringResource(R.string.dashboard_active_protection_val, protectedCount),
                     modifier = Modifier.weight(1f)
                 )
                 OverviewMetric(
-                    label = "Limit durumu",
-                    value = if (exceededCount > 0) "$exceededCount aşım" else "Aşım yok",
+                    label = stringResource(R.string.dashboard_limit_status),
+                    value = if (exceededCount > 0) stringResource(R.string.dashboard_exceeded_val, exceededCount) else stringResource(R.string.dashboard_no_exceed),
                     isWarning = exceededCount > 0,
                     modifier = Modifier.weight(1f)
                 )
@@ -264,7 +266,7 @@ private fun TodayOverviewCard(
             if (exceededCount > 0) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Limitini aşan uygulamalar var. Sıralamadan kontrol edebilirsin.",
+                    text = stringResource(R.string.dashboard_exceeded_warning),
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
@@ -293,7 +295,7 @@ private fun TodayOverviewCard(
                 )
                 Spacer(modifier = Modifier.size(7.dp))
                 Text(
-                    text = "Yeni Kısıtlama Ekle",
+                    text = stringResource(R.string.dashboard_add_restriction),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -335,7 +337,7 @@ private fun DisciplineSummary(
 ) {
     Column {
         Text(
-            text = "Disiplin Özeti",
+            text = stringResource(R.string.dashboard_discipline_summary),
             color = PureBlack,
             fontSize = 17.sp,
             fontWeight = FontWeight.Black
@@ -345,11 +347,11 @@ private fun DisciplineSummary(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            SummaryCard(title = "Rütbe", value = levelName, modifier = Modifier.weight(1f))
-            SummaryCard(title = "Seri", value = "$streak gün", modifier = Modifier.weight(1f))
+            SummaryCard(title = stringResource(R.string.dashboard_rank), value = levelName, modifier = Modifier.weight(1f))
+            SummaryCard(title = stringResource(R.string.dashboard_streak), value = stringResource(R.string.dashboard_streak_val, streak), modifier = Modifier.weight(1f))
             SummaryCard(
-                title = "Korunan",
-                value = "$protectedCount hedef",
+                title = stringResource(R.string.dashboard_protected),
+                value = stringResource(R.string.dashboard_protected_val, protectedCount),
                 modifier = Modifier.weight(1f),
                 onClick = onProtectedClick
             )
@@ -386,14 +388,14 @@ private fun SummaryCard(
     }
 }
 
+@Composable
 fun formatSavedDuration(savedMillis: Long): String {
     val totalMinutes = savedMillis / 60_000L
     val hours = totalMinutes / 60
     val minutes = totalMinutes % 60
-    return buildString {
-        if (hours > 0) {
-            append("${hours}sa ")
-        }
-        append("${minutes}dk kazanıldı")
+    return if (hours > 0) {
+        stringResource(R.string.duration_saved_hours_mins, hours, minutes)
+    } else {
+        stringResource(R.string.duration_saved_mins, minutes)
     }
 }

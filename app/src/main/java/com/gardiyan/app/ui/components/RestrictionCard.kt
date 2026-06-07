@@ -21,6 +21,9 @@ import com.gardiyan.app.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+import androidx.compose.ui.res.stringResource
+import com.gardiyan.app.R
+
 @Composable
 fun AppIconView(packageName: String, modifier: Modifier = Modifier) {
     if (packageName.isEmpty()) {
@@ -83,6 +86,16 @@ fun ModernRestrictionCard(
     val mm = totalSecs / 60
     val ss = totalSecs % 60
 
+    val daysMap = mapOf(
+        "Pzt" to R.string.day_mon,
+        "Sal" to R.string.day_tue,
+        "Çar" to R.string.day_wed,
+        "Per" to R.string.day_thu,
+        "Cum" to R.string.day_fri,
+        "Cmt" to R.string.day_sat,
+        "Paz" to R.string.day_sun
+    )
+
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -131,15 +144,22 @@ fun ModernRestrictionCard(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Günlük limit: ${app.dailyLimitMinutes} dk",
+                        text = stringResource(R.string.protected_apps_daily_limit) + ": " + stringResource(R.string.protected_apps_minutes, app.dailyLimitMinutes),
                         fontSize = 11.sp,
                         fontFamily = FontFamily.SansSerif,
                         color = MutedGray
                     )
-                    if (app.activeDays.isNotEmpty() && app.activeDays != "Pzt,Sal,Çar,Per,Cum,Cmt,Paz") {
+                    val isAllDays = app.activeDays.split(",").map { it.trim() }.filter { it.isNotEmpty() }.size >= 7
+                    if (app.activeDays.isNotEmpty() && !isAllDays) {
                         Spacer(modifier = Modifier.height(2.dp))
+                        val localizedDays = app.activeDays.split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+                            .mapNotNull { daysMap[it] }
+                            .map { stringResource(it) }
+                            .joinToString(",")
                         Text(
-                            text = "Günler: ${app.activeDays}",
+                            text = stringResource(R.string.protected_apps_active_days) + ": $localizedDays",
                             fontSize = 9.sp,
                             fontFamily = FontFamily.SansSerif,
                             color = MutedGray.copy(alpha = 0.8f)
@@ -167,10 +187,10 @@ fun ModernRestrictionCard(
                         app.isFailed -> "⚠️"
                         else -> "🛡️"
                     }
-                    val statusText = when {
-                        isLocked -> "Limit Doldu"
-                        app.isFailed -> "Denge Süreci"
-                        else -> "Korunuyor"
+                    val statusTextRes = when {
+                        isLocked -> R.string.protected_apps_limit_reached
+                        app.isFailed -> R.string.protected_apps_discipline_process
+                        else -> R.string.status_protected
                     }
                     val statusColor = when {
                         isLocked || app.isFailed -> DangerRed
@@ -178,7 +198,7 @@ fun ModernRestrictionCard(
                     }
                     Text(text = statusIcon, fontSize = 10.sp)
                     Text(
-                        text = statusText,
+                        text = stringResource(statusTextRes),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.SansSerif,

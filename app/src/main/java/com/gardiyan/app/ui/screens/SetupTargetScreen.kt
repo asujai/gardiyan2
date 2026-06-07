@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.gardiyan.app.R
 import com.gardiyan.app.ui.components.AppIconView
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
@@ -43,6 +45,15 @@ fun SetupTargetScreen(
     var customDurationText by remember { mutableStateOf("") }
     
     val daysOfWeek = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
+    val daysMap = mapOf(
+        "Pzt" to R.string.day_mon,
+        "Sal" to R.string.day_tue,
+        "Çar" to R.string.day_wed,
+        "Per" to R.string.day_thu,
+        "Cum" to R.string.day_fri,
+        "Cmt" to R.string.day_sat,
+        "Paz" to R.string.day_sun
+    )
     var selectedDays by remember { mutableStateOf(daysOfWeek.toSet()) }
 
     var isAppSheetVisible by remember { mutableStateOf(false) }
@@ -57,11 +68,11 @@ fun SetupTargetScreen(
     }
 
     val presetChoices = listOf(
-        Pair("Test (10sn)", 0),
-        Pair("15 Dk", 15),
-        Pair("30 Dk", 30),
-        Pair("1 Saat", 60),
-        Pair("2 Saat", 120)
+        Pair(stringResource(R.string.setup_target_test_10s), 0),
+        Pair(stringResource(R.string.setup_target_15m), 15),
+        Pair(stringResource(R.string.setup_target_30m), 30),
+        Pair(stringResource(R.string.setup_target_1h), 60),
+        Pair(stringResource(R.string.setup_target_2h), 120)
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -88,14 +99,14 @@ fun SetupTargetScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Geri",
+                            contentDescription = stringResource(R.string.btn_close),
                             tint = PureBlack,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(14.dp))
                     Text(
-                        text = "KISITLAMA EKLE",
+                        text = stringResource(R.string.setup_target_add),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
                         color = PureBlack,
@@ -133,7 +144,7 @@ fun SetupTargetScreen(
                                     Icon(Icons.Default.Phone, contentDescription = null, tint = PureBlack, modifier = Modifier.size(16.dp))
                                 }
                                 Text(
-                                    text = "UYGULAMA SEÇİN",
+                                    text = stringResource(R.string.setup_target_select_app_title),
                                     fontSize = 11.sp,
                                     fontFamily = FontFamily.SansSerif,
                                     fontWeight = FontWeight.Bold,
@@ -178,7 +189,7 @@ fun SetupTargetScreen(
                                         }
                                     } else {
                                         Text(
-                                            text = "Korunacak uygulamaları seçin...",
+                                            text = stringResource(R.string.setup_target_select_app_placeholder),
                                             fontSize = 13.sp,
                                             color = MutedGray,
                                             modifier = Modifier.weight(1f)
@@ -213,7 +224,7 @@ fun SetupTargetScreen(
                                     Icon(Icons.Default.List, contentDescription = null, tint = PureBlack, modifier = Modifier.size(16.dp))
                                 }
                                 Text(
-                                    text = "GÜNLÜK KULLANIM LİMİTİ",
+                                    text = stringResource(R.string.setup_target_daily_limit),
                                     fontSize = 11.sp,
                                     fontFamily = FontFamily.SansSerif,
                                     fontWeight = FontWeight.Bold,
@@ -262,7 +273,7 @@ fun SetupTargetScreen(
                                         customDurationText = newValue
                                     }
                                 },
-                                label = { Text("Özel dakika sınırı girin", color = MutedGray, fontSize = 13.sp) },
+                                label = { Text(stringResource(R.string.setup_target_custom_limit), color = MutedGray, fontSize = 13.sp) },
                                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                                     keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
                                 ),
@@ -298,7 +309,7 @@ fun SetupTargetScreen(
                                     Icon(Icons.Default.DateRange, contentDescription = null, tint = PureBlack, modifier = Modifier.size(16.dp))
                                 }
                                 Text(
-                                    text = "KORUMA GÜNLERİ",
+                                    text = stringResource(R.string.setup_target_days),
                                     fontSize = 11.sp,
                                     fontFamily = FontFamily.SansSerif,
                                     fontWeight = FontWeight.Bold,
@@ -331,7 +342,7 @@ fun SetupTargetScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = day,
+                                            text = stringResource(daysMap[day]!!),
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = if (isSelected) OnPureBlack else PureBlack
@@ -356,11 +367,11 @@ fun SetupTargetScreen(
                     Button(
                         onClick = {
                             if (selectedApps.isEmpty()) {
-                                Toast.makeText(context, "Önce en az bir uygulama seçin", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.setup_target_error_no_app), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (selectedDays.isEmpty()) {
-                                Toast.makeText(context, "Lütfen en az bir gün seçin", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.setup_target_error_no_day), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             val daysStr = selectedDays.joinToString(",")
@@ -368,13 +379,21 @@ fun SetupTargetScreen(
                                 selectedApps.forEach { app ->
                                     viewModel.startQuickTest(context, app.second, app.first, testSeconds = 10, activeDays = daysStr)
                                 }
-                                Toast.makeText(context, "${selectedApps.size} uygulama için hızlı test başlatıldı!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.setup_target_toast_test_start, selectedApps.size),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 onCompleted()
                             } else {
                                 selectedApps.forEach { app ->
                                     viewModel.addRestrictedApp(app.second, app.first, finalDuration, activeDays = daysStr)
                                 }
-                                Toast.makeText(context, "${selectedApps.size} uygulama kısıtlamalara eklendi", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.setup_target_toast_added, selectedApps.size),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 selectedApps = emptySet()
                                 onCompleted()
                             }
@@ -388,7 +407,7 @@ fun SetupTargetScreen(
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (finalDuration == 0) "HIZLI TESTİ BAŞLAT (10sn)" else "KISITLAMALARI AKTİFLEŞTİR",
+                            text = if (finalDuration == 0) stringResource(R.string.setup_target_btn_test) else stringResource(R.string.setup_target_btn_activate),
                             fontFamily = FontFamily.SansSerif,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
@@ -407,7 +426,7 @@ fun SetupTargetScreen(
                                 .height(54.dp)
                         ) {
                             Text(
-                                text = "İŞLEMLERİ TAMAMLA & KORUMAYI AÇ",
+                                text = stringResource(R.string.setup_target_btn_complete),
                                 fontFamily = FontFamily.SansSerif,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
@@ -465,7 +484,7 @@ fun SetupTargetScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "UYGULAMALARI SEÇİN",
+                            text = stringResource(R.string.setup_target_select_app_title),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.ExtraBold,
                             fontFamily = FontFamily.SansSerif,
@@ -478,7 +497,7 @@ fun SetupTargetScreen(
                                 .background(MatteSurface)
                                 .size(36.dp)
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = "Kapat", tint = PureBlack, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.btn_close), tint = PureBlack, modifier = Modifier.size(18.dp))
                         }
                     }
                     
@@ -488,12 +507,12 @@ fun SetupTargetScreen(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Uygulama adı veya paket adı ara...", color = MutedGray, fontSize = 13.sp) },
+                        placeholder = { Text(stringResource(R.string.setup_target_search_placeholder), color = MutedGray, fontSize = 13.sp) },
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MutedGray) },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = "Temizle", tint = MutedGray)
+                                    Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.btn_clean), tint = MutedGray)
                                 }
                             }
                         },
@@ -540,14 +559,14 @@ fun SetupTargetScreen(
                                 Text("🔍", fontSize = 44.sp)
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = "Eşleşen Uygulama Yok",
+                                    text = stringResource(R.string.setup_target_no_match),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PureBlack
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "\"$searchQuery\" aramasına uygun yüklü uygulama bulunamadı.",
+                                    text = stringResource(R.string.setup_target_no_match_desc, searchQuery),
                                     fontSize = 12.sp,
                                     color = MutedGray,
                                     textAlign = TextAlign.Center,
@@ -614,7 +633,7 @@ fun SetupTargetScreen(
                                 .height(50.dp)
                         ) {
                             Text(
-                                text = "SEÇİMİ ONAYLA (${selectedApps.size} UYGULAMA)",
+                                text = stringResource(R.string.setup_target_confirm_selection, selectedApps.size),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 0.5.sp
@@ -654,7 +673,7 @@ fun SelectedAppChip(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Kaldır",
+                    contentDescription = stringResource(R.string.btn_close),
                     tint = MutedGray,
                     modifier = Modifier.size(10.dp)
                 )

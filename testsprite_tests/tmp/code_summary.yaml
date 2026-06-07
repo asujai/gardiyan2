@@ -1,0 +1,31 @@
+project_name: gardiyan2
+version: 1.1
+
+tech_stack:
+  language: Kotlin
+  ui_framework: Jetpack Compose
+  architecture: MVVM
+  database: Room ORM (SQLite)
+  background_services:
+    - Android Service
+    - Android Foreground Service
+    - Android Accessibility Service
+  job_scheduler: WorkManager
+  testing_frameworks:
+    - JUnit4
+    - Robolectric
+    - Roborazzi
+
+features:
+  - name: Restricted App Management
+    description: Allows users to add, update, and remove application packages to restrict their usage time.
+  - name: App Usage Monitoring
+    description: Monitors active application usage using UsageStatsManager and Accessibility Service to detect when a restricted app is in the foreground.
+  - name: Blocking Overlay Screen
+    description: Displays a system overlay window (BlockOverlayService) over restricted applications once their daily time limit is reached.
+  - name: Persistent Logging
+    description: Logs critical actions such as permission changes, restrictions added/removed, and overlay events.
+  - name: Permissions Verification
+    description: Requests and verifies crucial Android permissions including Overlay, Usage Stats, Accessibility, Notification, and Battery Optimization.
+  - name: Hardened Unblocking
+    description: Implements a protected 5-second long press mechanism (cancelAllWithFiveSecondHold) as the only way to disable monitoring and unlock restricted apps.

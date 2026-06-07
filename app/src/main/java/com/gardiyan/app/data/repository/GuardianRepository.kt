@@ -46,7 +46,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
             guardianDao.insertUserSession(
                 UserSessionEntity(
                     id = 1,
-                    username = "GardiyanUser",
+                    username = "LimitraUser",
                     level = 1,
                     hasRedBadge = false,
                     isActive = false

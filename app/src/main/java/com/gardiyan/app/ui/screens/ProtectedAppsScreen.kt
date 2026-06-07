@@ -30,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.gardiyan.app.R
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.data.repository.GuardianRepository
 import com.gardiyan.app.ui.components.AppIconView
@@ -41,11 +43,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-enum class ProtectedFilter(val displayName: String) {
-    ALL("Tümü"),
-    ACTIVE("Aktif"),
-    LOCKED("Kilitli"),
-    REACHED_LIMIT("Limiti Dolanlar")
+enum class ProtectedFilter(val titleRes: Int) {
+    ALL(R.string.log_filter_all),
+    ACTIVE(R.string.overlay_active),
+    LOCKED(R.string.log_type_app_locked),
+    REACHED_LIMIT(R.string.filter_limit_reached)
 }
 
 @Composable
@@ -96,7 +98,7 @@ fun ProtectedAppsScreen(
                     ) {
                         Column {
                             Text(
-                                text = "KORUNANLAR",
+                                text = stringResource(R.string.protected_apps_title),
                                 fontSize = 18.sp,
                                 fontFamily = FontFamily.SansSerif,
                                 fontWeight = FontWeight.Black,
@@ -105,7 +107,7 @@ fun ProtectedAppsScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Süre sınırı koyduğunuz uygulamaları takip edin.",
+                                text = stringResource(R.string.protected_apps_desc),
                                 fontSize = 12.sp,
                                 color = MutedGray
                             )
@@ -135,7 +137,7 @@ fun ProtectedAppsScreen(
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    text = filter.displayName,
+                                    text = stringResource(filter.titleRes),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = chipText
@@ -172,14 +174,14 @@ fun ProtectedAppsScreen(
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = "Henüz korunan bir uygulama yok.",
+                                    text = stringResource(R.string.protected_apps_empty),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PureBlack
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "İlk uygulamanızı eklemek için Ana Ekrandaki \"Yeni Kısıtlama Ekle\" kartını kullanın.",
+                                    text = stringResource(R.string.protected_apps_empty_desc),
                                     fontSize = 11.sp,
                                     color = MutedGray,
                                     textAlign = TextAlign.Center,
@@ -212,6 +214,15 @@ fun ProtectedAppsScreen(
             var limitHours by remember(app.id) { mutableStateOf(latestApp.dailyLimitMinutes / 60) }
             var limitMinsOnly by remember(app.id) { mutableStateOf(latestApp.dailyLimitMinutes % 60) }
             val daysOfWeek = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
+            val daysMap = mapOf(
+                "Pzt" to R.string.day_mon,
+                "Sal" to R.string.day_tue,
+                "Çar" to R.string.day_wed,
+                "Per" to R.string.day_thu,
+                "Cum" to R.string.day_fri,
+                "Cmt" to R.string.day_sat,
+                "Paz" to R.string.day_sun
+            )
             var selectedDays by remember(app.id) {
                 val shownDays = latestApp.nextDayActiveDays.ifEmpty { latestApp.activeDays }
                 mutableStateOf(shownDays.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet())
@@ -257,7 +268,7 @@ fun ProtectedAppsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "KISITLAMA YÖNETİMİ",
+                            text = stringResource(R.string.protected_apps_mgmt),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.ExtraBold,
                             fontFamily = FontFamily.SansSerif,
@@ -272,7 +283,7 @@ fun ProtectedAppsScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Kapat",
+                                contentDescription = stringResource(R.string.btn_close),
                                 tint = PureBlack,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -340,7 +351,7 @@ fun ProtectedAppsScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "Kalan Süre",
+                                            text = stringResource(R.string.protected_apps_remaining_time),
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = PureBlack
@@ -362,15 +373,15 @@ fun ProtectedAppsScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "Durum",
+                                            text = stringResource(R.string.perm_status),
                                             fontSize = 13.sp,
                                             color = MutedGray
                                         )
                                         Text(
                                             text = when {
-                                                isLocked -> "Limit Doldu"
-                                                latestApp.isFailed -> "Denge Süreci"
-                                                else -> "Korunuyor"
+                                                isLocked -> stringResource(R.string.protected_apps_limit_reached)
+                                                latestApp.isFailed -> stringResource(R.string.protected_apps_discipline_process)
+                                                else -> stringResource(R.string.status_protected)
                                             },
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
@@ -390,8 +401,11 @@ fun ProtectedAppsScreen(
                             val isLocked = totalSecs <= 0
 
                             val durationText = buildString {
-                                if (limitHours > 0) append("$limitHours saat ")
-                                append("$limitMinsOnly dakika")
+                                if (limitHours > 0) {
+                                    append(stringResource(R.string.protected_apps_hours, limitHours))
+                                    append(" ")
+                                }
+                                append(stringResource(R.string.protected_apps_minutes, limitMinsOnly))
                             }
 
                             Card(
@@ -410,7 +424,7 @@ fun ProtectedAppsScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "Günlük Limit",
+                                            text = stringResource(R.string.protected_apps_daily_limit),
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = PureBlack
@@ -464,7 +478,7 @@ fun ProtectedAppsScreen(
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "Aktif Günler",
+                                        text = stringResource(R.string.protected_apps_active_days),
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = PureBlack
@@ -494,7 +508,7 @@ fun ProtectedAppsScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
-                                                    text = day,
+                                                    text = stringResource(daysMap[day]!!),
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     color = if (isSelected) OnPureBlack else PureBlack
@@ -513,7 +527,9 @@ fun ProtectedAppsScreen(
                                 onDeleteConfirmed = {
                                     viewModel.removeRestrictedApp(latestApp.id)
                                     coroutineScope.launch {
-                                        snackbarHostState.showSnackbar("${latestApp.appName} kısıtlaması tamamen silindi.")
+                                        snackbarHostState.showSnackbar(
+                                            context.getString(R.string.log_desc_restriction_deleted, latestApp.appName)
+                                        )
                                     }
                                     selectedAppForManagement = null
                                 },
@@ -521,7 +537,7 @@ fun ProtectedAppsScreen(
                                     viewModel.logCriticalAction(
                                         "CRITICAL_ACTION_STARTED",
                                         latestApp.appName,
-                                        "${latestApp.appName} kısıtlamasını silme işlemi basılı tutularak başlatıldı."
+                                        context.getString(R.string.log_desc_critical_start, latestApp.appName)
                                     )
                                 }
                             )
@@ -540,13 +556,15 @@ fun ProtectedAppsScreen(
                             if (newLimit > latestApp.dailyLimitMinutes) {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar(
-                                        "Günlük limiti mevcut süreden daha yükseğe çıkaramazsınız."
+                                        context.getString(R.string.protected_apps_limit_error)
                                     )
                                 }
                             } else {
                                 viewModel.updateRestrictionSettings(latestApp.id, newLimit, daysStr)
                                 coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Değişiklikler başarıyla kaydedildi.")
+                                    snackbarHostState.showSnackbar(
+                                        context.getString(R.string.protected_apps_save_success)
+                                    )
                                 }
                                 selectedAppForManagement = null
                             }
@@ -558,7 +576,7 @@ fun ProtectedAppsScreen(
                             .height(50.dp)
                     ) {
                         Text(
-                            text = "DEĞİŞİKLİKLERİ KAYDET",
+                            text = stringResource(R.string.protected_apps_save_btn),
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp
                         )
@@ -610,7 +628,7 @@ private fun HoldToDeleteButton(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "KORUMA AYARI",
+                    text = stringResource(R.string.protected_apps_settings),
                     fontSize = 10.sp,
                     fontFamily = FontFamily.SansSerif,
                     color = MutedGray,
@@ -620,7 +638,7 @@ private fun HoldToDeleteButton(
             }
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Bu uygulamanın kısıtlamasını kaldırmak için butona 5 saniye basılı tutun.",
+                text = stringResource(R.string.protected_apps_remove_instruction),
                 fontSize = 11.sp,
                 color = MutedGray,
                 textAlign = TextAlign.Center
@@ -684,9 +702,9 @@ private fun HoldToDeleteButton(
 
                 Text(
                     text = when {
-                        completed -> "✓ KALDIRILDI"
-                        isHolding -> "BIRAKMAYIN · ${(progress * 5).toInt() + 1}s"
-                        else -> "KISITLAMAYI KALDIR (5sn BASILI TUT)"
+                        completed -> stringResource(R.string.protected_apps_removed)
+                        isHolding -> stringResource(R.string.protected_apps_dont_release, (progress * 5).toInt() + 1)
+                        else -> stringResource(R.string.protected_apps_remove_btn)
                     },
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,

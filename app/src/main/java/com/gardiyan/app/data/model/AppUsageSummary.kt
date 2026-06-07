@@ -1,10 +1,12 @@
 package com.gardiyan.app.data.model
 
-enum class UsagePeriod(val label: String) {
-    DAILY("Günlük"),
-    WEEKLY("Haftalık"),
-    MONTHLY("Aylık"),
-    AVERAGE("Ortalama")
+import com.gardiyan.app.R
+
+enum class UsagePeriod(val labelResId: Int) {
+    DAILY(R.string.period_daily),
+    WEEKLY(R.string.period_weekly),
+    MONTHLY(R.string.period_monthly),
+    AVERAGE(R.string.period_average)
 }
 
 data class AppUsageSummary(

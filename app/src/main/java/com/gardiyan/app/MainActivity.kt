@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -44,7 +45,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Gardiyan her zaman kilit ekranından çıkış ve kısıtlama yönetimi yolu olmalıdır.
+        // Limitra her zaman kilit ekranından çıkış ve kısıtlama yönetimi yolu olmalıdır.
         BlockOverlayService.hideLockOverlay()
     }
 }
@@ -136,8 +137,8 @@ fun MainNavigationContent(
                     contentColor = PureWhite
                 ) {
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Dashboard") },
-                        label = { Text("Ana Ekran", fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) },
+                        icon = { Icon(Icons.Default.Home, contentDescription = stringResource(R.string.nav_home)) },
+                        label = { Text(stringResource(R.string.nav_home), fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) },
                         selected = currentRoute == ROUTE_DASHBOARD,
                         onClick = {
                             if (currentRoute != ROUTE_DASHBOARD) {
@@ -158,8 +159,8 @@ fun MainNavigationContent(
                     )
 
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Lock, contentDescription = "Protected Apps") },
-                        label = { Text("Korunanlar", fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) },
+                        icon = { Icon(Icons.Default.Lock, contentDescription = stringResource(R.string.nav_protected)) },
+                        label = { Text(stringResource(R.string.nav_protected), fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) },
                         selected = currentRoute == ROUTE_PROTECTED,
                         onClick = {
                             if (currentRoute != ROUTE_PROTECTED) {
@@ -180,8 +181,8 @@ fun MainNavigationContent(
                     )
 
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Person, contentDescription = "Settings/Profile") },
-                        label = { Text("Profil & Ayarlar", fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) },
+                        icon = { Icon(Icons.Default.Person, contentDescription = stringResource(R.string.nav_profile)) },
+                        label = { Text(stringResource(R.string.nav_profile), fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) },
                         selected = currentRoute == ROUTE_SETTINGS,
                         onClick = {
                             if (currentRoute != ROUTE_SETTINGS) {

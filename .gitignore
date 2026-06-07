@@ -36,3 +36,5 @@ debug.keystore*
 app/release/
 app/build/
 build/
+
+testsprite_tests\tmp\config.json
