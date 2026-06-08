@@ -25,6 +25,13 @@ class ServiceKeepAliveWorker(
             val db = GuardianDatabase.getDatabase(applicationContext)
             val repository = GuardianRepository(db.guardianDao())
 
+            val hasActiveRestrictions = withContext(Dispatchers.IO) {
+                repository.getActiveRestrictedAppsSync().isNotEmpty()
+            }
+            if (!hasActiveRestrictions) {
+                return Result.success()
+            }
+
             // Pil optimizasyon muafiyeti kontrolü
             val pm = applicationContext.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
             val isIgnoringBattery = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
@@ -44,15 +51,8 @@ class ServiceKeepAliveWorker(
                 sendBatteryWarningNotification(applicationContext)
             }
 
-            // restricted_apps tablosundaki aktif kayıt varlığını kontrol et
-            val hasActiveRestrictions = withContext(Dispatchers.IO) {
-                repository.getActiveRestrictedAppsSync().isNotEmpty()
-            }
-
-            if (hasActiveRestrictions) {
-                if (!BlockOverlayService.isServiceRunning.get()) {
-                    BlockOverlayService.start(applicationContext)
-                }
+            if (!BlockOverlayService.isServiceRunning.get()) {
+                BlockOverlayService.start(applicationContext)
             }
             Result.success()
         } catch (e: Exception) {
@@ -63,7 +63,18 @@ class ServiceKeepAliveWorker(
 
     private fun sendBatteryWarningNotification(context: Context) {
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? android.app.NotificationManager ?: return
-        
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(
+                BlockOverlayService.CHANNEL_ID,
+                context.getString(R.string.notification_channel_service),
+                android.app.NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = context.getString(R.string.notification_channel_service_desc)
+            }
+            nm.createNotificationChannel(channel)
+        }
+
         val notificationIntent = android.content.Intent(context, com.gardiyan.app.MainActivity::class.java).apply {
             flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -72,7 +83,7 @@ class ServiceKeepAliveWorker(
             android.app.PendingIntent.FLAG_IMMUTABLE
         )
 
-        val builder = androidx.core.app.NotificationCompat.Builder(context, "gardiyan_service_channel")
+        val builder = androidx.core.app.NotificationCompat.Builder(context, BlockOverlayService.CHANNEL_ID)
             .setContentTitle(context.getString(R.string.keep_alive_notification_title))
             .setContentText(context.getString(R.string.keep_alive_notification_desc))
             .setSmallIcon(android.R.drawable.stat_sys_warning)

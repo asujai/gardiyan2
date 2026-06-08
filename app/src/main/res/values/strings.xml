@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Limitra</string>
+    <string name="overlay_brand_icon" translatable="false">&#x1F6E1;&#xFE0F;</string>
+    <string name="overlay_initial_countdown" translatable="false">00:10</string>
     <string name="accessibility_service_description">Limitra uses this permission only to detect when a restricted app is opened, in order to enforce your digital boundaries and app limits. All data is processed locally on your device; no data is collected or exported. Background tracking is solely for executing your chosen block rules.</string>
     <string name="notification_channel_service">Limitra Protection Service</string>
     <string name="notification_channel_service_desc">Runs to keep protection active and locally enforce the limits you set. Your data remains entirely on your device.</string>
@@ -101,6 +103,8 @@
     <string name="profile_browser_error">Web browser not found.</string>
     <string name="profile_privacy">Privacy Policy</string>
     <string name="profile_privacy_desc">Review data usage rules and privacy policy.</string>
+    <string name="profile_terms">Terms of Use</string>
+    <string name="profile_terms_desc">Review terms of use and user agreement.</string>
     <string name="profile_clear_data">Clear My Data</string>
     <string name="profile_clear_data_desc">Reset restriction history, time limits, and logs.</string>
     <string name="profile_clear_confirm_title">Clear data?</string>

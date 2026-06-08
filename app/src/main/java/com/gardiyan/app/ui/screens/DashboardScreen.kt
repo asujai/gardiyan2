@@ -53,6 +53,7 @@ import com.gardiyan.app.ui.theme.DashboardMuted as MutedGray
 import com.gardiyan.app.ui.theme.DashboardSoftDanger as SoftDangerRed
 import com.gardiyan.app.ui.theme.DashboardSuccess as SuccessGreen
 import com.gardiyan.app.ui.theme.CopperAccent
+import com.gardiyan.app.ui.theme.OnPureBlack
 import com.gardiyan.app.ui.theme.SoftCopper
 import com.gardiyan.app.ui.theme.WarmGray
 import com.gardiyan.app.ui.theme.WineAccent
@@ -284,7 +285,7 @@ private fun TodayOverviewCard(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PureBlack,
-                    contentColor = Color.White
+                    contentColor = OnPureBlack
                 ),
                 shape = RoundedCornerShape(14.dp)
             ) {

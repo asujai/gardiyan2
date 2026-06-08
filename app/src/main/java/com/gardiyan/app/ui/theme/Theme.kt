@@ -18,7 +18,7 @@ enum class AppThemePalette {
 }
 
 // Global olarak tema durumunu tutan MutableState'ler
-val currentThemeMode = mutableStateOf(AppThemeMode.SYSTEM)
+val currentThemeMode = mutableStateOf(AppThemeMode.DARK)
 val currentThemePalette = mutableStateOf(AppThemePalette.PREMIUM_DARK)
 
 @Composable
@@ -31,11 +31,19 @@ fun MyApplicationTheme(
     // Tema modunu SharedPreferences'tan okuyup eşitleyelim
     LaunchedEffect(Unit) {
         val prefs = context.getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
-        val savedMode = prefs.getString("theme_mode", AppThemeMode.SYSTEM.name) ?: AppThemeMode.SYSTEM.name
-        currentThemeMode.value = runCatching { AppThemeMode.valueOf(savedMode) }.getOrDefault(AppThemeMode.SYSTEM)
+        val savedMode = prefs.getString("theme_mode", AppThemeMode.DARK.name) ?: AppThemeMode.DARK.name
+        val restoredMode = runCatching { AppThemeMode.valueOf(savedMode) }.getOrDefault(AppThemeMode.DARK)
         
         val savedPalette = prefs.getString("theme_palette", AppThemePalette.PREMIUM_DARK.name) ?: AppThemePalette.PREMIUM_DARK.name
-        currentThemePalette.value = runCatching { AppThemePalette.valueOf(savedPalette) }.getOrDefault(AppThemePalette.PREMIUM_DARK)
+        val restoredPalette = runCatching { AppThemePalette.valueOf(savedPalette) }.getOrDefault(AppThemePalette.PREMIUM_DARK)
+
+        currentThemeMode.value = restoredMode
+        currentThemePalette.value = if (restoredMode != AppThemeMode.DARK && restoredPalette == AppThemePalette.PREMIUM_DARK) {
+            prefs.edit().putString("theme_palette", AppThemePalette.BLUE.name).apply()
+            AppThemePalette.BLUE
+        } else {
+            restoredPalette
+        }
     }
 
     val isDark = when (currentThemeMode.value) {
@@ -79,11 +87,21 @@ fun MyApplicationTheme(
 fun updateThemeMode(context: Context, mode: AppThemeMode) {
     currentThemeMode.value = mode
     val prefs = context.getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
-    prefs.edit().putString("theme_mode", mode.name).apply()
+    val editor = prefs.edit().putString("theme_mode", mode.name)
+    if (mode != AppThemeMode.DARK && currentThemePalette.value == AppThemePalette.PREMIUM_DARK) {
+        currentThemePalette.value = AppThemePalette.BLUE
+        editor.putString("theme_palette", AppThemePalette.BLUE.name)
+    }
+    editor.apply()
 }
 
 fun updateThemePalette(context: Context, palette: AppThemePalette) {
     currentThemePalette.value = palette
     val prefs = context.getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
-    prefs.edit().putString("theme_palette", palette.name).apply()
+    val editor = prefs.edit().putString("theme_palette", palette.name)
+    if (palette == AppThemePalette.PREMIUM_DARK && currentThemeMode.value != AppThemeMode.DARK) {
+        currentThemeMode.value = AppThemeMode.DARK
+        editor.putString("theme_mode", AppThemeMode.DARK.name)
+    }
+    editor.apply()
 }

@@ -101,6 +101,8 @@
     <string name="profile_browser_error">İnternet tarayıcısı bulunamadı.</string>
     <string name="profile_privacy">Gizlilik Politikası</string>
     <string name="profile_privacy_desc">Veri kullanımı kuralları ve gizlilik beyanını inceleyin.</string>
+    <string name="profile_terms">Kullanım Şartları</string>
+    <string name="profile_terms_desc">Kullanım şartları ve kullanıcı sözleşmesini inceleyin.</string>
     <string name="profile_clear_data">Verilerimi Temizle</string>
     <string name="profile_clear_data_desc">Kısıtlama geçmişi, süre limitleri ve logları sıfırlayın.</string>
     <string name="profile_clear_confirm_title">Veriler temizlensin mi?</string>

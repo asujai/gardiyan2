@@ -25,7 +25,7 @@
 -keep class * implements androidx.room.RoomDatabase$Callback
 -keep class * extends androidx.room.migration.Migration
 -keepclassmembers class * extends androidx.room.RoomDatabase {
-    <init>(...);
+    void <init>(...);
 }
 -dontwarn androidx.room.limits.Limit
 -dontwarn androidx.room.RxRoom
@@ -39,9 +39,16 @@
 }
 -dontwarn kotlinx.coroutines.**
 
+# Strip noisy debug/info logs from minified release builds while keeping warnings/errors.
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+}
+
 # Jetpack Compose Proguard Rules
 -keepclassmembers class * extends androidx.compose.ui.platform.AbstractComposeView {
-    *** <init>(...);
+    void <init>(...);
 }
 -keep class androidx.compose.ui.platform.ComposeView { *; }
 -keep class * implements androidx.compose.runtime.snapshots.SnapshotStateObserver { *; }

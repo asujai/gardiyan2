@@ -15,6 +15,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
 
     companion object {
         const val ALL_DAYS = "Pzt,Sal,Çar,Per,Cum,Cmt,Paz"
+        const val MAX_DAILY_LIMIT_MINUTES = 23 * 60 + 59
 
         private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
@@ -105,6 +106,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         activeDays: String = ALL_DAYS
     ): Long {
         val today = todayKey()
+        val safeDailyLimitMinutes = dailyLimitMinutes.coerceIn(1, MAX_DAILY_LIMIT_MINUTES)
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
         return if (existing != null) {
             if (existing.isActive) {
@@ -113,9 +115,9 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
             guardianDao.updateRestrictedApp(
                 existing.copy(
                     appName = appName,
-                    dailyLimitMinutes = dailyLimitMinutes,
-                    remainingMinutesToday = dailyLimitMinutes,
-                    remainingSecondsToday = dailyLimitMinutes * 60,
+                    dailyLimitMinutes = safeDailyLimitMinutes,
+                    remainingMinutesToday = safeDailyLimitMinutes,
+                    remainingSecondsToday = safeDailyLimitMinutes * 60,
                     isActive = true,
                     isFailed = false,
                     activeDays = activeDays,
@@ -123,7 +125,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                     nextDayLimitMinutes = 0,
                     nextDayActiveDays = "",
                     lastLimitUpdateDate = today,
-                    todayMinLimitMinutes = dailyLimitMinutes
+                    todayMinLimitMinutes = safeDailyLimitMinutes
                 )
             )
             existing.id
@@ -132,15 +134,15 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                 RestrictedAppEntity(
                     packageName = packageName,
                     appName = appName,
-                    dailyLimitMinutes = dailyLimitMinutes,
-                    remainingMinutesToday = dailyLimitMinutes,
-                    remainingSecondsToday = dailyLimitMinutes * 60,
+                    dailyLimitMinutes = safeDailyLimitMinutes,
+                    remainingMinutesToday = safeDailyLimitMinutes,
+                    remainingSecondsToday = safeDailyLimitMinutes * 60,
                     isActive = true,
                     isFailed = false,
                     activeDays = activeDays,
                     lastResetDate = today,
                     lastLimitUpdateDate = today,
-                    todayMinLimitMinutes = dailyLimitMinutes
+                    todayMinLimitMinutes = safeDailyLimitMinutes
                 )
             )
         }
@@ -154,7 +156,8 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
     ): Long {
         val today = todayKey()
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
-        val dailyLimitMinutes = (testSeconds + 59) / 60
+        val safeTestSeconds = testSeconds.coerceIn(1, MAX_DAILY_LIMIT_MINUTES * 60)
+        val dailyLimitMinutes = (safeTestSeconds + 59) / 60
         return if (existing != null) {
             if (existing.isActive) {
                 return existing.id
@@ -163,8 +166,8 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                 existing.copy(
                     appName = appName,
                     dailyLimitMinutes = dailyLimitMinutes,
-                    remainingMinutesToday = testSeconds / 60,
-                    remainingSecondsToday = testSeconds,
+                    remainingMinutesToday = safeTestSeconds / 60,
+                    remainingSecondsToday = safeTestSeconds,
                     isActive = true,
                     isFailed = false,
                     activeDays = activeDays,
@@ -180,8 +183,8 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                     packageName = packageName,
                     appName = appName,
                     dailyLimitMinutes = dailyLimitMinutes,
-                    remainingMinutesToday = testSeconds / 60,
-                    remainingSecondsToday = testSeconds,
+                    remainingMinutesToday = safeTestSeconds / 60,
+                    remainingSecondsToday = safeTestSeconds,
                     isActive = true,
                     isFailed = false,
                     activeDays = activeDays,

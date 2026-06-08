@@ -961,7 +961,7 @@ fun ProfileScreen(
                     colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
                     shape = RoundedCornerShape(20.dp),
                     onClick = {
-                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://gardiyan-app.github.io/privacy-policy"))
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://doc-hosting.flycricket.io/limitra-privacy-policy/1dd2dedf-ea24-4a49-91b5-fa79b0ba9337/privacy"))
                         runCatching {
                             context.startActivity(intent)
                         }.onFailure {
@@ -1011,6 +1011,66 @@ fun ProfileScreen(
                                 .clickable { showDataUsageDialog = true }
                                 .border(0.8.dp, SuccessGreen, RoundedCornerShape(4.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            }
+
+            // Kullanım Şartları
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                    shape = RoundedCornerShape(20.dp),
+                    onClick = {
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://doc-hosting.flycricket.io/limitra-terms-of-use/8221a2c7-16d3-454e-9a0d-a61495fab4e6/terms"))
+                        runCatching {
+                            context.startActivity(intent)
+                        }.onFailure {
+                            android.widget.Toast.makeText(context, context.getString(R.string.profile_browser_error), android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(PureBlack.copy(alpha = 0.08f))
+                        ) {
+                            Text(text = "📜", fontSize = 16.sp)
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.profile_terms),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PureBlack
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = stringResource(R.string.profile_terms_desc),
+                                fontSize = 10.sp,
+                                color = MutedGray,
+                                lineHeight = 14.sp
+                            )
+                        }
+
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MutedGray,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }

@@ -41,6 +41,7 @@ import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 
 enum class ProtectedFilter(val titleRes: Int) {
@@ -357,7 +358,7 @@ fun ProtectedAppsScreen(
                                             color = PureBlack
                                         )
                                         Text(
-                                            text = String.format("%02d:%02d", mm, ss),
+                                            text = String.format(Locale.ROOT, "%02d:%02d", mm, ss),
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
                                             fontFamily = FontFamily.Monospace,
@@ -569,7 +570,7 @@ fun ProtectedAppsScreen(
                                 selectedAppForManagement = null
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = Color.White),
+                        colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()

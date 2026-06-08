@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.gardiyan.app.R
+import com.gardiyan.app.data.repository.GuardianRepository
 import com.gardiyan.app.ui.components.AppIconView
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
@@ -269,7 +270,12 @@ fun SetupTargetScreen(
                             OutlinedTextField(
                                 value = customDurationText,
                                 onValueChange = { newValue ->
-                                    if (newValue.all { it.isDigit() }) {
+                                    val validCustomDuration = newValue.toIntOrNull()
+                                    if (newValue.isEmpty() ||
+                                        (newValue.all { it.isDigit() } &&
+                                            validCustomDuration != null &&
+                                            validCustomDuration in 1..GuardianRepository.MAX_DAILY_LIMIT_MINUTES)
+                                    ) {
                                         customDurationText = newValue
                                     }
                                 },
@@ -358,7 +364,9 @@ fun SetupTargetScreen(
             // Ekleme ve bitirme butonları
             item {
                 val finalDuration = if (customDurationText.isNotEmpty()) {
-                    customDurationText.toIntOrNull() ?: selectedDurationPreset
+                    customDurationText.toIntOrNull()
+                        ?.coerceIn(1, GuardianRepository.MAX_DAILY_LIMIT_MINUTES)
+                        ?: selectedDurationPreset
                 } else {
                     selectedDurationPreset
                 }

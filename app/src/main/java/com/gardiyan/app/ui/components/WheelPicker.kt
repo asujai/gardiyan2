@@ -112,19 +112,19 @@ fun DurationWheelPicker(
     modifier: Modifier = Modifier
 ) {
     val hoursList = remember { (0..23).map { "$it saat" } }
-    val minutesList = remember { (0..55 step 5).map { "$it dakika" } }
+    val minutesList = remember { (0..59).map { "$it dakika" } }
 
     var selectedHours by remember { mutableStateOf(initialHours.coerceIn(0, 23)) }
-    var selectedMinutes by remember { mutableStateOf((initialMinutes / 5 * 5).coerceIn(0, 55)) }
+    var selectedMinutes by remember { mutableStateOf(initialMinutes.coerceIn(0, 59)) }
 
     // Sync state when initial parameters change
     LaunchedEffect(initialHours, initialMinutes) {
         selectedHours = initialHours.coerceIn(0, 23)
-        selectedMinutes = (initialMinutes / 5 * 5).coerceIn(0, 55)
+        selectedMinutes = initialMinutes.coerceIn(0, 59)
     }
 
     val initialHoursIndex = selectedHours
-    val initialMinutesIndex = selectedMinutes / 5
+    val initialMinutesIndex = selectedMinutes
 
     Row(
         modifier = modifier
@@ -151,9 +151,8 @@ fun DurationWheelPicker(
             items = minutesList,
             initialIndex = initialMinutesIndex,
             onItemSelected = { index ->
-                val mins = index * 5
-                selectedMinutes = mins
-                onDurationChanged(selectedHours, mins)
+                selectedMinutes = index
+                onDurationChanged(selectedHours, index)
             },
             modifier = Modifier
                 .weight(1f)

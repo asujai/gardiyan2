@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 
 import androidx.compose.ui.res.stringResource
 import com.gardiyan.app.R
+import java.util.Locale
 
 @Composable
 fun AppIconView(packageName: String, modifier: Modifier = Modifier) {
@@ -224,7 +225,7 @@ fun ModernRestrictionCard(
                     trackColor = BorderGray
                 )
                 Text(
-                    text = String.format("%02d:%02d", mm, ss),
+                    text = String.format(Locale.ROOT, "%02d:%02d", mm, ss),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace,

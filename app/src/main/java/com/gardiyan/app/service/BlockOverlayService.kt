@@ -34,6 +34,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.InputStream
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -521,7 +522,7 @@ class BlockOverlayService : Service() {
     private fun formatSeconds(totalSec: Int): String {
         val mm = totalSec / 60
         val ss = totalSec % 60
-        return String.format("%02d:%02d", mm, ss)
+        return String.format(Locale.ROOT, "%02d:%02d", mm, ss)
     }
 
     @Suppress("DEPRECATION")

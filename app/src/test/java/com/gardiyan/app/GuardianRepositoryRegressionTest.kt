@@ -136,4 +136,28 @@ class GuardianRepositoryRegressionTest {
         assertEquals("", result.lastLimitUpdateDate)
         assertEquals(0, result.todayMinLimitMinutes)
     }
+
+    @Test
+    fun `invalid daily limits are clamped to a safe range`() = runBlocking {
+        val minimumId = repository.upsertRestrictedApp("minimum.package", "Minimum", 0)
+        val maximumId = repository.upsertRestrictedApp("maximum.package", "Maximum", Int.MAX_VALUE)
+
+        val minimum = repository.getRestrictedAppByIdSync(minimumId)!!
+        val maximum = repository.getRestrictedAppByIdSync(maximumId)!!
+
+        assertEquals(1, minimum.dailyLimitMinutes)
+        assertEquals(60, minimum.remainingSecondsToday)
+        assertEquals(GuardianRepository.MAX_DAILY_LIMIT_MINUTES, maximum.dailyLimitMinutes)
+        assertEquals(GuardianRepository.MAX_DAILY_LIMIT_MINUTES * 60, maximum.remainingSecondsToday)
+    }
+
+    @Test
+    fun `invalid quick test duration cannot create an exhausted restriction`() = runBlocking {
+        val id = repository.insertQuickTestApp("quick.package", "Quick", 0)
+
+        val result = repository.getRestrictedAppByIdSync(id)!!
+
+        assertEquals(1, result.remainingSecondsToday)
+        assertFalse(result.isFailed)
+    }
 }
