@@ -48,7 +48,7 @@ import com.gardiyan.app.ui.theme.SoftCopper
 import com.gardiyan.app.ui.theme.WarmGray
 import com.gardiyan.app.ui.theme.WineAccent
 
-private const val MAX_VISIBLE_APPS = 6
+private const val MAX_VISIBLE_APPS = 3
 
 @Composable
 fun UsageRankingSection(
@@ -69,17 +69,11 @@ fun UsageRankingSection(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.usage_ranking_title),
-            fontSize = 21.sp,
-            fontWeight = FontWeight.Black,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
             color = PureBlack
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = stringResource(R.string.usage_ranking_desc),
-            fontSize = 13.sp,
-            color = MutedGray
-        )
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PeriodSelector(
             selectedPeriod = selectedPeriod,
@@ -111,7 +105,7 @@ fun UsageRankingSection(
                     .clip(RoundedCornerShape(12.dp))
                     .clickable(onClick = onSeeAll)
                     .padding(horizontal = 12.dp, vertical = 8.dp),
-                color = WineAccent,
+                color = CopperAccent,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -127,25 +121,25 @@ private fun PeriodSelector(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(WarmGray)
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+            .border(1.dp, BorderGray, RoundedCornerShape(99.dp))
+            .background(Color.Transparent)
+            .padding(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         UsagePeriod.entries.forEach { period ->
             val selected = period == selectedPeriod
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(11.dp))
+                    .clip(RoundedCornerShape(99.dp))
                     .background(if (selected) PureBlack else Color.Transparent)
                     .clickable { onPeriodSelected(period) }
-                    .padding(vertical = 9.dp),
+                    .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = stringResource(period.labelResId),
-                    color = if (selected) OnPureBlack else MutedGray,
+                    color = if (selected) OnPureBlack else PureBlack.copy(alpha = 0.7f),
                     fontSize = 12.sp,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
                 )
@@ -164,12 +158,12 @@ private fun UsageRankingRow(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderGray, RoundedCornerShape(17.dp)),
+            .border(1.dp, BorderGray, RoundedCornerShape(24.dp)),
         colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(17.dp)
+        shape = RoundedCornerShape(24.dp)
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AppIcon(packageName = item.packageName, appName = item.appName)
@@ -202,14 +196,14 @@ private fun UsageRankingRow(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(4.dp)
+                        .height(6.dp)
                         .clip(CircleShape)
-                        .background(WarmGray)
+                        .background(SoftCopper)
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(progress)
-                            .height(4.dp)
+                            .height(6.dp)
                             .clip(CircleShape)
                             .background(if (isLimitExceeded) DangerRed else CopperAccent)
                     )

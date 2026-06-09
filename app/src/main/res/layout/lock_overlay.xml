@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#090D16"> <!-- Deep premium dark slate background -->
 
     <LinearLayout
+        android:id="@+id/cardLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="24dp"
-        android:background="@drawable/lock_card_bg"
+        android:layout_margin="28dp"
+        android:elevation="8dp"
         android:orientation="vertical"
-        android:padding="28dp"
+        android:padding="32dp"
         android:gravity="center">
 
         <!-- Brand Header -->
@@ -25,24 +27,25 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/overlay_brand_icon"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/appTitleText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:text="@string/app_name"
                 android:textColor="#2EC4B6"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.15" />
+                android:letterSpacing="0.2" />
         </LinearLayout>
 
         <!-- Circular App Icon Container -->
         <FrameLayout
             android:id="@+id/emojiContainer"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:layout_marginTop="24dp"
             android:background="@drawable/emoji_container_bg"
             android:padding="12dp">
@@ -59,7 +62,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:textSize="36sp"
+                android:textSize="28sp"
                 android:visibility="gone" />
         </FrameLayout>
 
@@ -71,88 +74,94 @@
             android:layout_marginTop="16dp"
             android:gravity="center"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.02" />
 
         <!-- Status Message -->
         <TextView
+            android:id="@+id/limitOverText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:gravity="center"
             android:text="@string/overlay_limit_over"
             android:textColor="#EF4444"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.01" />
 
-        <!-- Explanations -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
-            android:paddingHorizontal="8dp"
-            android:text="@string/overlay_protected_by_gardiyan"
-            android:textColor="#94A3B8"
-            android:textSize="12sp" />
+        <!-- Divider Line before Quote -->
+        <View
+            android:layout_width="32dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:background="#334155" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:gravity="center"
-            android:paddingHorizontal="8dp"
-            android:text="@string/overlay_explanation"
-            android:textColor="#64748B"
-            android:textSize="10sp" />
-
-        <!-- Countdown Card -->
+        <!-- Quote Section (Main Focal Point) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/countdown_card_bg"
+            android:layout_marginTop="20dp"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="8dp">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/quoteText"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/protected_apps_remaining_time"
+                android:gravity="center"
+                android:text=""
+                android:textColor="#E2E8F0"
+                android:textSize="15sp"
+                android:fontFamily="serif"
+                android:lineSpacingMultiplier="1.3" />
+
+            <TextView
+                android:id="@+id/quoteAuthorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text=""
                 android:textColor="#94A3B8"
-                android:textSize="9sp"
-                android:textStyle="bold"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-medium"
                 android:letterSpacing="0.08" />
-
-            <TextView
-                android:id="@+id/countdownText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="monospace"
-                android:text="@string/overlay_initial_countdown"
-                android:textColor="#2EC4B6"
-                android:textSize="38sp"
-                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- Divider Line -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="20dp"
-            android:background="#334155" />
+            android:layout_marginTop="24dp"
+            android:background="#2E3A4E" />
 
-        <!-- Guide Footer -->
+        <!-- Explanations -->
         <TextView
+            android:id="@+id/explanationText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:gravity="center"
-            android:text="@string/overlay_return_to_home"
+            android:paddingHorizontal="8dp"
+            android:text="@string/overlay_protected_by_gardiyan"
             android:textColor="#64748B"
-            android:textSize="11sp" />
+            android:textSize="10sp"
+            android:lineSpacingMultiplier="1.1" />
+
+        <!-- Guide Footer -->
+        <TextView
+            android:id="@+id/returnToHomeText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/overlay_return_to_home"
+            android:textColor="#475569"
+            android:textSize="10sp"
+            android:letterSpacing="0.02" />
 
     </LinearLayout>
 </FrameLayout>

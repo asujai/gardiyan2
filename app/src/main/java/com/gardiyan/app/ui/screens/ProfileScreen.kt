@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,6 +35,11 @@ import com.gardiyan.app.data.local.entity.UserSessionEntity
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import java.util.Calendar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import com.gardiyan.app.data.model.UsagePeriod
+import com.gardiyan.app.ui.components.formatUsageDuration
+import androidx.compose.runtime.produceState
 
 @Composable
 fun ProfileScreen(
@@ -48,22 +54,39 @@ fun ProfileScreen(
     val logs by viewModel.allLogs.collectAsState()
     val restrictedApps by viewModel.restrictedApps.collectAsState()
 
-    var selectedFilter by remember { mutableStateOf(LogFilter.ALL) }
+    var filterDate by remember { mutableStateOf(TimelineDateFilter.ALL_TIME) }
+    var filterType by remember { mutableStateOf(TimelineTypeFilter.ALL) }
     var isSettingsVisible by remember { mutableStateOf(false) }
     var isTimelineVisible by remember { mutableStateOf(false) }
 
     var showDeleteDataDialog by remember { mutableStateOf(false) }
     var showDataUsageDialog by remember { mutableStateOf(false) }
     
-    var isLanguageExpanded by remember { mutableStateOf(false) }
-    var isAboutExpanded by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
+    var showSupportInfoDialog by remember { mutableStateOf(false) }
+    var showPermissionInfoDialog by remember { mutableStateOf<String?>(null) }
+    var showFilterDialog by remember { mutableStateOf(false) }
+    var showQuoteSettingsDialog by remember { mutableStateOf(false) }
+
+    var showLevelDetailDialog by remember { mutableStateOf(false) }
+    var showStreakDetailDialog by remember { mutableStateOf(false) }
+    var showSavedTimeDetailDialog by remember { mutableStateOf(false) }
+    var showActiveAppsDetailDialog by remember { mutableStateOf(false) }
+    var showWeeklySummaryDetailDialog by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val allOk = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted && isNotificationsEnabled
+    var isHealthExpanded by remember { mutableStateOf(false) }
 
     // 1. Temel Hesaplamalar
     val totalSuccessDays = remember(logs) {
         logs.count { it.eventType == "DAILY_SUCCESS" || it.eventType == "SUCCESS" || it.eventType == "SUCCESS_DAY" }
     }
 
-    val filteredLogs = remember(logs, selectedFilter) {
+    val filteredLogs = remember(logs, filterDate, filterType) {
+        val now = System.currentTimeMillis()
         val startOfToday = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
@@ -71,17 +94,69 @@ fun ProfileScreen(
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
 
-        logs.filter { log ->
-            when (selectedFilter) {
-                LogFilter.ALL -> true
-                LogFilter.TODAY -> log.timestamp >= startOfToday
-                LogFilter.SUCCESSES -> log.eventType == "DAILY_SUCCESS" || log.eventType == "SUCCESS" || log.eventType == "SUCCESS_DAY"
-                LogFilter.VIOLATIONS -> log.eventType == "DAILY_FAILURE" || log.eventType == "FAILURE" || log.eventType == "VIOLATION"
-                LogFilter.CHANGES -> log.eventType == "RESTRICTION_ADDED" || log.eventType == "RESTRICTION_REMOVED" || log.eventType == "RESTRICTION_DELETED" || log.eventType == "RESTRICTION_RESET" || log.eventType == "LIMIT_CHANGED" || log.eventType == "DAYS_CHANGED" || log.eventType == "ACTIVE_DAYS_CHANGED" || log.eventType == "PERMISSION_CHANGED"
-                LogFilter.LOCKS -> log.eventType == "OVERLAY_TRIGGERED" || log.eventType == "OVERLAY_SHOWN" || log.eventType == "SESSION_STARTED" || log.eventType == "SESSION_CLOSED" || log.eventType == "SERVICE_STARTED" || log.eventType == "SERVICE_RESTARTED" || log.eventType == "SERVICE_STOPPED"
-                LogFilter.CANCELS -> log.eventType == "RESET_HOLD_5S" || log.eventType == "CRITICAL_ACTION_STARTED" || log.eventType == "CRITICAL_ACTION_COMPLETED"
+        val limitDate = when (filterDate) {
+            TimelineDateFilter.TODAY -> startOfToday
+            TimelineDateFilter.LAST_7_DAYS -> now - 7 * 24 * 60 * 60 * 1000L
+            TimelineDateFilter.LAST_30_DAYS -> now - 30 * 24 * 60 * 60 * 1000L
+            TimelineDateFilter.ALL_TIME -> 0L
+        }
+
+        val step1 = logs.filter { log ->
+            // Exclude technical logs explicitly
+            val isMeaningful = log.eventType in setOf(
+                "RESTRICTION_ADDED", "RESTRICTION_REMOVED", "RESTRICTION_DELETED", "RESTRICTIONS_CLEARED",
+                "LIMIT_CHANGED", "DAYS_CHANGED", "ACTIVE_DAYS_CHANGED", "RESTRICTION_RESET", "QUICK_TEST_STARTED",
+                "FAILURE", "DAILY_FAILURE", "VIOLATION", "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY",
+                "PERMISSION_CHANGED", "RESET_HOLD_5S", "DATA_CLEARED",
+                "SERVICE_STARTED", "SERVICE_STOPPED", "OVERLAY_SHOWN", "OVERLAY_TRIGGERED"
+            )
+            if (!isMeaningful) return@filter false
+
+            // Date filter
+            if (log.timestamp < limitDate) return@filter false
+
+            // Type filter
+            when (filterType) {
+                TimelineTypeFilter.ALL -> true
+                TimelineTypeFilter.RESTRICTIONS -> log.eventType in setOf(
+                    "RESTRICTION_ADDED",
+                    "RESTRICTION_REMOVED",
+                    "RESTRICTION_DELETED",
+                    "LIMIT_CHANGED",
+                    "DAYS_CHANGED",
+                    "ACTIVE_DAYS_CHANGED",
+                    "RESTRICTION_RESET",
+                    "QUICK_TEST_STARTED"
+                )
+                TimelineTypeFilter.LIMITS -> log.eventType in setOf(
+                    "FAILURE",
+                    "DAILY_FAILURE",
+                    "VIOLATION",
+                    "SUCCESS",
+                    "DAILY_SUCCESS",
+                    "SUCCESS_DAY",
+                    "OVERLAY_SHOWN",
+                    "OVERLAY_TRIGGERED"
+                )
+                TimelineTypeFilter.PERMISSIONS -> log.eventType == "PERMISSION_CHANGED"
+                TimelineTypeFilter.DATA_ACTIONS -> log.eventType in setOf(
+                    "RESET_HOLD_5S",
+                    "DATA_CLEARED",
+                    "RESTRICTIONS_CLEARED"
+                )
             }
-        }.take(100)
+        }
+
+        val resultList = mutableListOf<com.gardiyan.app.data.local.entity.StatusLogEntity>()
+        var lastLog: com.gardiyan.app.data.local.entity.StatusLogEntity? = null
+        for (log in step1) {
+            if (lastLog != null && lastLog.eventType == log.eventType && lastLog.appName == log.appName) {
+                continue
+            }
+            resultList.add(log)
+            lastLog = log
+        }
+        resultList.take(100)
     }
 
     val groupedLogs = remember(filteredLogs) {
@@ -179,6 +254,34 @@ fun ProfileScreen(
     val redemptionStreakGoal = session?.redemptionStreakGoal?.coerceAtLeast(1) ?: 2
     val consecutiveSuccessDays = session?.consecutiveSuccessDays ?: 0
 
+    val levelName = when (level) {
+        1 -> "Başlangıç"
+        2 -> "Kontrol Kazanıyor"
+        3 -> "Odaklı"
+        4 -> "Dengeli Kullanıcı"
+        5 -> "Dijital Disiplin"
+        6 -> "Tam Kontrol"
+        else -> "Başlangıç"
+    }
+
+    val nextLevelNote = when (level) {
+        1 -> "Seviye 2 (Kontrol Kazanıyor) olmak için 3 gün kesintisiz başarı gerekir."
+        2 -> "Seviye 3 (Odaklı) olmak için 7 gün kesintisiz başarı gerekir."
+        3 -> "Seviye 4 (Dengeli Kullanıcı) olmak için 15 gün kesintisiz başarı gerekir."
+        4 -> "Seviye 5 (Dijital Disiplin) olmak için 30 gün kesintisiz başarı gerekir."
+        5 -> "Seviye 6 (Tam Kontrol) olmak için 60 gün kesintisiz başarı gerekir."
+        else -> "Tebrikler! En yüksek kontrol seviyesindesiniz."
+    }
+
+    val levelProgress = when (level) {
+        1 -> (consecutiveSuccessDays.toFloat() / 3f).coerceIn(0f, 1f)
+        2 -> (consecutiveSuccessDays.toFloat() / 7f).coerceIn(0f, 1f)
+        3 -> (consecutiveSuccessDays.toFloat() / 15f).coerceIn(0f, 1f)
+        4 -> (consecutiveSuccessDays.toFloat() / 30f).coerceIn(0f, 1f)
+        5 -> (consecutiveSuccessDays.toFloat() / 60f).coerceIn(0f, 1f)
+        else -> 1f
+    }
+
     val progress: Float
     val progressLabel: String
     val progressText: String
@@ -187,30 +290,171 @@ fun ProfileScreen(
     if (hasBadge && activeRedemptionDaysLeft > 0) {
         val completedDays = (redemptionStreakGoal - activeRedemptionDaysLeft).coerceAtLeast(0)
         progress = completedDays.toFloat() / redemptionStreakGoal.toFloat()
-        progressLabel = stringResource(R.string.redemption_progress_label)
-        progressText = stringResource(R.string.redemption_progress_text, completedDays, redemptionStreakGoal)
+        progressLabel = "Telafi İlerlemesi"
+        progressText = "$completedDays / $redemptionStreakGoal Gün"
         progressColor = DangerRed
     } else {
-        progressLabel = stringResource(R.string.rank_progress_label)
+        progressLabel = "Sonraki Seviyeye İlerleme"
         progressColor = SuccessGreen
-        when (level) {
-            1 -> {
-                progress = (consecutiveSuccessDays.toFloat() / 3f).coerceAtMost(1.0f)
-                progressText = stringResource(R.string.rank_progress_text_rookie, consecutiveSuccessDays)
-            }
-            2 -> {
-                progress = (consecutiveSuccessDays.toFloat() / 7f).coerceAtMost(1.0f)
-                progressText = stringResource(R.string.rank_progress_text_disciplined, consecutiveSuccessDays)
-            }
-            else -> {
-                progress = 1.0f
-                progressText = stringResource(R.string.rank_progress_max)
+        progress = levelProgress
+        progressText = "${(levelProgress * 100).toInt()}%"
+    }
+
+    val totalSavedMillis by produceState<Long>(initialValue = 0L, key1 = restrictedApps) {
+        value = withContext(Dispatchers.IO) {
+            val averageList = viewModel.getUsageRanking(UsagePeriod.AVERAGE)
+            val averageMap = averageList.associate { it.packageName to it.usageMillis }
+
+            activeApps.sumOf { app ->
+                val avgUsage = averageMap[app.packageName] ?: 0L
+                val limitMillis = app.dailyLimitMinutes * 60_000L
+                (avgUsage - limitMillis).coerceAtLeast(0L)
             }
         }
     }
 
+    val weeklySuccessDays = remember(logs) {
+        val oneWeekAgo = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L
+        logs.filter { it.timestamp >= oneWeekAgo && (it.eventType == "DAILY_SUCCESS" || it.eventType == "SUCCESS" || it.eventType == "SUCCESS_DAY") }
+            .map { 
+                val cal = Calendar.getInstance().apply { timeInMillis = it.timestamp }
+                cal.get(Calendar.DAY_OF_YEAR)
+            }.toSet().size.coerceAtMost(7)
+    }
+
     val isNoDataYet = logs.isEmpty()
-    val context = LocalContext.current
+
+    if (showLevelDetailDialog) {
+        AlertDialog(
+            onDismissRequest = { showLevelDetailDialog = false },
+            title = { Text("Dijital Seviye Detayı", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                Text(
+                    "Mevcut Seviyeniz: $levelName (Seviye $level)\n\n" +
+                    "Seviyeler ve Gereksinimler:\n" +
+                    "• Seviye 1: Başlangıç\n" +
+                    "• Seviye 2: Kontrol Kazanıyor (3 gün kesintisiz başarı)\n" +
+                    "• Seviye 3: Odaklı (7 gün kesintisiz başarı)\n" +
+                    "• Seviye 4: Dengeli Kullanıcı (15 gün kesintisiz başarı)\n" +
+                    "• Seviye 5: Dijital Disiplin (30 gün kesintisiz başarı)\n" +
+                    "• Seviye 6: Tam Kontrol (60 gün kesintisiz başarı)\n\n" +
+                    "Kısıtlamaları ihlal etmeden her başarılı gün serinizi artırır ve sonraki seviyeye geçmenizi sağlar.",
+                    color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showLevelDetailDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Kapat", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showStreakDetailDialog) {
+        AlertDialog(
+            onDismissRequest = { showStreakDetailDialog = false },
+            title = { Text("Başarı Serisi", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                Text(
+                    "Kısıtlama kurallarını bozmadan geçirdiğiniz ardışık gün sayısı: $consecutiveSuccessDays Gün.\n\n" +
+                    "Dijital dengenizi bozmadığınız sürece bu seri her gün artar. Kurallar ihlal edildiğinde veya kısıtlamalar bypass edildiğinde sıfırlanır.",
+                    color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showStreakDetailDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Kapat", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showSavedTimeDetailDialog) {
+        AlertDialog(
+            onDismissRequest = { showSavedTimeDetailDialog = false },
+            title = { Text("Kazanılan / Korunan Süre", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                val timeStr = if (totalSavedMillis > 0) formatUsageDuration(totalSavedMillis) else "Henüz veri yok"
+                Text(
+                    "Kısıtlamalar sayesinde bugüne kadar koruduğunuz tahmini süre: $timeStr.\n\n" +
+                    "Bu değer, kısıtlanan uygulamalardaki geçmiş ortalama kullanım süreniz ile günlük limitiniz arasındaki fark temel alınarak hesaplanır.",
+                    color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showSavedTimeDetailDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Kapat", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showActiveAppsDetailDialog) {
+        AlertDialog(
+            onDismissRequest = { showActiveAppsDetailDialog = false },
+            title = { Text("Aktif Kısıtlamalar", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                val appListStr = if (activeApps.isNotEmpty()) {
+                    activeApps.joinToString("\n") { "• ${it.appName} (${it.dailyLimitMinutes} dk)" }
+                } else {
+                    "Aktif kısıtlanmış uygulama bulunmuyor."
+                }
+                Text(
+                    "Şu anda aktif koruma altındaki uygulamalar:\n\n$appListStr",
+                    color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showActiveAppsDetailDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Kapat", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showWeeklySummaryDetailDialog) {
+        AlertDialog(
+            onDismissRequest = { showWeeklySummaryDetailDialog = false },
+            title = { Text("Haftalık Özet Detayı", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                Text(
+                    "Bu hafta toplam $weeklySuccessDays gün boyunca kısıtlama kurallarına tam uyum sağladınız.\n\n" +
+                    "Haftalık hedeflerinizi tamamlamak dijital disiplininizi pekiştirir ve odaklanma sürenizi artırır.",
+                    color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showWeeklySummaryDetailDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Kapat", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
 
     if (showDeleteDataDialog) {
         AlertDialog(
@@ -293,6 +537,516 @@ fun ProfileScreen(
         )
     }
 
+    if (showThemeDialog) {
+        val currentMode = currentThemeMode.value
+        val currentPalette = currentThemePalette.value
+        AlertDialog(
+            onDismissRequest = { showThemeDialog = false },
+            title = { Text("Görünüm Ayarları", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text("Görünüm Modu", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf(
+                            AppThemeMode.SYSTEM to "Sistem Varsayılanı",
+                            AppThemeMode.LIGHT to "Açık Tema",
+                            AppThemeMode.DARK to "Koyu Tema"
+                        ).forEach { (mode, label) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { updateThemeMode(context, mode) }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = currentMode == mode,
+                                    onClick = { updateThemeMode(context, mode) },
+                                    colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(label, color = PureBlack, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                    
+                    HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
+                    
+                    Text("Renk Teması", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf(
+                            AppThemePalette.BLUE to "Mavi Tema",
+                            AppThemePalette.MONOCHROME to "Siyah Beyaz",
+                            AppThemePalette.RED to "Kırmızı Tema",
+                            AppThemePalette.PREMIUM_DARK to "Premium Koyu"
+                        ).forEach { (palette, label) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { updateThemePalette(context, palette) }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = currentPalette == palette,
+                                    onClick = { updateThemePalette(context, palette) },
+                                    colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(label, color = PureBlack, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showThemeDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Tamam", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showLanguageDialog) {
+        val currentLocales = AppCompatDelegate.getApplicationLocales()
+        val currentLang = if (!currentLocales.isEmpty()) currentLocales.get(0)?.language ?: "en" else java.util.Locale.getDefault().language
+        val languages = listOf(
+            "en" to "English",
+            "tr" to "Türkçe",
+            "es" to "Español",
+            "fr" to "Français",
+            "de" to "Deutsch",
+            "pt" to "Português",
+            "ar" to "العربية",
+            "hi" to "हिन्दी",
+            "id" to "Bahasa Indonesia",
+            "ru" to "Русский"
+        )
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text("Dil Seçimi", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(languages) { (langCode, langName) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val localeList = LocaleListCompat.forLanguageTags(langCode)
+                                    AppCompatDelegate.setApplicationLocales(localeList)
+                                    (context as? android.app.Activity)?.recreate()
+                                    showLanguageDialog = false
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(langName, color = PureBlack, fontSize = 14.sp, fontWeight = if (currentLang == langCode) FontWeight.Bold else FontWeight.Normal)
+                            RadioButton(
+                                selected = currentLang == langCode,
+                                onClick = {
+                                    val localeList = LocaleListCompat.forLanguageTags(langCode)
+                                    AppCompatDelegate.setApplicationLocales(localeList)
+                                    (context as? android.app.Activity)?.recreate()
+                                    showLanguageDialog = false
+                                },
+                                colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { showLanguageDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
+                ) {
+                    Text("Kapat")
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showQuoteSettingsDialog) {
+        val prefs = remember { context.getSharedPreferences("gardiyan_settings", android.content.Context.MODE_PRIVATE) }
+        var tempQuoteText by remember { mutableStateOf(prefs.getString("custom_quote_text", "") ?: "") }
+        var tempQuoteAuthor by remember { mutableStateOf(prefs.getString("custom_quote_author", "") ?: "") }
+        var tempPreference by remember { mutableStateOf(prefs.getString("custom_quote_preference", "mix") ?: "mix") }
+        val hasCustom = prefs.getBoolean("has_custom_quote", false)
+
+        AlertDialog(
+            onDismissRequest = { showQuoteSettingsDialog = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.settings_quote_dialog_title),
+                    fontWeight = FontWeight.Bold,
+                    color = PureBlack
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_quote_dialog_desc),
+                        fontSize = 11.sp,
+                        color = MutedGray,
+                        lineHeight = 16.sp
+                    )
+
+                    OutlinedTextField(
+                        value = tempQuoteText,
+                        onValueChange = { tempQuoteText = it },
+                        label = { Text(stringResource(R.string.settings_quote_text_label)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PureBlack,
+                            unfocusedBorderColor = BorderGray,
+                            focusedLabelColor = PureBlack
+                        ),
+                        singleLine = false,
+                        maxLines = 4
+                    )
+
+                    OutlinedTextField(
+                        value = tempQuoteAuthor,
+                        onValueChange = { tempQuoteAuthor = it },
+                        label = { Text(stringResource(R.string.settings_quote_author_label)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PureBlack,
+                            unfocusedBorderColor = BorderGray,
+                            focusedLabelColor = PureBlack
+                        ),
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.settings_quote_pref_label),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PureBlack
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { tempPreference = "always" }
+                        ) {
+                            RadioButton(
+                                selected = tempPreference == "always",
+                                onClick = { tempPreference = "always" },
+                                colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_quote_pref_always),
+                                fontSize = 11.sp,
+                                color = PureBlack
+                            )
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { tempPreference = "mix" }
+                        ) {
+                            RadioButton(
+                                selected = tempPreference == "mix",
+                                onClick = { tempPreference = "mix" },
+                                colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_quote_pref_mix),
+                                fontSize = 11.sp,
+                                color = PureBlack
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (hasCustom) {
+                        Button(
+                            onClick = {
+                                prefs.edit().apply {
+                                    remove("custom_quote_text")
+                                    remove("custom_quote_author")
+                                    remove("custom_quote_preference")
+                                    putBoolean("has_custom_quote", false)
+                                    apply()
+                                }
+                                showQuoteSettingsDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = SoftDangerRed,
+                                contentColor = DangerRed
+                            )
+                        ) {
+                            Text(stringResource(R.string.btn_delete), fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    Button(
+                        onClick = {
+                            if (tempQuoteText.trim().isNotEmpty()) {
+                                prefs.edit().apply {
+                                    putString("custom_quote_text", tempQuoteText.trim())
+                                    putString("custom_quote_author", tempQuoteAuthor.trim().ifEmpty { "Anonim" })
+                                    putString("custom_quote_preference", tempPreference)
+                                    putBoolean("has_custom_quote", true)
+                                    apply()
+                                }
+                                showQuoteSettingsDialog = false
+                            } else {
+                                android.widget.Toast.makeText(
+                                    context,
+                                    context.getString(R.string.settings_quote_empty_error),
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PureBlack,
+                            contentColor = OnPureBlack
+                        )
+                    ) {
+                        Text(stringResource(R.string.btn_save), fontWeight = FontWeight.Bold)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showQuoteSettingsDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
+                ) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showAboutDialog) {
+        val appVersion = runCatching {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            pInfo.versionName ?: "1.1"
+        }.getOrDefault("1.1")
+
+        val appVersionCode = runCatching {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                pInfo.longVersionCode.toString()
+            } else {
+                @Suppress("DEPRECATION")
+                pInfo.versionCode.toString()
+            }
+        }.getOrDefault("1")
+
+        AlertDialog(
+            onDismissRequest = { showAboutDialog = false },
+            title = { Text("Hakkında", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.profile_about_desc),
+                        fontSize = 13.sp,
+                        color = PureBlack,
+                        lineHeight = 18.sp
+                    )
+
+                    HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = stringResource(R.string.profile_app_name), fontSize = 11.sp, color = MutedGray)
+                        Text(text = stringResource(R.string.app_name), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = stringResource(R.string.profile_version), fontSize = 11.sp, color = MutedGray)
+                        Text(text = appVersion, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = stringResource(R.string.profile_version_code), fontSize = 11.sp, color = MutedGray)
+                        Text(text = appVersionCode, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = stringResource(R.string.profile_android_version), fontSize = 11.sp, color = MutedGray)
+                        Text(text = android.os.Build.VERSION.RELEASE, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = stringResource(R.string.profile_developer_contact), fontSize = 11.sp, color = MutedGray)
+                        Text(text = "lumoriapdf@gmail.com", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showAboutDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Kapat", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showSupportInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showSupportInfoDialog = false },
+            title = { Text("Destek ve Geri Bildirim", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                Text(
+                    text = "Sorun bildirmek veya yeni bir özellik önermek için bizimle iletişime geçebilirsiniz.",
+                    color = MutedGray,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showSupportInfoDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Kapat", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showPermissionInfoDialog != null) {
+        val (title, desc) = when (showPermissionInfoDialog) {
+            "usage" -> stringResource(R.string.perm_usage_access_title) to stringResource(R.string.perm_usage_access_desc)
+            "accessibility" -> stringResource(R.string.perm_accessibility_title) to stringResource(R.string.perm_accessibility_desc)
+            "overlay" -> stringResource(R.string.perm_overlay_title) to stringResource(R.string.perm_overlay_desc)
+            "battery" -> stringResource(R.string.perm_battery_title) to stringResource(R.string.perm_battery_desc)
+            "notification" -> stringResource(R.string.perm_notification_title) to stringResource(R.string.perm_notification_desc)
+            else -> "" to ""
+        }
+        AlertDialog(
+            onDismissRequest = { showPermissionInfoDialog = null },
+            title = { Text(title, fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = { Text(desc, color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp) },
+            confirmButton = {
+                Button(
+                    onClick = { showPermissionInfoDialog = null },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Kapat", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showFilterDialog) {
+        AlertDialog(
+            onDismissRequest = { showFilterDialog = false },
+            title = { Text("Zaman Tünelini Filtrele", fontWeight = FontWeight.Bold, color = PureBlack) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text("Tarih", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        TimelineDateFilter.entries.forEach { dateOpt ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { filterDate = dateOpt }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = filterDate == dateOpt,
+                                    onClick = { filterDate = dateOpt },
+                                    colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(dateOpt.label, color = PureBlack, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                    
+                    HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
+                    
+                    Text("Olay Türü", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        TimelineTypeFilter.entries.forEach { typeOpt ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { filterType = typeOpt }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = filterType == typeOpt,
+                                    onClick = { filterType = typeOpt },
+                                    colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(typeOpt.label, color = PureBlack, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showFilterDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
+                ) {
+                    Text("Uygula", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = DarkCharcoal,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -320,57 +1074,45 @@ fun ProfileScreen(
                     color = PureBlack,
                     letterSpacing = 0.5.sp
                 )
-                IconButton(
-                    onClick = {
-                        if (isTimelineVisible) {
-                            isTimelineVisible = false
-                        } else {
-                            isSettingsVisible = !isSettingsVisible
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (isTimelineVisible) {
+                        TextButton(onClick = { showFilterDialog = true }) {
+                            Text(text = "Filtrele", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = SuccessGreen)
                         }
                     }
-                ) {
-                    Icon(
-                        imageVector = if (isTimelineVisible || isSettingsVisible) Icons.Default.Close else Icons.Default.Settings,
-                        contentDescription = if (isTimelineVisible || isSettingsVisible) stringResource(R.string.btn_close) else stringResource(R.string.protected_apps_settings),
-                        tint = PureBlack
-                    )
+                    IconButton(
+                        onClick = {
+                            if (isTimelineVisible) {
+                                isTimelineVisible = false
+                            } else {
+                                isSettingsVisible = !isSettingsVisible
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isTimelineVisible || isSettingsVisible) Icons.Default.Close else Icons.Default.Settings,
+                            contentDescription = if (isTimelineVisible || isSettingsVisible) stringResource(R.string.btn_close) else stringResource(R.string.protected_apps_settings),
+                            tint = PureBlack
+                        )
+                    }
                 }
             }
         }
 
         if (isTimelineVisible) {
-            // Zaman Tüneli Filtreleri ve Başlığı
             item {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(LogFilter.entries.toTypedArray()) { filter ->
-                            val isSelected = selectedFilter == filter
-                            val chipBg = if (isSelected) PureBlack else DarkCharcoal
-                            val chipText = if (isSelected) OnPureBlack else PureBlack
-                            val chipBorder = if (isSelected) PureBlack else BorderGray
-
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(chipBg)
-                                    .border(1.dp, chipBorder, RoundedCornerShape(12.dp))
-                                    .clickable { selectedFilter = filter }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(filter.titleRes),
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = chipText
-                                )
-                            }
-                        }
-                    }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(
+                        text = "${filterDate.label} · ${filterType.label}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MutedGray
+                    )
                 }
             }
 
@@ -513,33 +1255,32 @@ fun ProfileScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(1.dp, BorderGray, RoundedCornerShape(16.dp)),
+                                .border(1.dp, BorderGray.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
                             colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
                             shape = RoundedCornerShape(16.dp)
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(14.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
-                                    contentAlignment = Alignment.Center,
                                     modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(statusColor.copy(alpha = 0.08f))
-                                ) {
-                                    Text(text = statusIcon, fontSize = 16.sp)
-                                }
+                                        .width(4.dp)
+                                        .height(56.dp)
+                                        .background(statusColor)
+                                )
 
-                                Column(modifier = Modifier.weight(1f)) {
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                                ) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
+                                        @Suppress("DEPRECATION")
                                         Text(
                                             text = title,
                                             fontSize = 12.sp,
@@ -558,8 +1299,7 @@ fun ProfileScreen(
                                     Text(
                                         text = friendlyDetails,
                                         fontSize = 10.sp,
-                                        color = MutedGray,
-                                        lineHeight = 14.sp
+                                        color = MutedGray
                                     )
                                 }
                             }
@@ -568,11 +1308,8 @@ fun ProfileScreen(
                 }
             }
         } else if (isSettingsVisible) {
+            // 1. İzin Durumu
             item {
-                val context = LocalContext.current
-                val allOk = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted && isNotificationsEnabled
-                var isHealthExpanded by remember { mutableStateOf(false) }
-                
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -609,49 +1346,60 @@ fun ProfileScreen(
                                         .background(if (allOk) SuccessGreen else DangerRed)
                                 )
                             }
-                            Text(
-                                text = if (isHealthExpanded) "▲" else "▼",
-                                fontSize = 10.sp,
-                                color = MutedGray
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = if (allOk) "Tüm izinler aktif" else "Eksik izin var",
+                                    fontSize = 11.sp,
+                                    color = MutedGray,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = if (isHealthExpanded) "▲" else "▼",
+                                    fontSize = 10.sp,
+                                    color = MutedGray
+                                )
+                            }
                         }
-                        
+
                         androidx.compose.animation.AnimatedVisibility(
                             visible = isHealthExpanded
                         ) {
-                            Column {
-                                              HealthRow(
+                            Column(modifier = Modifier.padding(top = 10.dp)) {
+                                HealthRow(
                                     name = stringResource(R.string.perm_usage_access_title),
-                                    description = stringResource(R.string.perm_usage_access_desc),
                                     isOk = isUsageEnabled,
+                                    onInfoClick = { showPermissionInfoDialog = "usage" },
                                     onClick = { viewModel.openUsageStatsSettings(context) }
                                 )
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 HealthRow(
                                     name = stringResource(R.string.perm_accessibility_title),
-                                    description = stringResource(R.string.perm_accessibility_desc),
                                     isOk = isAccessibilityEnabled,
+                                    onInfoClick = { showPermissionInfoDialog = "accessibility" },
                                     onClick = { viewModel.openAccessibilitySettings(context) }
                                 )
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 HealthRow(
                                     name = stringResource(R.string.perm_overlay_title),
-                                    description = stringResource(R.string.perm_overlay_desc),
                                     isOk = isOverlayEnabled,
+                                    onInfoClick = { showPermissionInfoDialog = "overlay" },
                                     onClick = { viewModel.openOverlaySettings(context) }
                                 )
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 HealthRow(
                                     name = stringResource(R.string.perm_battery_title),
-                                    description = stringResource(R.string.perm_battery_desc),
                                     isOk = isBatteryExempted,
+                                    onInfoClick = { showPermissionInfoDialog = "battery" },
                                     onClick = { viewModel.requestBatteryOptimizationIgnore(context) }
                                 )
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 HealthRow(
                                     name = stringResource(R.string.perm_notification_title),
-                                    description = stringResource(R.string.perm_notification_desc),
                                     isOk = isNotificationsEnabled,
+                                    onInfoClick = { showPermissionInfoDialog = "notification" },
                                     onClick = { viewModel.openNotificationSettings(context) }
                                 )
                             }
@@ -660,10 +1408,8 @@ fun ProfileScreen(
                 }
             }
 
-            // Tema Ayarları
+            // 2. Görünüm Ayarları
             item {
-                val context = LocalContext.current
-                var isThemeExpanded by remember { mutableStateOf(false) }
                 val currentMode = currentThemeMode.value
                 val currentPalette = currentThemePalette.value
                 val currentModeLabel = when (currentMode) {
@@ -677,142 +1423,17 @@ fun ProfileScreen(
                     AppThemePalette.RED -> stringResource(R.string.profile_theme_red)
                     AppThemePalette.PREMIUM_DARK -> stringResource(R.string.profile_theme_premium)
                 }
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { isThemeExpanded = !isThemeExpanded },
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(R.string.profile_theme_settings),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PureBlack
-                            )
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Text(
-                                    text = "$currentModeLabel - $currentPaletteLabel",
-                                    fontSize = 11.sp,
-                                    color = MutedGray,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                Text(
-                                    text = if (isThemeExpanded) "▲" else "▼",
-                                    fontSize = 10.sp,
-                                    color = MutedGray
-                                )
-                            }
-                        }
-
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = isThemeExpanded
-                        ) {
-                            Column {
-                                Spacer(modifier = Modifier.height(14.dp))
-                                Text(
-                                    text = stringResource(R.string.profile_theme_view_mode),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MutedGray,
-                                    letterSpacing = 0.5.sp
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                ThemeOptionRow(
-                                    label = stringResource(R.string.profile_theme_system_default),
-                                    isSelected = currentMode == AppThemeMode.SYSTEM,
-                                    onClick = {
-                                        updateThemeMode(context, AppThemeMode.SYSTEM)
-                                    }
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                ThemeOptionRow(
-                                    label = stringResource(R.string.profile_theme_light),
-                                    isSelected = currentMode == AppThemeMode.LIGHT,
-                                    onClick = {
-                                        updateThemeMode(context, AppThemeMode.LIGHT)
-                                    }
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                ThemeOptionRow(
-                                    label = stringResource(R.string.profile_theme_dark),
-                                    isSelected = currentMode == AppThemeMode.DARK,
-                                    onClick = {
-                                        updateThemeMode(context, AppThemeMode.DARK)
-                                    }
-                                )
-
-                                Spacer(modifier = Modifier.height(14.dp))
-                                HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
-                                Spacer(modifier = Modifier.height(14.dp))
-
-                                Text(
-                                    text = stringResource(R.string.profile_theme_color),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MutedGray,
-                                    letterSpacing = 0.5.sp
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                ThemeOptionRow(
-                                    label = stringResource(R.string.profile_theme_blue),
-                                    isSelected = currentPalette == AppThemePalette.BLUE,
-                                    onClick = {
-                                        updateThemePalette(context, AppThemePalette.BLUE)
-                                    }
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                ThemeOptionRow(
-                                    label = stringResource(R.string.profile_theme_bw),
-                                    isSelected = currentPalette == AppThemePalette.MONOCHROME,
-                                    onClick = {
-                                        updateThemePalette(context, AppThemePalette.MONOCHROME)
-                                    }
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                ThemeOptionRow(
-                                    label = stringResource(R.string.profile_theme_red),
-                                    isSelected = currentPalette == AppThemePalette.RED,
-                                    onClick = {
-                                        updateThemePalette(context, AppThemePalette.RED)
-                                    }
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                ThemeOptionRow(
-                                    label = stringResource(R.string.profile_theme_premium),
-                                    isSelected = currentPalette == AppThemePalette.PREMIUM_DARK,
-                                    onClick = {
-                                        updateThemePalette(context, AppThemePalette.PREMIUM_DARK)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
+                SettingsRow(
+                    title = stringResource(R.string.profile_appearance),
+                    value = "$currentModeLabel · $currentPaletteLabel",
+                    onClick = { showThemeDialog = true }
+                )
             }
 
-            // Dil Ayarları
+            // 3. Dil Ayarları
             item {
-                val context = LocalContext.current
                 val currentLocales = AppCompatDelegate.getApplicationLocales()
                 val currentLang = if (!currentLocales.isEmpty()) currentLocales.get(0)?.language ?: "en" else java.util.Locale.getDefault().language
-
                 val languages = listOf(
                     "en" to "English",
                     "tr" to "Türkçe",
@@ -825,141 +1446,45 @@ fun ProfileScreen(
                     "id" to "Bahasa Indonesia",
                     "ru" to "Русский"
                 )
-
                 val currentLangLabel = languages.firstOrNull { it.first == currentLang }?.second ?: "English"
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { isLanguageExpanded = !isLanguageExpanded },
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(R.string.profile_language_settings),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PureBlack
-                            )
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Text(
-                                    text = currentLangLabel,
-                                    fontSize = 11.sp,
-                                    color = MutedGray,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                Text(
-                                    text = if (isLanguageExpanded) "▲" else "▼",
-                                    fontSize = 10.sp,
-                                    color = MutedGray
-                                )
-                            }
-                        }
-
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = isLanguageExpanded
-                        ) {
-                            Column {
-                                Spacer(modifier = Modifier.height(14.dp))
-                                languages.forEach { (langCode, langName) ->
-                                    ThemeOptionRow(
-                                        label = langName,
-                                        isSelected = currentLang == langCode,
-                                        onClick = {
-                                            val localeList = LocaleListCompat.forLanguageTags(langCode)
-                                            AppCompatDelegate.setApplicationLocales(localeList)
-                                            (context as? android.app.Activity)?.recreate()
-                                        }
-                                    )
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                }
-                            }
-                        }
-                    }
-                }
+                SettingsRow(
+                    title = stringResource(R.string.profile_language_settings),
+                    value = currentLangLabel,
+                    onClick = { showLanguageDialog = true }
+                )
             }
 
-            // Destek ve Geri Bildirim
+            // 3b. Koruma Ekranı Sözü
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp),
-                    onClick = { launchEmailIntent(context) }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(PureBlack.copy(alpha = 0.08f))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Email,
-                                contentDescription = null,
-                                tint = PureBlack,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.profile_support),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PureBlack
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = stringResource(R.string.profile_support_desc),
-                                fontSize = 10.sp,
-                                color = MutedGray,
-                                lineHeight = 14.sp
-                            )
-                        }
-
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = MutedGray,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                val prefs = remember { context.getSharedPreferences("gardiyan_settings", android.content.Context.MODE_PRIVATE) }
+                val hasCustom = prefs.getBoolean("has_custom_quote", false)
+                val customPref = prefs.getString("custom_quote_preference", "mix") ?: "mix"
+                val valueText = if (hasCustom) {
+                    if (customPref == "always") "Özel Söz (Her Zaman)" else "Özel Söz (Karışık)"
+                } else {
+                    "Varsayılan Sözler"
                 }
+
+                SettingsRow(
+                    title = stringResource(R.string.settings_quote_title),
+                    value = valueText,
+                    onClick = { showQuoteSettingsDialog = true }
+                )
             }
 
-            // Gizlilik Politikası
+            // 4. Destek ve Geri Bildirim
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp),
+                SettingsRow(
+                    title = stringResource(R.string.profile_support),
+                    onClick = { launchEmailIntent(context) },
+                    infoIconClick = { showSupportInfoDialog = true }
+                )
+            }
+
+            // 5. Gizlilik Politikası
+            item {
+                SettingsRow(
+                    title = stringResource(R.string.profile_privacy),
                     onClick = {
                         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://doc-hosting.flycricket.io/limitra-privacy-policy/1dd2dedf-ea24-4a49-91b5-fa79b0ba9337/privacy"))
                         runCatching {
@@ -968,62 +1493,13 @@ fun ProfileScreen(
                             android.widget.Toast.makeText(context, context.getString(R.string.profile_browser_error), android.widget.Toast.LENGTH_SHORT).show()
                         }
                     }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(PureBlack.copy(alpha = 0.08f))
-                        ) {
-                            Text(text = "📄", fontSize = 16.sp)
-                        }
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.profile_privacy),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PureBlack
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = stringResource(R.string.profile_privacy_desc),
-                                fontSize = 10.sp,
-                                color = MutedGray,
-                                lineHeight = 14.sp
-                            )
-                        }
-
-                        Text(
-                            text = stringResource(R.string.profile_details),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = SuccessGreen,
-                            modifier = Modifier
-                                .clickable { showDataUsageDialog = true }
-                                .border(0.8.dp, SuccessGreen, RoundedCornerShape(4.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-                }
+                )
             }
 
-            // Kullanım Şartları
+            // 5b. Kullanım Şartları
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp),
+                SettingsRow(
+                    title = stringResource(R.string.profile_terms),
                     onClick = {
                         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://doc-hosting.flycricket.io/limitra-terms-of-use/8221a2c7-16d3-454e-9a0d-a61495fab4e6/terms"))
                         runCatching {
@@ -1032,215 +1508,29 @@ fun ProfileScreen(
                             android.widget.Toast.makeText(context, context.getString(R.string.profile_browser_error), android.widget.Toast.LENGTH_SHORT).show()
                         }
                     }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(PureBlack.copy(alpha = 0.08f))
-                        ) {
-                            Text(text = "📜", fontSize = 16.sp)
-                        }
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.profile_terms),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PureBlack
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = stringResource(R.string.profile_terms_desc),
-                                fontSize = 10.sp,
-                                color = MutedGray,
-                                lineHeight = 14.sp
-                            )
-                        }
-
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = MutedGray,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
+                )
             }
 
-            // Verilerimi Temizle
+            // 6. Hakkında
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, DangerRed.copy(alpha = 0.2f), RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp),
-                    onClick = { showDeleteDataDialog = true }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(DangerRed.copy(alpha = 0.08f))
-                        ) {
-                            Text(text = "🗑️", fontSize = 16.sp)
-                        }
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.profile_clear_data),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DangerRed
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = stringResource(R.string.profile_clear_data_desc),
-                                fontSize = 10.sp,
-                                color = MutedGray,
-                                lineHeight = 14.sp
-                            )
-                        }
-
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = MutedGray,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
+                SettingsRow(
+                    title = stringResource(R.string.profile_about_title),
+                    value = "Limitra v1.1",
+                    onClick = { showAboutDialog = true }
+                )
             }
 
-            // Hakkında & Sürüm Bilgisi
+            // 7. Verilerimi Temizle
             item {
-                val appVersion = runCatching {
-                    val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-                    pInfo.versionName ?: "1.0.0"
-                }.getOrDefault("1.0.0")
-
-                val appVersionCode = runCatching {
-                    val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                        pInfo.longVersionCode.toString()
-                    } else {
-                        @Suppress("DEPRECATION")
-                        pInfo.versionCode.toString()
-                    }
-                }.getOrDefault("1")
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp),
-                    onClick = { isAboutExpanded = !isAboutExpanded }
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(R.string.profile_about_title).uppercase(),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PureBlack
-                            )
-                            Text(
-                                text = if (isAboutExpanded) "▲" else "▼",
-                                fontSize = 10.sp,
-                                color = MutedGray
-                            )
-                        }
-
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = isAboutExpanded
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Spacer(modifier = Modifier.height(14.dp))
-
-                                Text(
-                                    text = stringResource(R.string.profile_about_desc),
-                                    fontSize = 12.sp,
-                                    color = PureBlack,
-                                    lineHeight = 18.sp
-                                )
-
-                                HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = stringResource(R.string.profile_app_name), fontSize = 11.sp, color = MutedGray)
-                                    Text(text = stringResource(R.string.app_name), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
-                                }
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = stringResource(R.string.profile_version), fontSize = 11.sp, color = MutedGray)
-                                    Text(text = appVersion, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
-                                }
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = stringResource(R.string.profile_version_code), fontSize = 11.sp, color = MutedGray)
-                                    Text(text = appVersionCode, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
-                                }
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = stringResource(R.string.profile_android_version), fontSize = 11.sp, color = MutedGray)
-                                    Text(text = android.os.Build.VERSION.RELEASE, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
-                                }
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = stringResource(R.string.profile_developer_contact), fontSize = 11.sp, color = MutedGray)
-                                    Text(text = "lumoriapdf@gmail.com", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
-                                }
-                            }
-                        }
-                    }
-                }
+                SettingsRow(
+                    title = stringResource(R.string.profile_clear_data),
+                    onClick = { showDeleteDataDialog = true },
+                    textColor = DangerRed,
+                    showArrow = false
+                )
             }
 
-            // Zaman Tüneli Butonu
+            // 8. Zaman Tüneli Butonu
             item {
                 Button(
                     onClick = { isTimelineVisible = true },
@@ -1262,22 +1552,10 @@ fun ProfileScreen(
                 }
             }
         } else {
-            // 1. Profil Hub (Görsel Avatar & XP Bar)
+            // 1. Profil Hub (Yeni Temiz Seviye Kartı - Tıklanabilir)
             item {
-                val levelName = when (level) {
-                    1 -> stringResource(R.string.level_rookie)
-                    2 -> stringResource(R.string.level_disciplined)
-                    3 -> stringResource(R.string.level_master)
-                    else -> stringResource(R.string.level_rookie)
-                }
-                val shieldEmoji = when (level) {
-                    1 -> "🛡️"
-                    2 -> "🥈"
-                    3 -> "👑"
-                    else -> "🛡️"
-                }
-
                 Card(
+                    onClick = { showLevelDetailDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
                         .border(1.dp, BorderGray, RoundedCornerShape(24.dp)),
@@ -1290,22 +1568,8 @@ fun ProfileScreen(
                             .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Avatar Dairesi
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(CircleShape)
-                                .background(PureWhite.copy(alpha = 0.05f))
-                                .border(1.5.dp, PureWhite.copy(alpha = 0.15f), CircleShape)
-                        ) {
-                            Text(text = shieldEmoji, fontSize = 32.sp)
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
                         Text(
-                            text = stringResource(R.string.profile_level_label, level),
+                            text = "SEVİYE $level",
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.ExtraBold,
@@ -1322,15 +1586,14 @@ fun ProfileScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // XP / Telafi Barı (Gerçek verilere bağlı)
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = progressLabel, fontSize = 10.sp, color = MutedGray)
+                                Text(text = "Dijital Kontrol İlerlemesi", fontSize = 10.sp, color = MutedGray)
                                 Text(
-                                    text = progressText,
+                                    text = "${(levelProgress * 100).toInt()}%",
                                     fontSize = 10.sp,
                                     color = MutedGray,
                                     fontWeight = FontWeight.Bold
@@ -1338,22 +1601,28 @@ fun ProfileScreen(
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             LinearProgressIndicator(
-                                progress = { progress },
+                                progress = { levelProgress },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(6.dp)
                                     .clip(RoundedCornerShape(3.dp)),
-                                color = progressColor,
+                                color = SuccessGreen,
                                 trackColor = MatteSurface
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = nextLevelNote,
+                                fontSize = 10.sp,
+                                color = MutedGray,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
                 }
             }
 
-
-
-            // 3. Asimetrik Bento Kutuları (Bugünün Durumu & Başarı İstatistikleri)
+            // 2. Bento Kartları (Özet Bilgiler)
             item {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -1363,16 +1632,12 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Bugünün Durumu Bento Kartı
-                        val todayStatusLabel = when (todayStatusKey) {
-                            "no_restrictions" -> stringResource(R.string.today_status_no_restrictions)
-                            "violated" -> stringResource(R.string.today_status_violated)
-                            else -> stringResource(R.string.today_status_active)
-                        }
+                        // Protection Streak Card
                         Card(
+                            onClick = { showStreakDetailDialog = true },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(90.dp)
+                                .height(95.dp)
                                 .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
                             colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
                             shape = RoundedCornerShape(20.dp)
@@ -1389,44 +1654,7 @@ fun ProfileScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.profile_today_status),
-                                        fontSize = 8.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MutedGray
-                                    )
-                                    Text(text = todayStatusIcon, fontSize = 14.sp)
-                                }
-                                Text(
-                                    text = todayStatusLabel,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = todayStatusColor
-                                )
-                            }
-                        }
-
-                        // Ardışık Seri Bento Kartı
-                        Card(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(90.dp)
-                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                            shape = RoundedCornerShape(20.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(14.dp),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.profile_streak_label),
+                                        text = "BAŞARI SERİSİ",
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MutedGray
@@ -1434,7 +1662,46 @@ fun ProfileScreen(
                                     Text(text = "🔥", fontSize = 14.sp)
                                 }
                                 Text(
-                                    text = stringResource(R.string.profile_streak_days, consecutiveSuccessDays),
+                                    text = "$consecutiveSuccessDays Gün",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = PureBlack
+                                )
+                            }
+                        }
+
+                        // Saved Time Card
+                        val timeDisplayStr = if (totalSavedMillis > 0) formatUsageDuration(totalSavedMillis) else "Henüz veri yok"
+                        Card(
+                            onClick = { showSavedTimeDetailDialog = true },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(95.dp)
+                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+                            shape = RoundedCornerShape(20.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "KORUNAN SÜRE",
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MutedGray
+                                    )
+                                    Text(text = "⏳", fontSize = 14.sp)
+                                }
+                                Text(
+                                    text = timeDisplayStr,
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Black,
                                     color = PureBlack
@@ -1446,12 +1713,13 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Toplam Başarı Bento Kartı
+                      ) {
+                        // Active Restrictions Card
                         Card(
+                            onClick = { showActiveAppsDetailDialog = true },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(90.dp)
+                                .height(95.dp)
                                 .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
                             colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
                             shape = RoundedCornerShape(20.dp)
@@ -1468,27 +1736,28 @@ fun ProfileScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.profile_total_success),
+                                        text = "AKTİF KORUMA",
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MutedGray
                                     )
-                                    Text(text = "🏆", fontSize = 14.sp)
+                                    Text(text = "🛡️", fontSize = 14.sp)
                                 }
                                 Text(
-                                    text = stringResource(R.string.profile_total_success_days, totalSuccessDays),
-                                    fontSize = 15.sp,
+                                    text = "${activeApps.size} Uygulama",
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
                                     color = PureBlack
                                 )
                             }
                         }
 
-                        // Korumadaki Uygulamalar Bento Kartı
+                        // Weekly Summary Card
                         Card(
+                            onClick = { showWeeklySummaryDetailDialog = true },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(90.dp)
+                                .height(95.dp)
                                 .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
                             colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
                             shape = RoundedCornerShape(20.dp)
@@ -1505,73 +1774,21 @@ fun ProfileScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.profile_protected_target),
+                                        text = "HAFTALIK ÖZET",
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MutedGray
                                     )
-                                    Text(text = "🔒", fontSize = 14.sp)
+                                    Text(text = "📅", fontSize = 14.sp)
                                 }
                                 Text(
-                                    text = stringResource(R.string.profile_protected_apps, activeApps.size),
-                                    fontSize = 15.sp,
+                                    text = "$weeklySuccessDays/7 Gün",
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
                                     color = PureBlack
                                 )
                             }
                         }
-                    }
-                }
-            }
-
-            // 4. Tarih Bilgileri ve Motivasyon Kartı
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.profile_stat_details),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MutedGray,
-                            letterSpacing = 0.5.sp
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = stringResource(R.string.profile_last_success), fontSize = 12.sp, color = MutedGray)
-                            Text(text = lastSuccessDateStr, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PureBlack)
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = stringResource(R.string.profile_last_violation), fontSize = 12.sp, color = MutedGray)
-                            Text(text = lastViolationDateStr, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DangerRed)
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-                        HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = motivationText,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = PureBlack,
-                            lineHeight = 18.sp
-                        )
                     }
                 }
             }
@@ -1643,60 +1860,126 @@ private fun launchEmailIntent(context: android.content.Context) {
 @Composable
 private fun HealthRow(
     name: String,
-    description: String,
     isOk: Boolean,
+    onInfoClick: () -> Unit,
     onClick: () -> Unit
 ) {
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = !isOk) { onClick() }
-            .padding(vertical = 6.dp)
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(if (isOk) SuccessGreen else DangerRed)
+            )
+            Text(
+                text = name,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = PureBlack
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = if (isOk) "Aktif" else "Eksik",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isOk) SuccessGreen else DangerRed
+            )
+            IconButton(
+                onClick = onInfoClick,
+                modifier = Modifier.size(24.dp)
             ) {
-                Text(text = if (isOk) "🟢" else "🔴", fontSize = 10.sp)
-                Text(
-                    text = name,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = PureBlack
-                )
-            }
-            if (!isOk) {
-                Text(
-                    text = stringResource(R.string.perm_btn_grant),
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = DangerRed,
-                    modifier = Modifier
-                        .border(0.8.dp, DangerRed, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                )
-            } else {
-                Text(
-                    text = stringResource(R.string.perm_state_active),
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = SuccessGreen
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Bilgi",
+                    tint = MutedGray,
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = description,
-            fontSize = 10.sp,
-            color = MutedGray,
-            modifier = Modifier.padding(start = 18.dp),
-            lineHeight = 14.sp
-        )
+    }
+}
+
+@Composable
+private fun SettingsRow(
+    title: String,
+    value: String? = null,
+    onClick: () -> Unit,
+    showArrow: Boolean = true,
+    infoIconClick: (() -> Unit)? = null,
+    textColor: Color = PureBlack
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+        shape = RoundedCornerShape(20.dp),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = title,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = textColor,
+                modifier = Modifier.weight(1f)
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (value != null) {
+                    Text(
+                        text = value,
+                        fontSize = 11.sp,
+                        color = MutedGray,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                if (infoIconClick != null) {
+                    IconButton(
+                        onClick = infoIconClick,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Bilgi",
+                            tint = MutedGray,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                if (showArrow) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MutedGray,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -1705,12 +1988,17 @@ fun HeaderSection(session: UserSessionEntity?) {
     // DashboardHeader artık ana header. Bu fonksiyon geriye uyumluluk için korunuyor.
 }
 
-enum class LogFilter(val titleRes: Int) {
-    TODAY(R.string.timeline_today),
-    SUCCESSES(R.string.profile_total_success),
-    VIOLATIONS(R.string.log_type_violation),
-    CHANGES(R.string.log_filter_restrictions),
-    LOCKS(R.string.log_filter_locks),
-    CANCELS(R.string.log_filter_bypasses),
-    ALL(R.string.log_filter_all)
+enum class TimelineDateFilter(val label: String) {
+    TODAY("Bugün"),
+    LAST_7_DAYS("Son 7 gün"),
+    LAST_30_DAYS("Son 30 gün"),
+    ALL_TIME("Tüm zamanlar")
+}
+
+enum class TimelineTypeFilter(val label: String) {
+    ALL("Tüm olaylar"),
+    RESTRICTIONS("Kısıtlama olayları"),
+    LIMITS("Limit olayları"),
+    PERMISSIONS("İzin olayları"),
+    DATA_ACTIONS("Veri işlemleri")
 }

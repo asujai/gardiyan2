@@ -61,6 +61,21 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
     }
 
     suspend fun insertLog(eventType: String, appName: String, details: String) {
+        val technicalTypes = setOf(
+            "SESSION_STARTED",
+            "SESSION_UPDATED",
+            "SESSION_CLOSED",
+            "STALE_SESSION_CLEANED",
+            "USAGE_PROCESSED",
+            "ENGINE_RESYNCED",
+            "SUSPICIOUS_STATE_DETECTED",
+            "A11Y_EVENT_RECEIVED",
+            "USAGE_STATS_FALLBACK",
+            "SERVICE_RESTARTED"
+        )
+        if (eventType in technicalTypes) {
+            return
+        }
         guardianDao.insertLog(
             StatusLogEntity(
                 eventType = eventType,

@@ -1,13 +1,20 @@
 package com.gardiyan.app.service
 
 import android.accessibilityservice.AccessibilityService
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import androidx.core.app.NotificationCompat
 import com.gardiyan.app.MainActivity
+import com.gardiyan.app.R
 import com.gardiyan.app.data.local.database.GuardianDatabase
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.data.repository.GuardianRepository
@@ -22,6 +29,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.Calendar
+import java.util.Locale
 
 /**
  * Çoklu uygulama + event-driven ön plan tespiti ve zamanlayıcı.
@@ -247,10 +256,14 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     currentTrackedPackage
                         ?.takeIf { it == currentForegroundPackage }
                         ?.let { pkg ->
-                        withContext(Dispatchers.IO) {
-                            repository.updateSessionLastSeen(pkg)
+                            val app = withContext(Dispatchers.IO) {
+                                repository.updateSessionLastSeen(pkg)
+                                repository.getRestrictedAppByPackageSync(pkg)
+                            }
+                            if (app != null && app.isActive && !app.isFailed) {
+                                checkAndTriggerNotifications(app)
+                            }
                         }
-                    }
 
                     val now = System.currentTimeMillis()
                     val a11yAge = now - lastAccessibilityForegroundAt
@@ -591,5 +604,87 @@ class AppBlockAccessibilityService : AccessibilityService() {
         }
 
         clearTrackingState()
+    }
+
+    private fun checkAndTriggerNotifications(app: RestrictedAppEntity) {
+        val entryTime = entryTimeMillis
+        if (entryTime == 0L) return
+
+        val elapsedSec = (System.currentTimeMillis() - entryTime) / 1000L
+        val currentRemainingSec = (app.remainingSecondsToday - elapsedSec).coerceAtLeast(0L)
+
+        val totalLimitSec = if (app.dailyLimitMinutes > 0) app.dailyLimitMinutes * 60 else 10
+        val halfLimitSec = totalLimitSec / 2
+
+        val prefs = getSharedPreferences("gardiyan_notifications", Context.MODE_PRIVATE)
+        val today = todayKey()
+
+        // 1. %50 kısıtlama limiti bildirimi
+        val keyHalf = "notif_50_${app.packageName}_$today"
+        if (currentRemainingSec <= halfLimitSec && !prefs.getBoolean(keyHalf, false)) {
+            if (currentRemainingSec > 0) {
+                prefs.edit().putBoolean(keyHalf, true).apply()
+                sendThresholdNotification(app.appName, R.string.notif_half_limit_message)
+            }
+        }
+
+        // 2. 5 dakika (300 saniye) kala bildirimi
+        val key5Min = "notif_5min_${app.packageName}_$today"
+        if (totalLimitSec > 300 && currentRemainingSec <= 300 && !prefs.getBoolean(key5Min, false)) {
+            if (currentRemainingSec > 0) {
+                prefs.edit().putBoolean(key5Min, true).apply()
+                sendThresholdNotification(app.appName, R.string.notif_five_minutes_message)
+            }
+        }
+    }
+
+    private fun sendThresholdNotification(appName: String, messageTemplateResId: Int) {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            ?: return
+
+        val channelId = "limitra_events_channel"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Limitra",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Uygulama kullanım sınırları ile ilgili uyarı bildirimleri"
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val message = getString(messageTemplateResId, appName)
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("Limitra")
+            .setContentText(message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        val notifId = appName.hashCode() + messageTemplateResId
+        notificationManager.notify(notifId, notification)
+    }
+
+    private fun todayKey(): String {
+        val cal = Calendar.getInstance()
+        val year = cal.get(Calendar.YEAR)
+        val month = cal.get(Calendar.MONTH) + 1
+        val day = cal.get(Calendar.DAY_OF_MONTH)
+        return String.format(Locale.US, "%04d-%02d-%02d", year, month, day)
     }
 }

@@ -92,37 +92,30 @@ fun ProtectedAppsScreen(
                 // Header Area
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalAlignment = Alignment.Start
                     ) {
-                        Column {
-                            Text(
-                                text = stringResource(R.string.protected_apps_title),
-                                fontSize = 18.sp,
-                                fontFamily = FontFamily.SansSerif,
-                                fontWeight = FontWeight.Black,
-                                color = PureBlack,
-                                letterSpacing = 0.5.sp
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = stringResource(R.string.protected_apps_desc),
-                                fontSize = 12.sp,
-                                color = MutedGray
-                            )
-                        }
+                        Text(
+                            text = stringResource(R.string.protected_apps_title),
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PureBlack
+                        )
                     }
                 }
 
                 // Filter Buttons
                 item {
+                    val filters = listOf(
+                        ProtectedFilter.ACTIVE to "Limitra aktif",
+                        ProtectedFilter.REACHED_LIMIT to "Limiti Dolanlar"
+                    )
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(ProtectedFilter.values()) { filter ->
+                        items(filters) { (filter, label) ->
                             val isSelected = selectedFilter == filter
                             val chipBg = if (isSelected) PureBlack else DarkCharcoal
                             val chipText = if (isSelected) OnPureBlack else PureBlack
@@ -131,15 +124,15 @@ fun ProtectedAppsScreen(
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(99.dp))
                                     .background(chipBg)
-                                    .border(1.dp, chipBorder, RoundedCornerShape(12.dp))
+                                    .border(1.dp, chipBorder, RoundedCornerShape(99.dp))
                                     .clickable { selectedFilter = filter }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
                             ) {
                                 Text(
-                                    text = stringResource(filter.titleRes),
-                                    fontSize = 11.sp,
+                                    text = label,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = chipText
                                 )

@@ -273,6 +273,38 @@ fun PermissionsScreen(
             )
         }
 
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, SuccessGreen.copy(alpha = 0.2f), RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(containerColor = SuccessGreen.copy(alpha = 0.05f)),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(SuccessGreen.copy(alpha = 0.1f))
+                ) {
+                    Text(text = "🛡️", fontSize = 16.sp)
+                }
+
+                Text(
+                    text = stringResource(R.string.perm_privacy_msg),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MutedGray,
+                    lineHeight = 16.sp
+                )
+            }
+        }
+
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             ModernPermissionCard(
                 title = stringResource(R.string.perm_usage_access_title),

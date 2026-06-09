@@ -257,8 +257,9 @@ class BlockOverlayService : Service() {
             .setSmallIcon(android.R.drawable.ic_lock_lock)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setSilent(true)
             .build()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -283,7 +284,7 @@ class BlockOverlayService : Service() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 getString(R.string.notification_channel_service),
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_MIN
             ).apply {
                 description = getString(R.string.notification_channel_service_desc)
                 setShowBadge(false)
@@ -334,7 +335,6 @@ class BlockOverlayService : Service() {
         try {
             val overlayView = LayoutInflater.from(this).inflate(R.layout.lock_overlay, null)
             val targetText = overlayView.findViewById<TextView>(R.id.targetAppText)
-            val countdownText = overlayView.findViewById<TextView>(R.id.countdownText)
             val emojiText = overlayView.findViewById<TextView>(R.id.emojiText)
             val emojiImage = overlayView.findViewById<ImageView>(R.id.emojiImage)
 
@@ -357,6 +357,77 @@ class BlockOverlayService : Service() {
                 }
             }
 
+            // --- Söz Seçme ve Ayarlama Logic'i ---
+            val quoteText = overlayView.findViewById<TextView>(R.id.quoteText)
+            val quoteAuthorText = overlayView.findViewById<TextView>(R.id.quoteAuthorText)
+
+            val prefs = getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
+            val hasCustom = prefs.getBoolean("has_custom_quote", false)
+            val customText = prefs.getString("custom_quote_text", "") ?: ""
+            val customAuthor = prefs.getString("custom_quote_author", "") ?: ""
+            val customPref = prefs.getString("custom_quote_preference", "mix") ?: "mix"
+
+            var finalQuoteText = ""
+            var finalQuoteAuthor = ""
+
+            if (hasCustom && customText.isNotEmpty() && customPref == "always") {
+                finalQuoteText = customText
+                finalQuoteAuthor = customAuthor
+            } else {
+                val calendar = java.util.Calendar.getInstance()
+                val dayOfYear = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+                val year = calendar.get(java.util.Calendar.YEAR)
+                val seed = year * 365 + dayOfYear
+
+                val totalDefaultQuotes = 54
+                val totalQuotes = if (hasCustom && customText.isNotEmpty() && customPref == "mix") 55 else 54
+                val selectedIndex = (seed % totalQuotes) + 1
+
+                if (selectedIndex == 55) {
+                    finalQuoteText = customText
+                    finalQuoteAuthor = customAuthor
+                } else {
+                    val textResId = resources.getIdentifier("quote_text_$selectedIndex", "string", packageName)
+                    val authorResId = resources.getIdentifier("quote_author_$selectedIndex", "string", packageName)
+                    finalQuoteText = if (textResId != 0) getString(textResId) else ""
+                    finalQuoteAuthor = if (authorResId != 0) getString(authorResId) else ""
+                }
+            }
+
+            quoteText?.text = finalQuoteText
+            quoteAuthorText?.text = if (finalQuoteAuthor.isNotEmpty()) "- $finalQuoteAuthor" else ""
+
+            // --- Programatik Tema Renklendirme ---
+            val isDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+            val rootLayout = overlayView.findViewById<View>(R.id.rootLayout)
+            rootLayout?.setBackgroundColor(android.graphics.Color.parseColor(if (isDark) "#0B0F19" else "#F1F5F9"))
+
+            val cardView = overlayView.findViewById<View>(R.id.cardLayout)
+            if (cardView != null) {
+                val scale = resources.displayMetrics.density
+                val cardDrawable = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                    cornerRadius = 24f * scale
+                    setColor(android.graphics.Color.parseColor(if (isDark) "#151D30" else "#FFFFFF"))
+                    setStroke((1f * scale).toInt(), android.graphics.Color.parseColor(if (isDark) "#24324D" else "#CBD5E1"))
+                }
+                cardView.background = cardDrawable
+            }
+
+            val appTitleText = overlayView.findViewById<TextView>(R.id.appTitleText)
+            val limitOverText = overlayView.findViewById<TextView>(R.id.limitOverText)
+            val explanationText = overlayView.findViewById<TextView>(R.id.explanationText)
+            val returnToHomeText = overlayView.findViewById<TextView>(R.id.returnToHomeText)
+
+            appTitleText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#2EC4B6" else "#0D9488"))
+            targetText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#FFFFFF" else "#0F172A"))
+            limitOverText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#EF4444" else "#DC2626"))
+            quoteText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#E2E8F0" else "#334155"))
+            quoteAuthorText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#475569"))
+            explanationText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#64748B" else "#64748B"))
+            returnToHomeText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#475569" else "#475569"))
+
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -375,8 +446,8 @@ class BlockOverlayService : Service() {
             visibleOverlayPackage = targetAppPackage
             isLockOverlayVisible.set(true)
 
-            startInfiniteLoop(countdownText, emojiText, emojiImage)
-            Log.i(TAG, "Lock overlay added for $targetAppName (10s infinite loop started)")
+            startInfiniteLoop()
+            Log.i(TAG, "Lock overlay added for $targetAppName (Infinite loop active)")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to add lock overlay: ${e.message}", e)
         }
@@ -477,52 +548,18 @@ class BlockOverlayService : Service() {
         }
     }
 
-    /**
-     * 10 saniyelik KIRILMAZ sonsuz döngü:
-     *  1. 10sn geri sayım başlat
-     *  2. Her saniye TextView güncelle
-     *  3. 0'a ulaşınca ANINDA tekrar 10'a dön (gap yok, emoji gösterimi yok)
-     *  4. isActive ASLA false yapılmaz
-     *  5. Overlay ASLA bu fonksiyon tarafından kapatılmaz
-     *  6. Sadece hideLockOverlay() çağrıldığında isLockOverlayVisible false olur
-     *     ve while döngüsü doğal olarak sonlanır
-     */
-    private fun startInfiniteLoop(
-        countdownText: TextView,
-        emojiText: TextView,
-        emojiImage: ImageView
-    ) {
+    private fun startInfiniteLoop() {
         cycleJob?.cancel()
-        Log.d(TAG, "startInfiniteLoop: 10s cycle begins (FOREVER — no break)")
+        Log.d(TAG, "startInfiniteLoop: keeping overlay to front (no countdown)")
 
         cycleJob = serviceScope.launch {
             while (isLockOverlayVisible.get()) {
-                // 10 saniyelik geri sayım
-                for (remaining in LOCK_CYCLE_SECONDS downTo 1) {
-                    if (!isLockOverlayVisible.get()) return@launch
-                    runOnUiThreadSafe {
-                        countdownText.text = formatSeconds(remaining)
-                        forceOverlayToFrontInternal()
-                    }
-                    kotlinx.coroutines.delay(1000L)
-                }
-
-                // 0'a ulaşıldı — ANINDA tekrar başa sar, hiç gap yok
-                Log.d(TAG, "10s reached 0, instantly resetting to $LOCK_CYCLE_SECONDS (no gap, no break)")
                 runOnUiThreadSafe {
-                    countdownText.text = formatSeconds(LOCK_CYCLE_SECONDS)
                     forceOverlayToFrontInternal()
                 }
-
-                // Döngü while ile başa sarar — sonsuz, kırılmaz
+                kotlinx.coroutines.delay(2000L)
             }
         }
-    }
-
-    private fun formatSeconds(totalSec: Int): String {
-        val mm = totalSec / 60
-        val ss = totalSec % 60
-        return String.format(Locale.ROOT, "%02d:%02d", mm, ss)
     }
 
     @Suppress("DEPRECATION")

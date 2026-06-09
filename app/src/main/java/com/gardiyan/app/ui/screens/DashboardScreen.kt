@@ -2,11 +2,13 @@ package com.gardiyan.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,6 +46,7 @@ import com.gardiyan.app.data.model.AppUsageSummary
 import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.ui.components.UsageRankingSection
+import com.gardiyan.app.ui.components.formatUsageDuration
 import com.gardiyan.app.ui.theme.DashboardBorder as BorderGray
 import com.gardiyan.app.ui.theme.DashboardCard as DarkCharcoal
 import com.gardiyan.app.ui.theme.DashboardDanger as DangerRed
@@ -60,6 +63,11 @@ import com.gardiyan.app.ui.theme.WineAccent
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.Calendar
+
+private enum class DayStatus {
+    SUCCESS, FAILURE, NONE
+}
 
 @Composable
 fun DashboardScreen(
@@ -70,6 +78,7 @@ fun DashboardScreen(
 ) {
     val session by viewModel.userSession.collectAsState()
     val restrictedApps by viewModel.restrictedApps.collectAsState()
+    val logs by viewModel.allLogs.collectAsState()
     val activeApps = remember(restrictedApps) { restrictedApps.filter { it.isActive } }
     val appLimits = remember(activeApps) { activeApps.associate { it.packageName to it.dailyLimitMinutes } }
     val exceededPackages = remember(activeApps) { getExceededPackageNames(activeApps) }
@@ -95,11 +104,55 @@ fun DashboardScreen(
         value = withContext(Dispatchers.IO) { viewModel.getUsageRanking(selectedPeriod) }
     }
     val exceededCount = exceededPackages.size
-    val levelName = when (session?.level ?: 1) {
-        1 -> stringResource(R.string.level_rookie)
-        2 -> stringResource(R.string.level_disciplined)
-        3 -> stringResource(R.string.level_master)
-        else -> stringResource(R.string.level_rookie)
+
+    val dayBounds = remember {
+        List(21) { index ->
+            val daysAgo = 20 - index
+            val calStart = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, -daysAgo)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val calEnd = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, -daysAgo)
+                set(Calendar.HOUR_OF_DAY, 23)
+                set(Calendar.MINUTE, 59)
+                set(Calendar.SECOND, 59)
+                set(Calendar.MILLISECOND, 999)
+            }
+            calStart.timeInMillis to calEnd.timeInMillis
+        }
+    }
+
+    val todayHasViolation = remember(restrictedApps) {
+        restrictedApps.any { it.isActive && it.isFailed }
+    }
+
+    val dayStatuses = remember(logs, restrictedApps, todayHasViolation) {
+        List(21) { index ->
+            val start = dayBounds[index].first
+            val end = dayBounds[index].second
+            val isToday = (index == 20)
+            val dayLogs = logs.filter { it.timestamp in start..end }
+            
+            val hasSuccess = dayLogs.any { it.eventType in setOf("SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY") }
+            val hasFailure = dayLogs.any { it.eventType in setOf("FAILURE", "VIOLATION", "DAILY_FAILURE", "RESET_HOLD_5S", "CRITICAL_ACTION_COMPLETED") }
+            
+            when {
+                hasSuccess -> DayStatus.SUCCESS
+                hasFailure -> DayStatus.FAILURE
+                isToday -> {
+                    if (activeApps.isNotEmpty()) {
+                        if (todayHasViolation) DayStatus.FAILURE else DayStatus.SUCCESS
+                    } else {
+                        DayStatus.NONE
+                    }
+                }
+                else -> DayStatus.NONE
+            }
+        }
     }
 
     LazyColumn(
@@ -109,13 +162,9 @@ fun DashboardScreen(
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        item { Spacer(modifier = Modifier.height(4.dp)) }
-        item {
-            DashboardHeader()
-        }
+        item { Spacer(modifier = Modifier.height(12.dp)) }
         item {
             TodayOverviewCard(
-                totalSavedMillis = totalSavedMillis,
                 protectedCount = activeApps.size,
                 exceededCount = exceededCount,
                 onAddRestriction = onNavigateToSetup
@@ -133,9 +182,7 @@ fun DashboardScreen(
         }
         item {
             DisciplineSummary(
-                levelName = levelName,
-                streak = session?.consecutiveSuccessDays ?: 0,
-                protectedCount = activeApps.size,
+                dayStatuses = dayStatuses,
                 onProtectedClick = onNavigateToProtected
             )
         }
@@ -150,33 +197,7 @@ internal fun getExceededPackageNames(activeApps: List<RestrictedAppEntity>): Set
         .mapTo(mutableSetOf()) { it.packageName }
 
 @Composable
-private fun DashboardHeader() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "LİMİTRA",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Black,
-                color = PureBlack,
-                letterSpacing = 1.sp
-            )
-            Spacer(modifier = Modifier.height(3.dp))
-            Text(
-                text = stringResource(R.string.dashboard_subtitle),
-                fontSize = 13.sp,
-                color = MutedGray
-            )
-        }
-    }
-}
-
-@Composable
 private fun TodayOverviewCard(
-    totalSavedMillis: Long,
     protectedCount: Int,
     exceededCount: Int,
     onAddRestriction: () -> Unit
@@ -184,120 +205,31 @@ private fun TodayOverviewCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderGray, RoundedCornerShape(22.dp)),
+            .border(1.dp, BorderGray, RoundedCornerShape(24.dp)),
         colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(22.dp)
+        shape = RoundedCornerShape(24.dp)
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.dashboard_summary_title),
-                        color = WineAccent,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 0.9.sp
-                    )
-                    Spacer(modifier = Modifier.height(7.dp))
-                    if (totalSavedMillis > 0L) {
-                        Text(
-                             text = formatSavedDuration(totalSavedMillis),
-                             color = PureBlack,
-                             fontSize = 30.sp,
-                             fontWeight = FontWeight.Black
-                        )
-                        Text(
-                             text = stringResource(R.string.dashboard_today_gain),
-                             color = MutedGray,
-                             fontSize = 11.sp
-                        )
-                    } else {
-                        Text(
-                             text = stringResource(R.string.dashboard_no_gain),
-                             color = PureBlack,
-                             fontSize = 26.sp,
-                             fontWeight = FontWeight.Black
-                        )
-                        Text(
-                             text = stringResource(R.string.dashboard_no_gain_desc),
-                             color = MutedGray,
-                             fontSize = 11.sp
-                        )
-                    }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(SoftCopper),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = CopperAccent,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OverviewMetric(
-                    label = stringResource(R.string.dashboard_active_protection),
-                    value = stringResource(R.string.dashboard_active_protection_val, protectedCount),
-                    modifier = Modifier.weight(1f)
-                )
-                OverviewMetric(
-                    label = stringResource(R.string.dashboard_limit_status),
-                    value = if (exceededCount > 0) stringResource(R.string.dashboard_exceeded_val, exceededCount) else stringResource(R.string.dashboard_no_exceed),
-                    isWarning = exceededCount > 0,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            if (exceededCount > 0) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = stringResource(R.string.dashboard_exceeded_warning),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(SoftDangerRed)
-                        .padding(horizontal = 10.dp, vertical = 8.dp),
-                    color = DangerRed,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 24.dp, horizontal = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Button(
                 onClick = onAddRestriction,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PureBlack,
                     contentColor = OnPureBlack
                 ),
-                shape = RoundedCornerShape(14.dp)
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(17.dp)
-                )
-                Spacer(modifier = Modifier.size(7.dp))
                 Text(
-                    text = stringResource(R.string.dashboard_add_restriction),
-                    fontSize = 12.sp,
+                    text = "+ " + stringResource(R.string.dashboard_add_restriction),
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -306,97 +238,112 @@ private fun TodayOverviewCard(
 }
 
 @Composable
-private fun OverviewMetric(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    isWarning: Boolean = false
-) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(13.dp))
-            .background(if (isWarning) SoftDangerRed else WarmGray)
-            .padding(horizontal = 11.dp, vertical = 10.dp)
-    ) {
-        Text(text = label, color = MutedGray, fontSize = 9.sp, fontWeight = FontWeight.Medium)
-        Spacer(modifier = Modifier.height(3.dp))
-        Text(
-            text = value,
-            color = if (isWarning) DangerRed else PureBlack,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
 private fun DisciplineSummary(
-    levelName: String,
-    streak: Int,
-    protectedCount: Int,
+    dayStatuses: List<DayStatus>,
     onProtectedClick: () -> Unit
 ) {
     Column {
         Text(
             text = stringResource(R.string.dashboard_discipline_summary),
             color = PureBlack,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Black
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
         )
-        Spacer(modifier = Modifier.height(10.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            SummaryCard(title = stringResource(R.string.dashboard_rank), value = levelName, modifier = Modifier.weight(1f))
-            SummaryCard(title = stringResource(R.string.dashboard_streak), value = stringResource(R.string.dashboard_streak_val, streak), modifier = Modifier.weight(1f))
-            SummaryCard(
-                title = stringResource(R.string.dashboard_protected),
-                value = stringResource(R.string.dashboard_protected_val, protectedCount),
-                modifier = Modifier.weight(1f),
-                onClick = onProtectedClick
-            )
-        }
-    }
-}
-
-@Composable
-private fun SummaryCard(
-    title: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null
-) {
-    Card(
-        onClick = onClick ?: {},
-        enabled = onClick != null,
-        modifier = modifier
-            .height(72.dp)
-            .border(1.dp, BorderGray, RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
+        Spacer(modifier = Modifier.height(12.dp))
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp),
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .border(1.dp, BorderGray, RoundedCornerShape(24.dp))
+                .clickable { onProtectedClick() },
+            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+            shape = RoundedCornerShape(24.dp)
         ) {
-            Text(text = title, color = MutedGray, fontSize = 9.sp, fontWeight = FontWeight.Medium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = value, color = PureBlack, fontSize = 12.sp, fontWeight = FontWeight.Black)
+            Column(
+                modifier = Modifier.padding(18.dp)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    repeat(3) { rowIndex ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            repeat(7) { colIndex ->
+                                val cellIndex = rowIndex * 7 + colIndex
+                                val status = dayStatuses.getOrNull(cellIndex) ?: DayStatus.NONE
+                                val cellColor = when (status) {
+                                    DayStatus.SUCCESS -> SuccessGreen
+                                    DayStatus.FAILURE -> DangerRed
+                                    DayStatus.NONE -> WarmGray
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .aspectRatio(1f)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(cellColor)
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(14.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.discipline_summary_days_ago),
+                        color = MutedGray,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(SuccessGreen)
+                            )
+                            Text(
+                                text = stringResource(R.string.discipline_summary_success),
+                                color = MutedGray,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(DangerRed)
+                            )
+                            Text(
+                                text = stringResource(R.string.discipline_summary_failure),
+                                color = MutedGray,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
         }
-    }
-}
-
-@Composable
-fun formatSavedDuration(savedMillis: Long): String {
-    val totalMinutes = savedMillis / 60_000L
-    val hours = totalMinutes / 60
-    val minutes = totalMinutes % 60
-    return if (hours > 0) {
-        stringResource(R.string.duration_saved_hours_mins, hours, minutes)
-    } else {
-        stringResource(R.string.duration_saved_mins, minutes)
     }
 }

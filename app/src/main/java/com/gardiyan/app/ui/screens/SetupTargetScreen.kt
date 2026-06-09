@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -31,6 +32,16 @@ import com.gardiyan.app.data.repository.GuardianRepository
 import com.gardiyan.app.ui.components.AppIconView
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
+import java.util.Locale
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.material3.ripple
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SetupTargetScreen(
@@ -42,8 +53,9 @@ fun SetupTargetScreen(
     val installedApps = remember { viewModel.getInstalledApps(context) }
     var selectedApps by remember { mutableStateOf<Set<Pair<String, String>>>(emptySet()) }
     
-    var selectedDurationPreset by remember { mutableStateOf(60) }
-    var customDurationText by remember { mutableStateOf("") }
+    // Time picker states
+    var selectedHours by remember { mutableStateOf(1) }
+    var selectedMinutes by remember { mutableStateOf(0) }
     
     val daysOfWeek = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
     val daysMap = mapOf(
@@ -69,12 +81,10 @@ fun SetupTargetScreen(
     }
 
     val presetChoices = listOf(
-        Pair(stringResource(R.string.setup_target_test_10s), 0),
-        Pair(stringResource(R.string.setup_target_15m), 15),
-        Pair(stringResource(R.string.setup_target_30m), 30),
-        Pair(stringResource(R.string.setup_target_1h), 60),
-        Pair(stringResource(R.string.setup_target_2h), 120)
+        Pair(stringResource(R.string.setup_target_test_10s), 0)
     )
+
+    val currentTotalMinutes = selectedHours * 60 + selectedMinutes
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -105,18 +115,18 @@ fun SetupTargetScreen(
                             modifier = Modifier.size(20.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(14.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = stringResource(R.string.setup_target_add),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Black,
+                        text = "KISITLAMA EKLE",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
                         color = PureBlack,
-                        letterSpacing = 0.5.sp
+                        letterSpacing = 1.sp
                     )
                 }
             }
 
-            // Bütünleşik Form Paneli (Tek bir Bento / Minimal Kart yapısı)
+            // Form panel enclosed in a single card
             item {
                 Card(
                     modifier = Modifier
@@ -127,46 +137,36 @@ fun SetupTargetScreen(
                 ) {
                     Column(
                         modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        // BÖLÜM 1: Uygulama Seçimi
+                        // SECTION 1: App Selection
                         Column {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(PureBlack.copy(alpha = 0.1f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.Phone, contentDescription = null, tint = PureBlack, modifier = Modifier.size(16.dp))
-                                }
                                 Text(
                                     text = stringResource(R.string.setup_target_select_app_title),
-                                    fontSize = 11.sp,
-                                    fontFamily = FontFamily.SansSerif,
-                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = MutedGray,
                                     letterSpacing = 0.5.sp
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
+                                    .clip(RoundedCornerShape(12.dp))
                                     .background(MatteSurface)
-                                    .border(1.dp, BorderGray, RoundedCornerShape(14.dp))
+                                    .border(1.dp, BorderGray, RoundedCornerShape(12.dp))
                                     .clickable { 
                                         searchQuery = ""
                                         isAppSheetVisible = true 
                                     }
-                                    .padding(16.dp)
+                                    .padding(14.dp)
                             ) {
                                 Row(
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -198,7 +198,7 @@ fun SetupTargetScreen(
                                     }
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Icon(
-                                        imageVector = Icons.Default.Search,
+                                        imageVector = Icons.Default.List,
                                         contentDescription = null,
                                         tint = MutedGray,
                                         modifier = Modifier.size(20.dp)
@@ -209,32 +209,22 @@ fun SetupTargetScreen(
 
                         HorizontalDivider(color = BorderGray, thickness = 1.dp)
 
-                        // BÖLÜM 2: Süre Sınırı
+                        // SECTION 2: Daily Limit
                         Column {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(PureBlack.copy(alpha = 0.1f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.List, contentDescription = null, tint = PureBlack, modifier = Modifier.size(16.dp))
-                                }
                                 Text(
                                     text = stringResource(R.string.setup_target_daily_limit),
-                                    fontSize = 11.sp,
-                                    fontFamily = FontFamily.SansSerif,
-                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = MutedGray,
                                     letterSpacing = 0.5.sp
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -242,15 +232,15 @@ fun SetupTargetScreen(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 items(presetChoices) { choice ->
-                                    val isSelected = selectedDurationPreset == choice.second && customDurationText.isEmpty()
+                                    val isSelected = currentTotalMinutes == choice.second
                                     Box(
                                         modifier = Modifier
-                                            .clip(RoundedCornerShape(999.dp))
+                                            .clip(RoundedCornerShape(99.dp))
                                             .background(if (isSelected) PureBlack else MatteSurface)
-                                            .border(1.dp, if (isSelected) PureBlack else BorderGray, RoundedCornerShape(999.dp))
+                                            .border(1.dp, if (isSelected) PureBlack else BorderGray, RoundedCornerShape(99.dp))
                                             .clickable {
-                                                selectedDurationPreset = choice.second
-                                                customDurationText = ""
+                                                selectedHours = choice.second / 60
+                                                selectedMinutes = choice.second % 60
                                             }
                                             .padding(horizontal = 16.dp, vertical = 10.dp),
                                         contentAlignment = Alignment.Center
@@ -258,48 +248,144 @@ fun SetupTargetScreen(
                                         Text(
                                             text = choice.first,
                                             fontSize = 12.sp,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                             color = if (isSelected) OnPureBlack else PureBlack
                                         )
                                     }
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
-                            OutlinedTextField(
-                                value = customDurationText,
-                                onValueChange = { newValue ->
-                                    val validCustomDuration = newValue.toIntOrNull()
-                                    if (newValue.isEmpty() ||
-                                        (newValue.all { it.isDigit() } &&
-                                            validCustomDuration != null &&
-                                            validCustomDuration in 1..GuardianRepository.MAX_DAILY_LIMIT_MINUTES)
+                            // Custom Hour/Minute Up-Down Picker
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MatteSurface, RoundedCornerShape(16.dp))
+                                    .border(1.dp, BorderGray, RoundedCornerShape(16.dp))
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Hours Column
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.width(80.dp)
+                                ) {
+                                    Text(
+                                        text = "SAAT",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MutedGray,
+                                        modifier = Modifier.padding(bottom = 6.dp)
+                                    )
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier
+                                            .background(DarkCharcoal, RoundedCornerShape(12.dp))
+                                            .border(1.dp, BorderGray, RoundedCornerShape(12.dp))
                                     ) {
-                                        customDurationText = newValue
+                                        RepeatingIconButton(
+                                            onClick = {
+                                                if (selectedHours < 23) selectedHours++
+                                            },
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.ArrowDropDown,
+                                                contentDescription = "Saat Artır",
+                                                tint = MutedGray,
+                                                modifier = Modifier.rotate(180f)
+                                            )
+                                        }
+                                        Text(
+                                            text = String.format(Locale.ROOT, "%02d", selectedHours),
+                                            fontSize = 24.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = PureBlack,
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+                                        )
+                                        RepeatingIconButton(
+                                            onClick = {
+                                                if (selectedHours > 0) selectedHours--
+                                            },
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.ArrowDropDown,
+                                                contentDescription = "Saat Azalt",
+                                                tint = MutedGray
+                                            )
+                                        }
                                     }
-                                },
-                                label = { Text(stringResource(R.string.setup_target_custom_limit), color = MutedGray, fontSize = 13.sp) },
-                                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
-                                ),
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = PureWhite,
-                                    unfocusedBorderColor = BorderGray,
-                                    focusedContainerColor = MatteSurface,
-                                    unfocusedContainerColor = MatteSurface,
-                                    focusedTextColor = PureBlack,
-                                    unfocusedTextColor = PureBlack
-                                ),
-                                shape = RoundedCornerShape(14.dp)
-                            )
+                                }
+
+                                Text(
+                                    text = ":",
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MutedGray,
+                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                                )
+
+                                // Minutes Column
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.width(80.dp)
+                                ) {
+                                    Text(
+                                        text = "DAKİKA",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MutedGray,
+                                        modifier = Modifier.padding(bottom = 6.dp)
+                                    )
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier
+                                            .background(DarkCharcoal, RoundedCornerShape(12.dp))
+                                            .border(1.dp, BorderGray, RoundedCornerShape(12.dp))
+                                    ) {
+                                        RepeatingIconButton(
+                                            onClick = {
+                                                if (selectedMinutes < 59) selectedMinutes++
+                                            },
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.ArrowDropDown,
+                                                contentDescription = "Dakika Artır",
+                                                tint = MutedGray,
+                                                modifier = Modifier.rotate(180f)
+                                            )
+                                        }
+                                        Text(
+                                            text = String.format(Locale.ROOT, "%02d", selectedMinutes),
+                                            fontSize = 24.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = PureBlack,
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+                                        )
+                                        RepeatingIconButton(
+                                            onClick = {
+                                                if (selectedMinutes > 0) selectedMinutes--
+                                            },
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.ArrowDropDown,
+                                                contentDescription = "Dakika Azalt",
+                                                tint = MutedGray
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         HorizontalDivider(color = BorderGray, thickness = 1.dp)
 
-                        // BÖLÜM 3: Gün Seçimi
+                        // SECTION 3: Days Selection
                         Column {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -309,22 +395,26 @@ fun SetupTargetScreen(
                                     modifier = Modifier
                                         .size(32.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(PureBlack.copy(alpha = 0.1f)),
+                                        .background(MatteSurface),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.DateRange, contentDescription = null, tint = PureBlack, modifier = Modifier.size(16.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.DateRange,
+                                        contentDescription = null,
+                                        tint = MutedGray,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                                 Text(
                                     text = stringResource(R.string.setup_target_days),
-                                    fontSize = 11.sp,
-                                    fontFamily = FontFamily.SansSerif,
-                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = MutedGray,
                                     letterSpacing = 0.5.sp
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -334,7 +424,9 @@ fun SetupTargetScreen(
                                     val isSelected = selectedDays.contains(day)
                                     Box(
                                         modifier = Modifier
-                                            .size(42.dp)
+                                            .weight(1f)
+                                            .aspectRatio(1f)
+                                            .padding(horizontal = 2.dp)
                                             .clip(CircleShape)
                                             .background(if (isSelected) PureBlack else MatteSurface)
                                             .border(1.dp, if (isSelected) PureBlack else BorderGray, CircleShape)
@@ -361,17 +453,9 @@ fun SetupTargetScreen(
                 }
             }
 
-            // Ekleme ve bitirme butonları
+            // Bottom actions
             item {
-                val finalDuration = if (customDurationText.isNotEmpty()) {
-                    customDurationText.toIntOrNull()
-                        ?.coerceIn(1, GuardianRepository.MAX_DAILY_LIMIT_MINUTES)
-                        ?: selectedDurationPreset
-                } else {
-                    selectedDurationPreset
-                }
-                
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Button(
                         onClick = {
                             if (selectedApps.isEmpty()) {
@@ -383,7 +467,7 @@ fun SetupTargetScreen(
                                 return@Button
                             }
                             val daysStr = selectedDays.joinToString(",")
-                            if (finalDuration == 0) {
+                            if (currentTotalMinutes == 0) {
                                 selectedApps.forEach { app ->
                                     viewModel.startQuickTest(context, app.second, app.first, testSeconds = 10, activeDays = daysStr)
                                 }
@@ -395,7 +479,7 @@ fun SetupTargetScreen(
                                 onCompleted()
                             } else {
                                 selectedApps.forEach { app ->
-                                    viewModel.addRestrictedApp(app.second, app.first, finalDuration, activeDays = daysStr)
+                                    viewModel.addRestrictedApp(app.second, app.first, currentTotalMinutes, activeDays = daysStr)
                                 }
                                 Toast.makeText(
                                     context,
@@ -415,32 +499,11 @@ fun SetupTargetScreen(
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (finalDuration == 0) stringResource(R.string.setup_target_btn_test) else stringResource(R.string.setup_target_btn_activate),
-                            fontFamily = FontFamily.SansSerif,
+                            text = if (currentTotalMinutes == 0) stringResource(R.string.setup_target_btn_test) else stringResource(R.string.setup_target_btn_activate),
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
                             letterSpacing = 0.5.sp
                         )
-                    }
-
-                    if (restrictedApps.any { it.isActive }) {
-                        OutlinedButton(
-                            onClick = onCompleted,
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = PureBlack),
-                            border = BorderStroke(1.5.dp, BorderGray),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(54.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.setup_target_btn_complete),
-                                fontFamily = FontFamily.SansSerif,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                letterSpacing = 0.5.sp
-                            )
-                        }
                     }
                 }
             }
@@ -450,7 +513,7 @@ fun SetupTargetScreen(
             }
         }
 
-        // Custom Uygulama Arama/Seçim Bottom Sheet Overlay
+        // Search Bottom Sheet Overlay
         if (isAppSheetVisible) {
             Box(
                 modifier = Modifier
@@ -511,7 +574,7 @@ fun SetupTargetScreen(
                     
                     Spacer(modifier = Modifier.height(12.dp))
                     
-                    // Arama Kutusu (Temizleme İkonu ile Birlikte)
+                    // Search box
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -539,7 +602,6 @@ fun SetupTargetScreen(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Filtrelenmiş Uygulamalar Listesi
                     val filteredApps = remember(searchQuery, availableApps) {
                         if (searchQuery.isBlank()) {
                             availableApps
@@ -551,7 +613,6 @@ fun SetupTargetScreen(
                         }
                     }
                     
-                    // Liste ve Boş Durum Yönetimi
                     if (filteredApps.isEmpty()) {
                         Box(
                             modifier = Modifier
@@ -629,7 +690,6 @@ fun SetupTargetScreen(
                         }
                     }
                     
-                    // Alt Kısım: Seçimi Onayla Butonu
                     if (selectedApps.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
@@ -664,7 +724,7 @@ fun SelectedAppChip(
         modifier = Modifier
             .wrapContentWidth()
             .height(38.dp)
-            .border(1.dp, PureWhite.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+            .border(1.dp, BorderGray, RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -687,5 +747,56 @@ fun SelectedAppChip(
                 )
             }
         }
+    }
+}
+
+
+@Composable
+fun RepeatingIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    val currentClickListener by rememberUpdatedState(onClick)
+    val interactionSource = remember { MutableInteractionSource() }
+    
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                coroutineScope {
+                    detectTapGestures(
+                        onTap = { currentClickListener() },
+                        onPress = { offset ->
+                            val press = PressInteraction.Press(offset)
+                            interactionSource.emit(press)
+                            val job = launch {
+                                delay(500)
+                                while (true) {
+                                    currentClickListener()
+                                    delay(100)
+                                }
+                            }
+                            try {
+                                awaitRelease()
+                                interactionSource.emit(PressInteraction.Release(press))
+                            } catch (c: Exception) {
+                                interactionSource.emit(PressInteraction.Cancel(press))
+                            } finally {
+                                job.cancel()
+                            }
+                        }
+                    )
+                }
+            }
+            .indication(
+                interactionSource = interactionSource,
+                indication = ripple(bounded = false)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        content()
     }
 }

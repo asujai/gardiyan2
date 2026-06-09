@@ -1,0 +1,326 @@
+[
+  {
+    "id": 1,
+    "originalNumber": 2,
+    "quoteText": "Bize verilen ömrün kısa olduğunu söyleyemeyiz, sadece biz onun çoğunu boşa harcıyoruz.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 2,
+    "originalNumber": 3,
+    "quoteText": "İnsanlar kişisel mülklerini koruma konusunda son derece cimridir; ancak konu zamanı çarçur etmeye geldiğinde, cömert olmanın tek doğru olduğu bu tek şeyde son derece savurgandırlar.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 3,
+    "originalNumber": 4,
+    "quoteText": "Huzur bulmak istiyorsan daha az şey yap. Ya da daha doğrusu, sadece gerekli olanı yap. Her an kendine şunu sor: 'Bu gerçekten gerekli mi?'",
+    "quoteAuthor": "Marcus Aurelius"
+  },
+  {
+    "id": 4,
+    "originalNumber": 6,
+    "quoteText": "İnsanın kendi içinde ne olduğu, yalnız kaldığında ona neyin eşlik ettiği, başkalarının onun hakkında düşündüklerinden çok daha önemlidir.",
+    "quoteAuthor": "Arthur Schopenhauer"
+  },
+  {
+    "id": 5,
+    "originalNumber": 7,
+    "quoteText": "Oradan oraya koşup durmak ve dikkatini sürekli başka yönlere dağıtmak, hastalıklı bir zihnin işaretidir.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 6,
+    "originalNumber": 8,
+    "quoteText": "Deneyimim, neye dikkat etmeyi kabul ettiğimden ibarettir.",
+    "quoteAuthor": "William James"
+  },
+  {
+    "id": 7,
+    "originalNumber": 9,
+    "quoteText": "Ruhun, düşüncelerinin rengine boyanır.",
+    "quoteAuthor": "Marcus Aurelius"
+  },
+  {
+    "id": 8,
+    "originalNumber": 10,
+    "quoteText": "Bana tüm gülünç şeyler içinde en gülünç geleni, meşgul olmaktır; yani işi gücü ve telaşı hiç bitmeyen bir insan olmaktır.",
+    "quoteAuthor": "Søren Kierkegaard"
+  },
+  {
+    "id": 9,
+    "originalNumber": 11,
+    "quoteText": "Sahip olduğumuz hiçbir şey bizim değildir; doğa bize sadece zaman adını verdiğimiz bu kaygan ve uçucu şeyi emanet etmiştir.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 10,
+    "originalNumber": 13,
+    "quoteText": "Bütün günahlar, içimizdeki boşlukları doldurma girişimleridir.",
+    "quoteAuthor": "Simone Weil"
+  },
+  {
+    "id": 11,
+    "originalNumber": 14,
+    "quoteText": "Yaşamak için bir 'neden'i olan insan, hemen her türlü 'nasıl'a katlanabilir.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "id": 12,
+    "originalNumber": 15,
+    "quoteText": "Herhangi bir eyleme verdiğin dikkatin değeri, o eylemin önemiyle doğru orantılı olmalıdır.",
+    "quoteAuthor": "Marcus Aurelius"
+  },
+  {
+    "id": 13,
+    "originalNumber": 16,
+    "quoteText": "Mutsuz insan her zaman kendi dışında olandır; kendi içinde asla var olamayan, anında hep eksik kalandır.",
+    "quoteAuthor": "Søren Kierkegaard"
+  },
+  {
+    "id": 14,
+    "originalNumber": 17,
+    "quoteText": "Meşgul insanın hayatı yaşamaktan başka her şeyle doludur.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 15,
+    "originalNumber": 18,
+    "quoteText": "İnsan ancak yalnız olduğu sürece kendisi olabilir; yalnızlığı sevmeyen özgürlüğü de sevemez; çünkü insan ancak yalnızken gerçekten özgürdür.",
+    "quoteAuthor": "Arthur Schopenhauer"
+  },
+  {
+    "id": 16,
+    "originalNumber": 19,
+    "quoteText": "Sonsuza dek yaşayacakmış gibi yaşıyorsunuz, ölümlü olduğunuz aklınıza bile gelmiyor; ne kadar zaman harcadığınıza hiç dikkat etmiyorsunuz.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 17,
+    "originalNumber": 20,
+    "quoteText": "Zihnimiz dışındaki şeyler bizi doğrudan etkilemez. Bizim zihnimiz o şeylerle ilgili nasıl bir yargıya varırsa, hislerimiz de ona göre şekillenir.",
+    "quoteAuthor": "Epictetus"
+  },
+  {
+    "id": 18,
+    "originalNumber": 21,
+    "quoteText": "Biz neyi tekrar tekrar yapıyorsak oyuz. Dolayısıyla mükemmellik bir eylem değil, bir alışkanlıktır.",
+    "quoteAuthor": "Will Durant (Aristoteles'in felsefesini özetlerken)"
+  },
+  {
+    "id": 19,
+    "originalNumber": 22,
+    "quoteText": "Her alışkanlık ve yetenek, ona karşılık gelen eylemlerle doğrulanır ve güçlendirilir; yürümek yürümeyle, koşmak koşmayla güçlenir.",
+    "quoteAuthor": "Epictetus"
+  },
+  {
+    "id": 20,
+    "originalNumber": 23,
+    "quoteText": "Eğer bir şeyi yapmak istemiyorsan, onu yapmaktan kaçın ve yerine başka bir şeyi alışkanlık haline getirmeyi öğren.",
+    "quoteAuthor": "Epictetus"
+  },
+  {
+    "id": 21,
+    "originalNumber": 24,
+    "quoteText": "Kendi kaderimizi kendimiz örüyoruz; iyi ya da kötü, asla geri alınamaz. Erdem ya da kusur yolundaki en ufak bir hareketimiz bile sinir hücrelerimizde silinmez bir iz bırakır.",
+    "quoteAuthor": "William James"
+  },
+  {
+    "id": 22,
+    "originalNumber": 25,
+    "quoteText": "Dağılan bir dikkati tekrar tekrar, inatla geri getirme yeteneği; muhakemenin, karakterin ve iradenin gerçek temelidir.",
+    "quoteAuthor": "William James"
+  },
+  {
+    "id": 23,
+    "originalNumber": 27,
+    "quoteText": "Her gün kesinlikle yapmak istemediğiniz küçük ama zor bir şeyi sırf iradenizi eğitmek adına yapın; böylece büyük bir zorluk anı yaklaştığında kendinizi hazırlıksız bulmazsınız.",
+    "quoteAuthor": "William James"
+  },
+  {
+    "id": 24,
+    "originalNumber": 28,
+    "quoteText": "Kendi kendinin efendisi olamayan hiç kimse özgür değildir.",
+    "quoteAuthor": "Epictetus"
+  },
+  {
+    "id": 25,
+    "originalNumber": 29,
+    "quoteText": "Hatalarimizi kaba bir irade gücüyle dişlerimizi sıkarak değil, ancak onlara tam bir dikkat göstererek iyileştirebiliriz.",
+    "quoteAuthor": "Simone Weil"
+  },
+  {
+    "id": 26,
+    "originalNumber": 30,
+    "quoteText": "Erdemler, sadece onları fiilen uygulayarak insanda şekillenir.",
+    "quoteAuthor": "Aristoteles"
+  },
+  {
+    "id": 27,
+    "originalNumber": 31,
+    "quoteText": "Vaat edilen bir zevkin cazibesine kapıldığında, onun seni sürüklemesine izin vermemek için kendini koru.",
+    "quoteAuthor": "Epictetus"
+  },
+  {
+    "id": 28,
+    "originalNumber": 32,
+    "quoteText": "Beslenmeyen bir arzunun ne kadar hızlı öldüğünü görmek şaşırtıcıdır.",
+    "quoteAuthor": "William James"
+  },
+  {
+    "id": 29,
+    "originalNumber": 33,
+    "quoteText": "Gençliğimizden itibaren şu ya da bu alışkanlıkları edinmiş olmamız önemsiz değildir; aksine, bu son derece önemlidir, hatta tek önemli şeydir.",
+    "quoteAuthor": "Aristoteles"
+  },
+  {
+    "id": 30,
+    "originalNumber": 34,
+    "quoteText": "Özgürlük, arzuların tatmin edilmesiyle değil, arzunun tamamen ortadan kaldırılmasıyla elde edilir.",
+    "quoteAuthor": "Epictetus"
+  },
+  {
+    "id": 31,
+    "originalNumber": 35,
+    "quoteText": "Bağımlılık, illüzyonların en büyük üreticisidir; gerçeğe ancak bağımlılıklarından sıyrılabilen kişi ulaşabilir.",
+    "quoteAuthor": "Simone Weil"
+  },
+  {
+    "id": 32,
+    "originalNumber": 36,
+    "quoteText": "Her dakikanı, önündeki işi tam ve samimi bir ciddiyetle, istekle ve adaletle yapmaya odaklan; kendini diğer tüm dikkat dağıtıcılardan kurtar.",
+    "quoteAuthor": "Marcus Aurelius"
+  },
+  {
+    "id": 33,
+    "originalNumber": 37,
+    "quoteText": "Hayatları boyunca didinip duran ama tüm düşünce ve dürtülerini yönlendirecekleri bir amaçları olmayan insanlar, çok çalışsalar bile zamanlarını boşa harcarlar.",
+    "quoteAuthor": "Marcus Aurelius"
+  },
+  {
+    "id": 34,
+    "originalNumber": 38,
+    "quoteText": "Zevklerden uzak durarak ölçülü olmayı öğreniriz ve ölçülü olduğumuzda zevklerden uzak durmaya en yetkin hale geliriz.",
+    "quoteAuthor": "Aristoteles"
+  },
+  {
+    "id": 35,
+    "originalNumber": 39,
+    "quoteText": "Beden, zihne itaatsizlik etmemesi için her zaman daha katı ve disiplinli bir muamele görmelidir.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 36,
+    "originalNumber": 41,
+    "quoteText": "Saatler akıp gidiyor ve hepsi hesabımıza yazılıyor.",
+    "quoteAuthor": "Martial (Marcus Valerius Martialis)"
+  },
+  {
+    "id": 37,
+    "originalNumber": 42,
+    "quoteText": "Kendin için en iyisini talep etmeyi ve doğru aklın kurallarını çiğnemeyi bırakmayı daha ne kadar erteleyeceksin?",
+    "quoteAuthor": "Epictetus"
+  },
+  {
+    "id": 38,
+    "originalNumber": 43,
+    "quoteText": "Artık, senin için en iyi olan her şeyi, asla çiğnemeyeceğin bir yasa olarak kabul etme zamanıdır.",
+    "quoteAuthor": "Epictetus"
+  },
+  {
+    "id": 39,
+    "originalNumber": 44,
+    "quoteText": "Biz hayatı ertelerken, o hızla geçip gidiyor.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 40,
+    "originalNumber": 45,
+    "quoteText": "Yarın yaşayacağım deme; yarınki yaşam çok geçtir; bugün yaşa.",
+    "quoteAuthor": "Martial (Marcus Valerius Martialis)"
+  },
+  {
+    "id": 41,
+    "originalNumber": 46,
+    "quoteText": "Kendini özgür kılmak için sana atanan zamanın bir sınırı olduğunu ve bunu kullanmazsan zamanın uçup gideceğini, bir daha asla geri gelmeyeceğini unutma.",
+    "quoteAuthor": "Marcus Aurelius"
+  },
+  {
+    "id": 42,
+    "originalNumber": 47,
+    "quoteText": "Hayat nehrini geçmen için üzerinde yürüyeceğin o köprüyü senden başka hiç kimse inşa edemez.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "id": 43,
+    "originalNumber": 48,
+    "quoteText": "Kendi varlığımızdan yalnızca kendimize karşı sorumluyuz; bu yüzden bu varlığın gerçek dümencisi olmak istiyoruz, onun düşüncesiz bir tesadüfe benzemesine izin veremeyiz.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "id": 44,
+    "originalNumber": 49,
+    "quoteText": "Kendini ölmüş varsay. Hayatını yaşadın ve bitti. Şimdi geri kalan zamanı al ve onu düzgünce yaşa.",
+    "quoteAuthor": "Marcus Aurelius"
+  },
+  {
+    "id": 45,
+    "originalNumber": 50,
+    "quoteText": "Yaşamanın önündeki en büyük engel, yarına bel bağlayan ve bugünü heba eden beklentidir. Kadere ait olanı planlıyor, elinde olanı ise kaçırıyorsun.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 46,
+    "originalNumber": 51,
+    "quoteText": "Her ne zaman, 'Bugün boş vereyim, yarın dikkat ederim' dersen, şunu söylemiş olduğunu bil: 'Bugün utanmaz, arsız ve pespaye olacağım; bugün öfkelenecek ve başkalarının kölesi olacağım.' Kendine nasıl bir kötülük sunduğunu gör!",
+    "quoteAuthor": "Epictetus"
+  },
+  {
+    "id": 47,
+    "originalNumber": 52,
+    "quoteText": "Geriye dönüp bak ve hatırla: Ne kadar çok insan sen farkında bile olmadan hayatını yağmaladı... Zamanından geriye ne kadar az şey kaldığını görünce zamansız öldüğünü anlayacaksın.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 48,
+    "originalNumber": 53,
+    "quoteText": "Seçeneklerin çokluğu içinde kaybolmak estetik seçimin doğasıdır; oysa kişi kendisini mutlak olarak seçmedikçe, sadece anlık ve geçici kararlar verir.",
+    "quoteAuthor": "Søren Kierkegaard"
+  },
+  {
+    "id": 49,
+    "originalNumber": 54,
+    "quoteText": "En uzun yaşayan da en kısa sürede ölecek olan da aynı şeyi kaybeder: Sadece şimdiki anı. Çünkü sadece ona sahipsiniz ve sahip olmadığınız bir şeyi kaybedemezsiniz.",
+    "quoteAuthor": "Marcus Aurelius"
+  },
+  {
+    "id": 50,
+    "originalNumber": 55,
+    "quoteText": "Kendi koyduğun yasanın hem yargıcı hem de celladı olarak kendinle baş başa kalmak dehşet vericidir.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "id": 51,
+    "originalNumber": 56,
+    "quoteText": "Hayal gücü, gerçeğin girmemesi için tüm çatlakları sürekli doldurur.",
+    "quoteAuthor": "Simone Weil"
+  },
+  {
+    "id": 52,
+    "originalNumber": 57,
+    "quoteText": "Geçmişi unutan, şimdiki anı ihmal eden ve gelecekten korkanların hayatı son derece kısa ve endişe doludur.",
+    "quoteAuthor": "Seneca"
+  },
+  {
+    "id": 53,
+    "originalNumber": 59,
+    "quoteText": "Zor ve önemsiz şeylerle uğraşmak itibar düşürücüdür; çocukça işler için harcanan emek ise ahmaklıktır.",
+    "quoteAuthor": "Martial (Marcus Valerius Martialis)"
+  },
+  {
+    "id": 54,
+    "originalNumber": 60,
+    "quoteText": "Mücadele başladı; şu an Olimpiyat Oyunları'ndasın, artık erteleme seçeneğin kalmadı ve tek bir yenilgi tüm ilerlemeni yerle bir edebilir.",
+    "quoteAuthor": "Epictetus"
+  }
+]
