@@ -36,6 +36,8 @@ import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
+import java.lang.ref.WeakReference
+import android.annotation.SuppressLint
 
 /**
  * Foreground Service — 10 saniye sonsuz döngüde kilit ekranı.
@@ -86,10 +88,10 @@ class BlockOverlayService : Service() {
         val isLockOverlayVisible = AtomicBoolean(false)
 
         @Volatile
-        private var serviceInstance: BlockOverlayService? = null
+        private var serviceInstance: WeakReference<BlockOverlayService>? = null
 
         @Volatile
-        private var appContextRef: Context? = null
+        private var appContextRef: WeakReference<Context>? = null
 
         @Volatile
         private var pendingOverlayTarget: Pair<String, String>? = null
@@ -104,20 +106,20 @@ class BlockOverlayService : Service() {
          */
         @JvmStatic
         fun showLockOverlay(context: Context, targetAppName: String, targetAppPackage: String) {
-            appContextRef = context.applicationContext
+            appContextRef = WeakReference(context.applicationContext)
             showLockOverlay(targetAppName, targetAppPackage)
         }
 
         @JvmStatic
         fun showLockOverlay(targetAppName: String, targetAppPackage: String) {
             Log.i(TAG, "showLockOverlay requested for $targetAppName")
-            val instance = serviceInstance
+            val instance = serviceInstance?.get()
             if (instance != null) {
                 instance.addLockOverlayView(targetAppName, targetAppPackage)
             } else {
                 pendingOverlayTarget = targetAppName to targetAppPackage
                 Log.w(TAG, "Service instance null, queuing pending overlay and restarting")
-                val ctx = appContextRef ?: return
+                val ctx = appContextRef?.get() ?: return
                 try {
                     start(ctx)
                 } catch (e: Exception) {
@@ -134,7 +136,7 @@ class BlockOverlayService : Service() {
         fun hideLockOverlay() {
             Log.i(TAG, "hideLockOverlay requested")
             pendingOverlayTarget = null
-            serviceInstance?.removeLockOverlayView()
+            serviceInstance?.get()?.removeLockOverlayView()
         }
 
         @JvmStatic
@@ -147,7 +149,7 @@ class BlockOverlayService : Service() {
          * `BlockOverlayService.customEmojiUri = uri` (companion var setter).
          */
         fun start(context: Context) {
-            appContextRef = context.applicationContext
+            appContextRef = WeakReference(context.applicationContext)
             val serviceIntent = Intent(context, BlockOverlayService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(serviceIntent)
@@ -170,8 +172,8 @@ class BlockOverlayService : Service() {
     override fun onCreate() {
         super.onCreate()
         isServiceRunning.set(true)
-        serviceInstance = this
-        appContextRef = applicationContext
+        serviceInstance = WeakReference(this)
+        appContextRef = WeakReference(applicationContext)
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         createNotificationChannel()
         startForegroundCompat()
@@ -218,29 +220,24 @@ class BlockOverlayService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             val alarmService = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (alarmService.canScheduleExactAlarms()) {
-                    alarmService.setExactAndAllowWhileIdle(
-                        AlarmManager.ELAPSED_REALTIME,
-                        SystemClock.elapsedRealtime() + 1000L,
-                        pendingIntent
-                    )
-                } else {
-                    alarmService.setAndAllowWhileIdle(
-                        AlarmManager.ELAPSED_REALTIME,
-                        SystemClock.elapsedRealtime() + 1000L,
-                        pendingIntent
-                    )
-                }
+            
+            // Play Store politika riski ve SCHEDULE_EXACT_ALARM izni gereksinimini kaldırmak için
+            // setAndAllowWhileIdle veya normal set kullanımı tercih edilir.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmService.setAndAllowWhileIdle(
+                    AlarmManager.ELAPSED_REALTIME,
+                    SystemClock.elapsedRealtime() + 1000L,
+                    pendingIntent
+                )
             } else {
-                alarmService.setExactAndAllowWhileIdle(
+                alarmService.set(
                     AlarmManager.ELAPSED_REALTIME,
                     SystemClock.elapsedRealtime() + 1000L,
                     pendingIntent
                 )
             }
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Failed to schedule exact alarm: ${e.message}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to schedule service restart: ${e.message}")
         }
     }
 
@@ -333,6 +330,7 @@ class BlockOverlayService : Service() {
         }
 
         try {
+            @SuppressLint("InflateParams")
             val overlayView = LayoutInflater.from(this).inflate(R.layout.lock_overlay, null)
             val targetText = overlayView.findViewById<TextView>(R.id.targetAppText)
             val emojiText = overlayView.findViewById<TextView>(R.id.emojiText)
@@ -387,10 +385,9 @@ class BlockOverlayService : Service() {
                     finalQuoteText = customText
                     finalQuoteAuthor = customAuthor
                 } else {
-                    val textResId = resources.getIdentifier("quote_text_$selectedIndex", "string", packageName)
-                    val authorResId = resources.getIdentifier("quote_author_$selectedIndex", "string", packageName)
-                    finalQuoteText = if (textResId != 0) getString(textResId) else ""
-                    finalQuoteAuthor = if (authorResId != 0) getString(authorResId) else ""
+                    val pair = DefaultQuotes.list.getOrNull(selectedIndex - 1)
+                    finalQuoteText = if (pair != null && pair.first != 0) getString(pair.first) else ""
+                    finalQuoteAuthor = if (pair != null && pair.second != 0) getString(pair.second) else ""
                 }
             }
 
@@ -425,8 +422,8 @@ class BlockOverlayService : Service() {
             limitOverText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#EF4444" else "#DC2626"))
             quoteText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#E2E8F0" else "#334155"))
             quoteAuthorText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#475569"))
-            explanationText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#64748B" else "#64748B"))
-            returnToHomeText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#475569" else "#475569"))
+            explanationText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#64748B"))
+            returnToHomeText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#475569"))
 
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -582,4 +579,63 @@ class BlockOverlayService : Service() {
             action()
         }
     }
+}
+
+object DefaultQuotes {
+    val list = listOf(
+        R.string.quote_text_1 to R.string.quote_author_1,
+        R.string.quote_text_2 to R.string.quote_author_2,
+        R.string.quote_text_3 to R.string.quote_author_3,
+        R.string.quote_text_4 to R.string.quote_author_4,
+        R.string.quote_text_5 to R.string.quote_author_5,
+        R.string.quote_text_6 to R.string.quote_author_6,
+        R.string.quote_text_7 to R.string.quote_author_7,
+        R.string.quote_text_8 to R.string.quote_author_8,
+        R.string.quote_text_9 to R.string.quote_author_9,
+        R.string.quote_text_10 to R.string.quote_author_10,
+        R.string.quote_text_11 to R.string.quote_author_11,
+        R.string.quote_text_12 to R.string.quote_author_12,
+        R.string.quote_text_13 to R.string.quote_author_13,
+        R.string.quote_text_14 to R.string.quote_author_14,
+        R.string.quote_text_15 to R.string.quote_author_15,
+        R.string.quote_text_16 to R.string.quote_author_16,
+        R.string.quote_text_17 to R.string.quote_author_17,
+        R.string.quote_text_18 to R.string.quote_author_18,
+        R.string.quote_text_19 to R.string.quote_author_19,
+        R.string.quote_text_20 to R.string.quote_author_20,
+        R.string.quote_text_21 to R.string.quote_author_21,
+        R.string.quote_text_22 to R.string.quote_author_22,
+        R.string.quote_text_23 to R.string.quote_author_23,
+        R.string.quote_text_24 to R.string.quote_author_24,
+        R.string.quote_text_25 to R.string.quote_author_25,
+        R.string.quote_text_26 to R.string.quote_author_26,
+        R.string.quote_text_27 to R.string.quote_author_27,
+        R.string.quote_text_28 to R.string.quote_author_28,
+        R.string.quote_text_29 to R.string.quote_author_29,
+        R.string.quote_text_30 to R.string.quote_author_30,
+        R.string.quote_text_31 to R.string.quote_author_31,
+        R.string.quote_text_32 to R.string.quote_author_32,
+        R.string.quote_text_33 to R.string.quote_author_33,
+        R.string.quote_text_34 to R.string.quote_author_34,
+        R.string.quote_text_35 to R.string.quote_author_35,
+        R.string.quote_text_36 to R.string.quote_author_36,
+        R.string.quote_text_37 to R.string.quote_author_37,
+        R.string.quote_text_38 to R.string.quote_author_38,
+        R.string.quote_text_39 to R.string.quote_author_39,
+        R.string.quote_text_40 to R.string.quote_author_40,
+        R.string.quote_text_41 to R.string.quote_author_41,
+        R.string.quote_text_42 to R.string.quote_author_42,
+        R.string.quote_text_43 to R.string.quote_author_43,
+        R.string.quote_text_44 to R.string.quote_author_44,
+        R.string.quote_text_45 to R.string.quote_author_45,
+        R.string.quote_text_46 to R.string.quote_author_46,
+        R.string.quote_text_47 to R.string.quote_author_47,
+        R.string.quote_text_48 to R.string.quote_author_48,
+        R.string.quote_text_49 to R.string.quote_author_49,
+        R.string.quote_text_50 to R.string.quote_author_50,
+        R.string.quote_text_51 to R.string.quote_author_51,
+        R.string.quote_text_52 to R.string.quote_author_52,
+        R.string.quote_text_53 to R.string.quote_author_53,
+        R.string.quote_text_54 to R.string.quote_author_54
+    )
 }

@@ -149,16 +149,14 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
         val db = GuardianDatabase.getDatabase(applicationContext)
         val repository = GuardianRepository(db.guardianDao())
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
-                withContext(Dispatchers.IO) {
-                    repository.closeActiveSession("Servis sonlandırıldı (Unbind)")
-                    repository.insertLog(
-                        eventType = "SERVICE_STOPPED",
-                        appName = "",
-                        details = "Limitra koruma motoru durduruldu (Unbind)."
-                    )
-                }
+                repository.closeActiveSession("Servis sonlandırıldı (Unbind)")
+                repository.insertLog(
+                    eventType = "SERVICE_STOPPED",
+                    appName = "",
+                    details = "Limitra koruma motoru durduruldu (Unbind)."
+                )
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -177,16 +175,14 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
         val db = GuardianDatabase.getDatabase(applicationContext)
         val repository = GuardianRepository(db.guardianDao())
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
-                withContext(Dispatchers.IO) {
-                    repository.closeActiveSession("Servis sonlandırıldı (Destroy)")
-                    repository.insertLog(
-                        eventType = "SERVICE_STOPPED",
-                        appName = "",
-                        details = "Limitra koruma motoru durduruldu (Destroy)."
-                    )
-                }
+                repository.closeActiveSession("Servis sonlandırıldı (Destroy)")
+                repository.insertLog(
+                    eventType = "SERVICE_STOPPED",
+                    appName = "",
+                    details = "Limitra koruma motoru durduruldu (Destroy)."
+                )
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -253,6 +249,19 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
             while (isActive) {
                 try {
+                    val today = todayKey()
+                    val evalPrefs = getSharedPreferences("gardiyan_eval_prefs", Context.MODE_PRIVATE)
+                    val hasLoggedActiveToday = evalPrefs.getBoolean("logged_active_$today", false)
+                    val activeAppsForLog = withContext(Dispatchers.IO) {
+                        repository.getActiveRestrictedAppsSync()
+                    }
+                    if (!hasLoggedActiveToday && activeAppsForLog.isNotEmpty()) {
+                        withContext(Dispatchers.IO) {
+                            repository.insertLog("ENGINE_ACTIVE", "", "Limitra koruma motoru aktif olarak çalışıyor.")
+                        }
+                        evalPrefs.edit().putBoolean("logged_active_$today", true).apply()
+                    }
+
                     currentTrackedPackage
                         ?.takeIf { it == currentForegroundPackage }
                         ?.let { pkg ->

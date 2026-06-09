@@ -79,6 +79,7 @@ fun ProfileScreen(
     val context = LocalContext.current
     val allOk = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted && isNotificationsEnabled
     var isHealthExpanded by remember { mutableStateOf(false) }
+    var isClearingData by remember { mutableStateOf(false) }
 
     // 1. Temel Hesaplamalar
     val totalSuccessDays = remember(logs) {
@@ -358,11 +359,10 @@ fun ProfileScreen(
     if (showStreakDetailDialog) {
         AlertDialog(
             onDismissRequest = { showStreakDetailDialog = false },
-            title = { Text("Başarı Serisi", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_streak_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 Text(
-                    "Kısıtlama kurallarını bozmadan geçirdiğiniz ardışık gün sayısı: $consecutiveSuccessDays Gün.\n\n" +
-                    "Dijital dengenizi bozmadığınız sürece bu seri her gün artar. Kurallar ihlal edildiğinde veya kısıtlamalar bypass edildiğinde sıfırlanır.",
+                    stringResource(R.string.profile_streak_dialog_desc, consecutiveSuccessDays),
                     color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
                 )
             },
@@ -371,7 +371,7 @@ fun ProfileScreen(
                     onClick = { showStreakDetailDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Kapat", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_close), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -382,12 +382,11 @@ fun ProfileScreen(
     if (showSavedTimeDetailDialog) {
         AlertDialog(
             onDismissRequest = { showSavedTimeDetailDialog = false },
-            title = { Text("Kazanılan / Korunan Süre", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_saved_time_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
-                val timeStr = if (totalSavedMillis > 0) formatUsageDuration(totalSavedMillis) else "Henüz veri yok"
+                val timeStr = if (totalSavedMillis > 0) formatUsageDuration(totalSavedMillis) else stringResource(R.string.profile_saved_time_no_data)
                 Text(
-                    "Kısıtlamalar sayesinde bugüne kadar koruduğunuz tahmini süre: $timeStr.\n\n" +
-                    "Bu değer, kısıtlanan uygulamalardaki geçmiş ortalama kullanım süreniz ile günlük limitiniz arasındaki fark temel alınarak hesaplanır.",
+                    stringResource(R.string.profile_saved_time_dialog_desc, timeStr),
                     color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
                 )
             },
@@ -396,7 +395,7 @@ fun ProfileScreen(
                     onClick = { showSavedTimeDetailDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Kapat", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_close), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -407,15 +406,15 @@ fun ProfileScreen(
     if (showActiveAppsDetailDialog) {
         AlertDialog(
             onDismissRequest = { showActiveAppsDetailDialog = false },
-            title = { Text("Aktif Kısıtlamalar", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_active_apps_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 val appListStr = if (activeApps.isNotEmpty()) {
                     activeApps.joinToString("\n") { "• ${it.appName} (${it.dailyLimitMinutes} dk)" }
                 } else {
-                    "Aktif kısıtlanmış uygulama bulunmuyor."
+                    stringResource(R.string.profile_active_apps_dialog_empty)
                 }
                 Text(
-                    "Şu anda aktif koruma altındaki uygulamalar:\n\n$appListStr",
+                    stringResource(R.string.profile_active_apps_dialog_desc, appListStr),
                     color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
                 )
             },
@@ -424,7 +423,7 @@ fun ProfileScreen(
                     onClick = { showActiveAppsDetailDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Kapat", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_close), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -435,11 +434,10 @@ fun ProfileScreen(
     if (showWeeklySummaryDetailDialog) {
         AlertDialog(
             onDismissRequest = { showWeeklySummaryDetailDialog = false },
-            title = { Text("Haftalık Özet Detayı", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_weekly_summary_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 Text(
-                    "Bu hafta toplam $weeklySuccessDays gün boyunca kısıtlama kurallarına tam uyum sağladınız.\n\n" +
-                    "Haftalık hedeflerinizi tamamlamak dijital disiplininizi pekiştirir ve odaklanma sürenizi artırır.",
+                    stringResource(R.string.profile_weekly_summary_dialog_desc, weeklySuccessDays),
                     color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
                 )
             },
@@ -448,7 +446,7 @@ fun ProfileScreen(
                     onClick = { showWeeklySummaryDetailDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Kapat", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_close), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -458,7 +456,7 @@ fun ProfileScreen(
 
     if (showDeleteDataDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDataDialog = false },
+            onDismissRequest = { if (!isClearingData) showDeleteDataDialog = false },
             title = {
                 Text(
                     text = stringResource(R.string.profile_clear_confirm_title),
@@ -468,20 +466,43 @@ fun ProfileScreen(
                 )
             },
             text = {
-                Text(
-                    text = stringResource(R.string.profile_clear_confirm_desc),
-                    color = MutedGray,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
-                )
+                Column {
+                    Text(
+                        text = stringResource(R.string.profile_clear_confirm_desc),
+                        color = MutedGray,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+                    if (isClearingData) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = PureBlack)
+                        }
+                    }
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        showDeleteDataDialog = false
-                        viewModel.clearAllUserData(context)
-                        android.widget.Toast.makeText(context, context.getString(R.string.profile_clear_success), android.widget.Toast.LENGTH_SHORT).show()
+                        isClearingData = true
+                        viewModel.clearAllUserData(
+                            context = context,
+                            onSuccess = {
+                                isClearingData = false
+                                showDeleteDataDialog = false
+                                android.widget.Toast.makeText(context, context.getString(R.string.profile_clear_success), android.widget.Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { error ->
+                                isClearingData = false
+                                showDeleteDataDialog = false
+                                android.widget.Toast.makeText(context, "Hata oluştu: ${error.localizedMessage}", android.widget.Toast.LENGTH_LONG).show()
+                            }
+                        )
                     },
+                    enabled = !isClearingData,
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed, contentColor = OnPureBlack),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -491,6 +512,7 @@ fun ProfileScreen(
             dismissButton = {
                 TextButton(
                     onClick = { showDeleteDataDialog = false },
+                    enabled = !isClearingData,
                     colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
                 ) {
                     Text(stringResource(R.string.btn_cancel))
@@ -809,7 +831,7 @@ fun ProfileScreen(
                             if (tempQuoteText.trim().isNotEmpty()) {
                                 prefs.edit().apply {
                                     putString("custom_quote_text", tempQuoteText.trim())
-                                    putString("custom_quote_author", tempQuoteAuthor.trim().ifEmpty { "Anonim" })
+                                    putString("custom_quote_author", tempQuoteAuthor.trim().ifEmpty { context.getString(R.string.quote_author_anonymous) })
                                     putString("custom_quote_preference", tempPreference)
                                     putBoolean("has_custom_quote", true)
                                     apply()

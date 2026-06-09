@@ -38,7 +38,7 @@ class GuardianRepositoryRegressionTest {
     }
 
     @Test
-    fun `readding an active restriction does not reset its lock state`() = runBlocking {
+    fun `readding an active restriction updates its limit and active days`() = runBlocking {
         val id = repository.upsertRestrictedApp("test.package", "Test", 30)
         val locked = repository.getRestrictedAppByIdSync(id)!!.copy(
             remainingMinutesToday = 0,
@@ -50,9 +50,9 @@ class GuardianRepositoryRegressionTest {
         repository.upsertRestrictedApp("test.package", "Test", 60)
 
         val result = repository.getRestrictedAppByIdSync(id)!!
-        assertEquals(30, result.dailyLimitMinutes)
-        assertEquals(0, result.remainingSecondsToday)
-        assertTrue(result.isFailed)
+        assertEquals(60, result.dailyLimitMinutes)
+        assertEquals(60 * 60, result.remainingSecondsToday)
+        assertFalse(result.isFailed)
     }
 
     @Test
@@ -102,10 +102,62 @@ class GuardianRepositoryRegressionTest {
     fun `successful daily evaluation creates one success log`() = runBlocking {
         repository.insertDefaultSessionIfMissing()
         repository.upsertRestrictedApp("test.package", "Test", 30)
+        repository.insertLog("ENGINE_ACTIVE", "", "Limitra active")
 
         val success = repository.evaluateDailySuccess(GuardianRepository.todayKey())
 
         assertTrue(success)
+        assertEquals(1, database.guardianDao().getAllLogsSync().count { it.eventType == "SUCCESS_DAY" })
+    }
+
+    @Test
+    fun `evaluation fails if no active engine log is present`() = runBlocking {
+        repository.insertDefaultSessionIfMissing()
+        repository.upsertRestrictedApp("test.package", "Test", 30)
+        
+        val success = repository.evaluateDailySuccess(GuardianRepository.todayKey())
+        
+        assertFalse(success)
+        assertEquals(0, database.guardianDao().getAllLogsSync().count { it.eventType == "SUCCESS_DAY" })
+    }
+
+    @Test
+    fun `evaluation success writes log with correct end of day timestamp`() = runBlocking {
+        repository.insertDefaultSessionIfMissing()
+        repository.upsertRestrictedApp("test.package", "Test", 30)
+        repository.insertLog("ENGINE_ACTIVE", "", "Limitra active")
+        
+        val todayStr = GuardianRepository.todayKey()
+        val success = repository.evaluateDailySuccess(todayStr)
+        
+        assertTrue(success)
+        
+        val successLog = database.guardianDao().getAllLogsSync().first { it.eventType == "SUCCESS_DAY" }
+        
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        val date = sdf.parse(todayStr)!!
+        val cal = java.util.Calendar.getInstance()
+        cal.time = date
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 23)
+        cal.set(java.util.Calendar.MINUTE, 59)
+        cal.set(java.util.Calendar.SECOND, 59)
+        cal.set(java.util.Calendar.MILLISECOND, 999)
+        
+        assertEquals(cal.timeInMillis, successLog.timestamp)
+    }
+
+    @Test
+    fun `repeated evaluation does not change success state`() = runBlocking {
+        repository.insertDefaultSessionIfMissing()
+        repository.upsertRestrictedApp("test.package", "Test", 30)
+        repository.insertLog("ENGINE_ACTIVE", "", "Limitra active")
+        
+        val successFirst = repository.evaluateDailySuccess(GuardianRepository.todayKey())
+        assertTrue(successFirst)
+        
+        val successSecond = repository.evaluateDailySuccess(GuardianRepository.todayKey())
+        assertTrue(successSecond)
+        
         assertEquals(1, database.guardianDao().getAllLogsSync().count { it.eventType == "SUCCESS_DAY" })
     }
 
@@ -123,7 +175,6 @@ class GuardianRepositoryRegressionTest {
         val id = repository.upsertRestrictedApp("test.package", "Test", 45)
         val app = repository.getRestrictedAppByIdSync(id)!!
         
-        // Mock a past reset date to simulate day change
         repository.updateRestrictedApp(
             app.copy(
                 lastResetDate = "2000-01-01"
@@ -159,5 +210,103 @@ class GuardianRepositoryRegressionTest {
 
         assertEquals(1, result.remainingSecondsToday)
         assertFalse(result.isFailed)
+    }
+
+    @Test
+    fun `upsertRestrictedApp always updates existing active restrictions`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 30, "Pzt")
+        
+        repository.upsertRestrictedApp("test.package", "Test", 45, "Sal")
+        
+        val result = repository.getRestrictedAppByIdSync(id)!!
+        assertEquals(45, result.dailyLimitMinutes)
+        assertEquals(45 * 60, result.remainingSecondsToday)
+        assertEquals("Sal", result.activeDays)
+    }
+
+    @Test
+    fun `insertQuickTestApp always updates existing active restrictions for quick test`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 30)
+        
+        repository.insertQuickTestApp("test.package", "Test", 15)
+        
+        val result = repository.getRestrictedAppByIdSync(id)!!
+        assertEquals(15, result.remainingSecondsToday)
+        assertFalse(result.isFailed)
+    }
+
+    @Test
+    fun `evaluateDailySuccess does not disable user session on success`() = runBlocking {
+        repository.insertDefaultSessionIfMissing()
+        val sessionBefore = repository.getSessionSync()!!
+        repository.saveSession(sessionBefore.copy(isActive = true))
+        
+        repository.upsertRestrictedApp("test.package", "Test", 30)
+        repository.insertLog("ENGINE_ACTIVE", "", "Limitra active")
+        
+        val success = repository.evaluateDailySuccess(GuardianRepository.todayKey())
+        assertTrue(success)
+        
+        val sessionAfter = repository.getSessionSync()!!
+        assertTrue(sessionAfter.isActive)
+    }
+
+    @Test
+    fun `evaluateDailySuccess does not award success to multiple past days without engine active log`() = runBlocking {
+        repository.insertDefaultSessionIfMissing()
+        repository.upsertRestrictedApp("test.package", "Test", 30)
+        
+        val successDayMinus3 = repository.evaluateDailySuccess("2026-06-07")
+        val successDayMinus2 = repository.evaluateDailySuccess("2026-06-08")
+        val successYesterday = repository.evaluateDailySuccess("2026-06-09")
+        
+        assertFalse(successDayMinus3)
+        assertFalse(successDayMinus2)
+        assertFalse(successYesterday)
+        assertEquals(0, database.guardianDao().getAllLogsSync().count { it.eventType == "SUCCESS_DAY" })
+    }
+
+    @Test
+    fun `incremental session duration updates remaining seconds`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 30)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        
+        repository.startSession(app)
+        val session = repository.getActiveSession()!!
+        
+        val dbSession = database.guardianDao().getActiveSessionSync()!!
+        database.guardianDao().updateActiveSession(
+            dbSession.copy(
+                lastSeenAtMillis = System.currentTimeMillis() - 5000L
+            )
+        )
+        
+        repository.updateSessionLastSeen("test.package")
+        
+        val result = repository.getRestrictedAppByIdSync(id)!!
+        val remaining = result.remainingSecondsToday
+        assertTrue(remaining in 1793..1797)
+    }
+
+    @Test
+    fun `closeActiveSession only subtracts duration since last heartbeat`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 30)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        
+        repository.startSession(app)
+        
+        val dbSession = database.guardianDao().getActiveSessionSync()!!
+        database.guardianDao().updateActiveSession(
+            dbSession.copy(
+                entryAtMillis = System.currentTimeMillis() - 10000L,
+                lastSeenAtMillis = System.currentTimeMillis() - 3000L
+            )
+        )
+        
+        repository.closeActiveSession("Test Close")
+        
+        val result = repository.getRestrictedAppByIdSync(id)!!
+        val remaining = result.remainingSecondsToday
+        assertTrue(remaining in 1795..1798)
     }
 }

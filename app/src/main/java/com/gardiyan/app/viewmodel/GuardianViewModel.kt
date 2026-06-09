@@ -128,6 +128,17 @@ class GuardianViewModel(context: Context) : ViewModel() {
             val app = repository.getRestrictedAppByIdSync(id)
             repository.removeRestrictedApp(id)
             if (app != null) {
+                // Aktif oturum bu uygulama ise kapat
+                val activeSession = repository.getActiveSession()
+                if (activeSession != null && activeSession.packageName == app.packageName) {
+                    repository.closeActiveSession("Kısıtlama silindi")
+                }
+                
+                // Silinen uygulama şu an kilitliyse ekranı kapat
+                if (BlockOverlayService.isLockOverlayFor(app.packageName)) {
+                    BlockOverlayService.hideLockOverlay()
+                }
+
                 repository.insertLog(
                     eventType = "RESTRICTION_REMOVED",
                     appName = app.appName,
@@ -138,6 +149,23 @@ class GuardianViewModel(context: Context) : ViewModel() {
                     appName = app.appName,
                     details = "${app.appName} restriction was removed through a protected action."
                 )
+            }
+
+            // Başka aktif kısıtlama kaldı mı kontrol et, kalmadıysa servisi durdur
+            val active = repository.getActiveRestrictedAppsSync()
+            if (active.isEmpty()) {
+                if (BlockOverlayService.isServiceRunning.get()) {
+                    val serviceIntent = Intent(appContext, BlockOverlayService::class.java)
+                    appContext.stopService(serviceIntent)
+                    _isMonitoringActive.value = false
+                }
+                if (BlockOverlayService.isLockOverlayVisible.get()) {
+                    BlockOverlayService.hideLockOverlay()
+                }
+                val session = repository.getSessionSync()
+                if (session != null && session.isActive) {
+                    repository.saveSession(session.copy(isActive = false))
+                }
             }
         }
     }
@@ -314,31 +342,43 @@ class GuardianViewModel(context: Context) : ViewModel() {
         }
     }
 
-    fun clearAllUserData(context: Context) {
+    fun clearAllUserData(context: Context, onSuccess: () -> Unit, onError: (Throwable) -> Unit) {
         viewModelScope.launch {
-            repository.clearAllRestrictedApps()
-            repository.clearLogs()
-            val defaultSession = UserSessionEntity(
-                id = 1,
-                username = "LimitraUser",
-                level = 1,
-                hasRedBadge = false,
-                isActive = false,
-                consecutiveSuccessDays = 0,
-                activeRedemptionDaysLeft = 0,
-                redemptionStreakGoal = 2
-            )
-            repository.saveSession(defaultSession)
+            try {
+                repository.clearAllRestrictedApps()
+                repository.clearActiveSessions()
+                repository.clearLogs()
+                val defaultSession = UserSessionEntity(
+                    id = 1,
+                    username = "LimitraUser",
+                    level = 1,
+                    hasRedBadge = false,
+                    isActive = false,
+                    consecutiveSuccessDays = 0,
+                    activeRedemptionDaysLeft = 0,
+                    redemptionStreakGoal = 2
+                )
+                repository.saveSession(defaultSession)
 
-            if (BlockOverlayService.isServiceRunning.get()) {
-                val serviceIntent = Intent(context, BlockOverlayService::class.java)
-                context.stopService(serviceIntent)
-                _isMonitoringActive.value = false
+                if (BlockOverlayService.isServiceRunning.get()) {
+                    val serviceIntent = Intent(context, BlockOverlayService::class.java)
+                    context.stopService(serviceIntent)
+                    _isMonitoringActive.value = false
+                }
+                if (BlockOverlayService.isLockOverlayVisible.get()) {
+                    BlockOverlayService.hideLockOverlay()
+                }
+
+                // SharedPreferences temizliği
+                context.getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE).edit().clear().apply()
+                context.getSharedPreferences("gardiyan_eval_prefs", Context.MODE_PRIVATE).edit().clear().apply()
+                context.getSharedPreferences("gardiyan_notifications", Context.MODE_PRIVATE).edit().clear().apply()
+                context.getSharedPreferences("gardiyan_theme_prefs", Context.MODE_PRIVATE).edit().clear().apply()
+
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e)
             }
-            if (BlockOverlayService.isLockOverlayVisible.get()) {
-                BlockOverlayService.hideLockOverlay()
-            }
-            repository.insertLog("DATA_CLEARED", "", "Tüm kullanıcı verileri ve kısıtlamaları temizlendi.")
         }
     }
 

@@ -83,7 +83,7 @@
     <string name="setup_target_2h">2 Hours</string>
     <string name="setup_target_add">ADD RESTRICTION</string>
     <string name="setup_target_select_app_title">SELECT APP</string>
-    <string name="setup_target_select_app_placeholder">Select apps to protect...</string>
+    <string name="setup_target_select_app_placeholder">Select apps to protect…</string>
     <string name="setup_target_daily_limit">DAILY USAGE LIMIT</string>
     <string name="setup_target_custom_limit">Enter custom minute limit</string>
     <string name="setup_target_days">PROTECTION DAYS</string>
@@ -94,7 +94,7 @@
     <string name="setup_target_btn_test">START QUICK TEST (10s)</string>
     <string name="setup_target_btn_activate">ACTIVATE RESTRICTIONS</string>
     <string name="setup_target_btn_complete">COMPLETE &amp; OPEN PROTECTION</string>
-    <string name="setup_target_search_placeholder">Search app name or package name...</string>
+    <string name="setup_target_search_placeholder">Search app name or package name…</string>
     <string name="setup_target_no_match">No Matching Apps</string>
     <string name="setup_target_no_match_desc">No installed app found matching \"%1$s\".</string>
     <string name="setup_target_confirm_selection">CONFIRM SELECTION (%1$d APPS)</string>
@@ -378,7 +378,7 @@
     <string name="quote_author_45">Seneca</string>
     <string name="quote_text_46">Whenever you say, \'I will let it go today, I will pay attention tomorrow,\' know that you have said this: \'Today I will be shameless, impudent, and base; today I will be angry and a slave to others.\' See what evil you present to yourself!</string>
     <string name="quote_author_46">Epictetus</string>
-    <string name="quote_text_47">Look back and remember: How many people plundered your life without you even realizing... When you see how little is left of your time, you will realize you are dying untimely.</string>
+    <string name="quote_text_47">Look back and remember: How many people plundered your life without you even realizing… When you see how little is left of your time, you will realize you are dying untimely.</string>
     <string name="quote_author_47">Seneca</string>
     <string name="quote_text_48">Losing oneself in the multiplicity of choices is the nature of aesthetic choice; whereas unless a person chooses himself absolutely, he only makes momentary and temporary decisions.</string>
     <string name="quote_author_48">Søren Kierkegaard</string>
@@ -401,4 +401,25 @@
     <string name="discipline_summary_days_ago">Last 21 Days</string>
     <string name="discipline_summary_success">Success</string>
     <string name="discipline_summary_failure">Failure</string>
+
+    <!-- Setup Target Hour/Minute Labels and accessibility -->
+    <string name="setup_target_hour_label">HOUR</string>
+    <string name="setup_target_minute_label">MINUTE</string>
+    <string name="setup_target_hour_inc_desc">Increase Hours</string>
+    <string name="setup_target_hour_dec_desc">Decrease Hours</string>
+    <string name="setup_target_minute_inc_desc">Increase Minutes</string>
+    <string name="setup_target_minute_dec_desc">Decrease Minutes</string>
+
+    <!-- Profile Dialogs and translations -->
+    <string name="profile_streak_dialog_title">Success Streak</string>
+    <string name="profile_streak_dialog_desc">Consecutive days you have spent without breaking restriction rules: %1$d Days.\n\nAs long as you maintain your digital balance, this streak increases every day. It resets to zero if rules are violated or restrictions are bypassed.</string>
+    <string name="profile_saved_time_dialog_title">Gained / Protected Time</string>
+    <string name="profile_saved_time_dialog_desc">Estimated time you have protected so far thanks to restrictions: %1$s.\n\nThis value is calculated based on the difference between your historical average usage time in restricted apps and your daily limit.</string>
+    <string name="profile_saved_time_no_data">No data yet</string>
+    <string name="profile_active_apps_dialog_title">Active Restrictions</string>
+    <string name="profile_active_apps_dialog_empty">No active restricted apps.</string>
+    <string name="profile_active_apps_dialog_desc">Currently protected apps:\n\n%1$s</string>
+    <string name="profile_weekly_summary_dialog_title">Weekly Summary Details</string>
+    <string name="profile_weekly_summary_dialog_desc">You fully complied with the restriction rules for a total of %1$d days this week.\n\nCompleting weekly goals reinforces your digital discipline and increases your focus time.</string>
+    <string name="quote_author_anonymous">Anonymous</string>
 </resources>

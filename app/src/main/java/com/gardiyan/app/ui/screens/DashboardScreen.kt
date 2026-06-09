@@ -66,7 +66,7 @@ import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 private enum class DayStatus {
-    SUCCESS, FAILURE, NONE
+    SUCCESS, FAILURE, PROGRESS, NONE
 }
 
 @Composable
@@ -141,11 +141,11 @@ fun DashboardScreen(
             val hasFailure = dayLogs.any { it.eventType in setOf("FAILURE", "VIOLATION", "DAILY_FAILURE", "RESET_HOLD_5S", "CRITICAL_ACTION_COMPLETED") }
             
             when {
-                hasSuccess -> DayStatus.SUCCESS
                 hasFailure -> DayStatus.FAILURE
+                hasSuccess -> DayStatus.SUCCESS
                 isToday -> {
                     if (activeApps.isNotEmpty()) {
-                        if (todayHasViolation) DayStatus.FAILURE else DayStatus.SUCCESS
+                        if (todayHasViolation) DayStatus.FAILURE else DayStatus.PROGRESS
                     } else {
                         DayStatus.NONE
                     }
@@ -275,6 +275,7 @@ private fun DisciplineSummary(
                                 val cellColor = when (status) {
                                     DayStatus.SUCCESS -> SuccessGreen
                                     DayStatus.FAILURE -> DangerRed
+                                    DayStatus.PROGRESS -> CopperAccent
                                     DayStatus.NONE -> WarmGray
                                 }
                                 Box(

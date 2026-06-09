@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">Limitra</string>
     <string name="accessibility_service_description">Limitra, bu izni yalnızca belirlediğiniz dijital sınırları ve uygulama limitlerini uygulamak amacıyla, kısıtlı bir uygulama açıldığında bunu algılamak için kullanır. Tüm veriler cihazınızda yerel olarak işlenir, hiçbir veri toplanmaz veya dışarıya aktarılmaz. Arka plan izlemesi sadece sizin seçtiğiniz engelleme kurallarını yürütmek içindir.</string>
@@ -81,7 +81,7 @@
     <string name="setup_target_2h">2 Saat</string>
     <string name="setup_target_add">KISITLAMA EKLE</string>
     <string name="setup_target_select_app_title">UYGULAMA SEÇİN</string>
-    <string name="setup_target_select_app_placeholder">Korunacak uygulamaları seçin...</string>
+    <string name="setup_target_select_app_placeholder">Korunacak uygulamaları seçin…</string>
     <string name="setup_target_daily_limit">GÜNLÜK KULLANIM LİMİTİ</string>
     <string name="setup_target_custom_limit">Özel dakika sınırı girin</string>
     <string name="setup_target_days">KORUMA GÜNLERİ</string>
@@ -92,7 +92,7 @@
     <string name="setup_target_btn_test">HIZLI TESTİ BAŞLAT (10sn)</string>
     <string name="setup_target_btn_activate">KISITLAMALARI AKTİFLEŞTİR</string>
     <string name="setup_target_btn_complete">İŞLEMLERİ TAMAMLA &amp; KORUMAYI AÇ</string>
-    <string name="setup_target_search_placeholder">Uygulama adı veya paket adı ara...</string>
+    <string name="setup_target_search_placeholder">Uygulama adı veya paket adı ara…</string>
     <string name="setup_target_no_match">Eşleşen Uygulama Yok</string>
     <string name="setup_target_no_match_desc">\"%1$s\" aramasına uygun yüklenmiş uygulama bulunamadı.</string>
     <string name="setup_target_confirm_selection">SEÇİMİ ONAYLA (%1$d UYGULAMA)</string>
@@ -271,7 +271,6 @@
     <string name="unit_minute">dk</string>
     <string name="log_desc_system_permission">Sistem izin durumu değişti.</string>
     <string name="perm_privacy_msg">Gizliliğiniz korunur. Limitra kullanım verilerinizi üçüncü taraflarla paylaşmaz, internete göndermez; veriler yalnızca cihazınızda lokal olarak işlenir.</string>
-
     <string name="settings_quote_title">Koruma Ekranı Sözü</string>
     <string name="settings_quote_dialog_title">Özel Söz Ayarları</string>
     <string name="settings_quote_dialog_desc">Uygulama limiti dolduğunda ekranda gösterilecek kendi felsefi veya motivasyon sözünüzü ekleyin.</string>
@@ -281,7 +280,6 @@
     <string name="settings_quote_pref_always">Her zaman benim sözümü göster</string>
     <string name="settings_quote_pref_mix">Benim sözümü varsayılan sözlerle karıştır</string>
     <string name="settings_quote_empty_error">Söz metni boş olamaz.</string>
-
     <string name="quote_text_1">Bize verilen ömrün kısa olduğunu söyleyemeyiz, sadece biz onun çoğunu boşa harcıyoruz.</string>
     <string name="quote_author_1">Seneca</string>
     <string name="quote_text_2">İnsanlar kişisel mülklerini koruma konusunda son derece cimridir; ancak konu zamanı çarçur etmeye geldiğinde, cömert olmanın tek doğru olduğu bu tek şeyde son derece savurgandırlar.</string>
@@ -374,7 +372,7 @@
     <string name="quote_author_45">Seneca</string>
     <string name="quote_text_46">Her ne zaman, \'Bugün boş vereyim, yarın dikkat ederim\' dersen, şunu söylemiş olduğunu bil: \'Bugün utanmaz, arsız ve pespaye olacağım; bugün öfkelenecek ve başkalarının kölesi olacağım.\' Kendine nasıl bir kötülük sunduğunu gör!</string>
     <string name="quote_author_46">Epictetus</string>
-    <string name="quote_text_47">Geriye dönüp bak ve hatırla: Ne kadar çok insan sen farkında bile olmadan hayatını yağmaladı... Zamanından geriye ne kadar az şey kaldığını görünce zamansız öldüğünü anlayacaksın.</string>
+    <string name="quote_text_47">Geriye dönüp bak ve hatırla: Ne kadar çok insan sen farkında bile olmadan hayatını yağmaladı… Zamanından geriye ne kadar az şey kaldığını görünce zamansız öldüğünü anlayacaksın.</string>
     <string name="quote_author_47">Seneca</string>
     <string name="quote_text_48">Seçeneklerin çokluğu içinde kaybolmak estetik seçimin doğasıdır; oysa kişi kendisini mutlak olarak seçmedikçe, sadece anlık ve geçici kararlar verir.</string>
     <string name="quote_author_48">Søren Kierkegaard</string>
@@ -390,11 +388,31 @@
     <string name="quote_author_53">Martial</string>
     <string name="quote_text_54">Mücadele başladı; şu an Olimpiyat Oyunları\'ndasın, artık erteleme seçeneğin kalmadı ve tek bir yenilgi tüm ilerlemeni yerle bir edebilir.</string>
     <string name="quote_author_54">Epictetus</string>
-
     <string name="notif_half_limit_message">Bugünkü limitinizin yarısını (%1$s) kullandınız.</string>
     <string name="notif_five_minutes_message">Bu uygulama (%1$s) için bugün sadece 5 dakikanız kaldı.</string>
     <string name="profile_appearance">Görünüm</string>
     <string name="discipline_summary_days_ago">Son 21 Gün</string>
     <string name="discipline_summary_success">Başarılı</string>
     <string name="discipline_summary_failure">Başarısız</string>
+    <string name="setup_target_hour_label">SAAT</string>
+    <string name="setup_target_minute_label">DAKİKA</string>
+    <string name="setup_target_hour_inc_desc">Saat Artır</string>
+    <string name="setup_target_hour_dec_desc">Saat Azalt</string>
+    <string name="setup_target_minute_inc_desc">Dakika Artır</string>
+    <string name="setup_target_minute_dec_desc">Dakika Azalt</string>
+    <string name="profile_streak_dialog_title">Başarı Serisi</string>
+    <string name="profile_streak_dialog_desc">Kısıtlama kurallarını bozmadan geçirdiğiniz ardışık gün sayısı: %1$d Gün.\n\nDijital dengenizi bozmadığınız sürece bu seri her gün artar. Kurallar ihlal edildiğinde veya kısıtlamalar bypass edildiğinde sıfırlanır.</string>
+    <string name="profile_saved_time_dialog_title">Kazanılan / Korunan Süre</string>
+    <string name="profile_saved_time_dialog_desc">Kısıtlamalar sayesinde bugüne kadar koruduğunuz tahmini süre: %1$s.\n\nBu değer, kısıtlanan uygulamalardaki geçmiş ortalama kullanım süreniz ile günlük limitiniz arasındaki fark temel alınarak hesaplanır.</string>
+    <string name="profile_saved_time_no_data">Henüz veri yok</string>
+    <string name="profile_active_apps_dialog_title">Aktif Kısıtlamalar</string>
+    <string name="profile_active_apps_dialog_empty">Aktif kısıtlanmış uygulama bulunmuyor.</string>
+    <string name="profile_active_apps_dialog_desc">Şu anda aktif koruma altındaki uygulamalar:\n\n%1$s</string>
+    <string name="profile_weekly_summary_dialog_title">Haftalık Özet Detayı</string>
+    <string name="profile_weekly_summary_dialog_desc">Bu hafta toplam %1$d gün boyunca kısıtlama kurallarına tam uyum sağladınız.\n\nHaftalık hedeflerinizi tamamlamak dijital disiplininizi pekiştirir ve odaklanma sürenizi artırır.</string>
+    <string name="quote_author_anonymous">Anonim</string>
+    <string name="btn_save">Kaydet</string>
+    <string name="btn_delete">Sil</string>
+    <string name="overlay_brand_icon" translatable="false">🛡️</string>
+    <string name="overlay_initial_countdown" translatable="false">00:10</string>
 </resources>

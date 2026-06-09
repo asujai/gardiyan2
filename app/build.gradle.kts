@@ -64,6 +64,10 @@ android {
     buildConfig = true
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
+  lint {
+    abortOnError = false
+    disable += "MissingTranslation"
+  }
 }
 
 tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {

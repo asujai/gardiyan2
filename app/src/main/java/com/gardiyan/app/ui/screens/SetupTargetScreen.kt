@@ -117,7 +117,7 @@ fun SetupTargetScreen(
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = "KISITLAMA EKLE",
+                        text = stringResource(R.string.setup_target_add),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = PureBlack,
@@ -273,7 +273,7 @@ fun SetupTargetScreen(
                                     modifier = Modifier.width(80.dp)
                                 ) {
                                     Text(
-                                        text = "SAAT",
+                                        text = stringResource(R.string.setup_target_hour_label),
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MutedGray,
@@ -293,7 +293,7 @@ fun SetupTargetScreen(
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.ArrowDropDown,
-                                                contentDescription = "Saat Artır",
+                                                contentDescription = stringResource(R.string.setup_target_hour_inc_desc),
                                                 tint = MutedGray,
                                                 modifier = Modifier.rotate(180f)
                                             )
@@ -313,7 +313,7 @@ fun SetupTargetScreen(
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.ArrowDropDown,
-                                                contentDescription = "Saat Azalt",
+                                                contentDescription = stringResource(R.string.setup_target_hour_dec_desc),
                                                 tint = MutedGray
                                             )
                                         }
@@ -334,7 +334,7 @@ fun SetupTargetScreen(
                                     modifier = Modifier.width(80.dp)
                                 ) {
                                     Text(
-                                        text = "DAKİKA",
+                                        text = stringResource(R.string.setup_target_minute_label),
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MutedGray,
@@ -354,7 +354,7 @@ fun SetupTargetScreen(
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.ArrowDropDown,
-                                                contentDescription = "Dakika Artır",
+                                                contentDescription = stringResource(R.string.setup_target_minute_inc_desc),
                                                 tint = MutedGray,
                                                 modifier = Modifier.rotate(180f)
                                             )
@@ -374,7 +374,7 @@ fun SetupTargetScreen(
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.ArrowDropDown,
-                                                contentDescription = "Dakika Azalt",
+                                                contentDescription = stringResource(R.string.setup_target_minute_dec_desc),
                                                 tint = MutedGray
                                             )
                                         }

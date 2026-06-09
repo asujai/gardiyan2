@@ -60,7 +60,12 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         guardianDao.insertUserSession(session)
     }
 
-    suspend fun insertLog(eventType: String, appName: String, details: String) {
+    suspend fun insertLog(
+        eventType: String,
+        appName: String,
+        details: String,
+        customTimestamp: Long? = null
+    ) {
         val technicalTypes = setOf(
             "SESSION_STARTED",
             "SESSION_UPDATED",
@@ -81,13 +86,17 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
                 eventType = eventType,
                 appName = appName,
                 details = details,
-                timestamp = System.currentTimeMillis()
+                timestamp = customTimestamp ?: System.currentTimeMillis()
             )
         )
     }
 
     suspend fun clearLogs() {
         guardianDao.clearLogs()
+    }
+
+    suspend fun clearActiveSessions() {
+        guardianDao.clearActiveSessions()
     }
 
     suspend fun getActiveRestrictedAppsSync(): List<RestrictedAppEntity> {
@@ -124,9 +133,6 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         val safeDailyLimitMinutes = dailyLimitMinutes.coerceIn(1, MAX_DAILY_LIMIT_MINUTES)
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
         return if (existing != null) {
-            if (existing.isActive) {
-                return existing.id
-            }
             guardianDao.updateRestrictedApp(
                 existing.copy(
                     appName = appName,
@@ -174,9 +180,6 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         val safeTestSeconds = testSeconds.coerceIn(1, MAX_DAILY_LIMIT_MINUTES * 60)
         val dailyLimitMinutes = (safeTestSeconds + 59) / 60
         return if (existing != null) {
-            if (existing.isActive) {
-                return existing.id
-            }
             guardianDao.updateRestrictedApp(
                 existing.copy(
                     appName = appName,
@@ -318,7 +321,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         }
     }
 
-    suspend fun succeedActiveTarget() {
+    suspend fun succeedActiveTarget(customTimestamp: Long? = null) {
         val session = getSessionSync() ?: return
 
         val nextStreak = session.consecutiveSuccessDays + 1
@@ -347,7 +350,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
 
         guardianDao.insertUserSession(
             session.copy(
-                isActive = false,
+                isActive = session.isActive,
                 level = nextLevel,
                 hasRedBadge = nextRedBadge,
                 activeRedemptionDaysLeft = nextRedemptionDays,
@@ -358,7 +361,8 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         insertLog(
             eventType = "SUCCESS_DAY",
             appName = session.targetAppName,
-            details = logDetails
+            details = logDetails,
+            customTimestamp = customTimestamp
         )
     }
 
@@ -411,6 +415,23 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         val endTime = calEnd.timeInMillis
 
         val logs = guardianDao.getAllLogsSync()
+
+        // Zaten SUCCESS_DAY kaydedilmişse değerlendirmeyi tekrarlama, direkt true dön
+        val hasSuccessDay = logs.any { log ->
+            log.timestamp in startTime..endTime && log.eventType == "SUCCESS_DAY"
+        }
+        if (hasSuccessDay) {
+            return true
+        }
+
+        // Zaten ihlal tespit edilmişse tekrar işlem yapma
+        val hasExistingViolation = logs.any { log ->
+            log.timestamp in startTime..endTime && log.eventType == "VIOLATION" && log.details.contains("kısıtlama ihlali tespit edildi")
+        }
+        if (hasExistingViolation) {
+            return false
+        }
+
         val hasViolation = logs.any { log ->
             log.timestamp in startTime..endTime && log.eventType in setOf(
                 "FAILURE",
@@ -427,7 +448,8 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
             insertLog(
                 eventType = "VIOLATION",
                 appName = "",
-                details = "$dateKey tarihinde kısıtlama ihlali tespit edildi. Günlük hedef başarısız."
+                details = "$dateKey tarihinde kısıtlama ihlali tespit edildi. Günlük hedef başarısız.",
+                customTimestamp = endTime
             )
 
             val session = getSessionSync()
@@ -447,7 +469,25 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
             if (activeAppsOnDay.isEmpty()) {
                 return false
             }
-            succeedActiveTarget()
+
+            // İzinler/servisin o gün çalıştığına dair kanıt var mı?
+            val hasActiveLog = logs.any { log ->
+                log.timestamp in startTime..endTime && log.eventType == "ENGINE_ACTIVE"
+            }
+            if (!hasActiveLog) {
+                // Güvenilir kanıt yoksa günü değerlendirilemedi say ve false dön, ceza verme ama seriyi sıfırla
+                val session = getSessionSync()
+                if (session != null) {
+                    guardianDao.insertUserSession(
+                        session.copy(
+                            consecutiveSuccessDays = 0
+                        )
+                    )
+                }
+                return false
+            }
+
+            succeedActiveTarget(endTime)
             return true
         }
     }
@@ -479,6 +519,30 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         val session = guardianDao.getActiveSessionSync() ?: return
         if (session.packageName == packageName) {
             val now = System.currentTimeMillis()
+            val deltaMs = now - session.lastSeenAtMillis
+            
+            // Eğer deltaMs anormal derecede büyükse (örneğin 30 saniyeden uzun süredir heartbeat atılamadıysa),
+            // bunu makul bir değere kısıtlarız veya hiç düşmeyiz. Normal şartlarda 2.5 saniyedir.
+            if (deltaMs in 1..30000L) {
+                val deltaSec = (deltaMs / 1000L).toInt()
+                if (deltaSec > 0) {
+                    val app = guardianDao.getRestrictedAppByIdSync(session.appId)
+                    if (app != null && app.isActive && !app.isFailed) {
+                        val newRemaining = (app.remainingSecondsToday - deltaSec).coerceAtLeast(0)
+                        guardianDao.updateRestrictedApp(
+                            app.copy(
+                                remainingSecondsToday = newRemaining,
+                                remainingMinutesToday = newRemaining / 60
+                            )
+                        )
+                        if (newRemaining <= 0) {
+                            failRestrictedApp(app.id)
+                        }
+                    }
+                }
+            }
+
+            // session'ı son görülme zamanıyla güncelle
             val updated = session.copy(
                 lastSeenAtMillis = now,
                 updatedAtMillis = now
@@ -496,7 +560,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
     suspend fun closeActiveSession(reason: String) {
         val session = guardianDao.getActiveSessionSync() ?: return
         val now = System.currentTimeMillis()
-        val elapsedMs = now - session.entryAtMillis
+        val elapsedMs = now - session.lastSeenAtMillis
         val elapsedSec = (elapsedMs / 1000L).toInt().coerceAtLeast(0)
 
         val app = guardianDao.getRestrictedAppByIdSync(session.appId)
@@ -529,7 +593,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         val now = System.currentTimeMillis()
         for (session in sessions) {
             if (now - session.lastSeenAtMillis > 30000L) {
-                val elapsedMs = session.lastSeenAtMillis - session.entryAtMillis
+                val elapsedMs = now - session.lastSeenAtMillis
                 val elapsedSec = (elapsedMs / 1000L).toInt().coerceAtLeast(0)
 
                 val app = guardianDao.getRestrictedAppByIdSync(session.appId)

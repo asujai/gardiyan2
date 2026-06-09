@@ -95,4 +95,7 @@ interface GuardianDao {
 
     @Query("DELETE FROM active_usage_session WHERE id = :id")
     suspend fun deleteActiveSessionById(id: Long)
+
+    @Query("DELETE FROM active_usage_session")
+    suspend fun clearActiveSessions()
 }

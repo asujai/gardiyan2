@@ -3,10 +3,15 @@ package com.gardiyan.app.service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.gardiyan.app.data.local.database.GuardianDatabase
+import com.gardiyan.app.data.repository.GuardianRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
- * Uygulama güncellendiğinde (yeni APK yüklendiğinde) otomatik olarak açılmasını sağlar.
- * Android hem MY_PACKAGE_REPLACED hem de eski cihazlarda PACKAGE_REPLACED yayını yapar.
+ * Uygulama güncellendiğinde (yeni APK yüklendiğinde) arka planda koruma durumunu
+ * güvenli şekilde yeniden başlatır. Kullanıcıyı istemeden ana ekrana getirmez.
  */
 class PackageReplacedReceiver : BroadcastReceiver() {
 
@@ -14,14 +19,26 @@ class PackageReplacedReceiver : BroadcastReceiver() {
         val action = intent.action ?: return
 
         if (action == Intent.ACTION_MY_PACKAGE_REPLACED) {
-            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-            if (launchIntent != null) {
-                launchIntent.addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                )
-                context.startActivity(launchIntent)
+            val pendingResult = goAsync()
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val db = GuardianDatabase.getDatabase(context.applicationContext)
+                    val repository = GuardianRepository(db.guardianDao())
+                    val hasActiveRestrictions = repository.getActiveRestrictedAppsSync().isNotEmpty()
+
+                    if (hasActiveRestrictions) {
+                        val serviceIntent = Intent(context, BlockOverlayService::class.java)
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            context.startForegroundService(serviceIntent)
+                        } else {
+                            context.startService(serviceIntent)
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    pendingResult.finish()
+                }
             }
         }
     }
