@@ -108,8 +108,8 @@ fun ProtectedAppsScreen(
                 // Filter Buttons
                 item {
                     val filters = listOf(
-                        ProtectedFilter.ACTIVE to "Limitra aktif",
-                        ProtectedFilter.REACHED_LIMIT to "Limiti Dolanlar"
+                        ProtectedFilter.ACTIVE to stringResource(R.string.protected_tab_active_format, "Limitra"),
+                        ProtectedFilter.REACHED_LIMIT to stringResource(R.string.protected_tab_reached_limit)
                     )
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -644,10 +644,10 @@ private fun HoldToDeleteButton(
                     .fillMaxWidth()
                     .height(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (isHolding) BorderGray.copy(alpha = 0.1f) else MatteSurface)
+                    .background(if (isHolding) DangerRed.copy(alpha = 0.15f) else MatteSurface)
                     .border(
-                        width = 1.dp,
-                        color = BorderGray,
+                        width = if (isHolding) 1.5.dp else 1.dp,
+                        color = if (isHolding) DangerRed.copy(alpha = 0.5f) else BorderGray,
                         shape = RoundedCornerShape(12.dp)
                     )
                     .pointerInput(Unit) {
@@ -689,7 +689,7 @@ private fun HoldToDeleteButton(
                         modifier = Modifier
                             .fillMaxHeight()
                             .fillMaxWidth(progress)
-                            .background(BorderGray.copy(alpha = 0.2f))
+                            .background(DangerRed.copy(alpha = 0.25f))
                             .align(Alignment.CenterStart)
                     )
                 }
@@ -703,7 +703,7 @@ private fun HoldToDeleteButton(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.SansSerif,
-                    color = PureBlack
+                    color = if (isHolding) DangerRed else PureBlack
                 )
             }
         }

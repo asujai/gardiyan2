@@ -415,4 +415,92 @@
     <string name="profile_weekly_summary_dialog_title">Weekly Summary Details</string>
     <string name="profile_weekly_summary_dialog_desc">You fully complied with the restriction rules for a total of %1$d days this week.\n\nCompleting weekly goals reinforces your digital discipline and increases your focus time.</string>
     <string name="quote_author_anonymous">Anonymous</string>
+    <string name="discipline_detail_title">अनुशासन इतिहास</string>
+    <string name="discipline_detail_completed_series">पूरी की गई श्रृंखला</string>
+    <string name="discipline_detail_active_series">सक्रिय श्रृंखला</string>
+    <string name="discipline_detail_back_to_active">सक्रिय श्रृंखला पर लौटें</string>
+    <string name="discipline_detail_series_label">श्रृंखला %1$d</string>
+
+    <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_add_title">नया विचार जोड़ें</string>
+    <string name="saved_quotes_edit_title">विचार संपादित करें</string>
+    <string name="saved_quotes_btn_add">जोड़ें</string>
+    <string name="saved_quotes_btn_update">अपडेट करें</string>
+    <string name="saved_quotes_list_title_format">सहेजे गए विचार (%1$d)</string>
+    <string name="saved_quotes_empty">अभी तक कोई सहेजे गए विचार नहीं हैं।</string>
+    <string name="btn_back_desc">पीछे</string>
+    <string name="btn_delete_desc">हटाएं</string>
+
+    <!-- Profile Screen Info -->
+    <string name="profile_level_detail_title">डिजिटल स्तर का विवरण</string>
+    <string name="profile_level_detail_desc">आपका वर्तमान स्तर: %1$s (स्तर %2$d)\n\nस्तर और आवश्यकताएं:\n• स्तर 1: नौसिखिया\n• स्तर 2: नियंत्रण प्राप्त करना (3 दिन निरंतर सफलता)\n• स्तर 3: केंद्रित (7 दिन निरंतर सफलता)\n• स्तर 4: संतुलित उपयोगकर्ता (15 दिन निरंतर सफलता)\n• स्तर 5: डिजिटल अनुशासन (30 दिन निरंतर सफलता)\n• स्तर 6: पूर्ण नियंत्रण (60 दिन निरंतर सफलता)\n\nबिना किसी प्रतिबंध के प्रत्येक सफल दिन आपकी लकीर को बढ़ाता है और आपको स्तर बढ़ाने की अनुमति देता है।</string>
+    <string name="profile_redemption_progress">ढाल मरम्मत प्रगति</string>
+    <string name="profile_next_level_progress">अगले स्तर की प्रगति</string>
+    <string name="profile_custom_quote_always">कस्टम विचार (हमेशा)</string>
+    <string name="profile_custom_quote_mix">कस्टम विचार (मिश्रित)</string>
+    <string name="profile_default_quotes">डिफ़ॉल्ट विचार</string>
+    <string name="profile_digital_control_progress">डिजिटल नियंत्रण प्रगति</string>
+    
+    <string name="profile_theme_dialog_title">सजावट सेटिंग्स</string>
+    <string name="profile_theme_dialog_mode_section">प्रदर्शन मोड</string>
+    <string name="profile_theme_dialog_palette_section">रंग विषय</string>
+    
+    <string name="profile_language_dialog_title">भाषा चयन</string>
+    <string name="profile_support_dialog_title">सहायता और प्रतिक्रिया</string>
+    <string name="profile_support_dialog_desc">आप किसी समस्या की रिपोर्ट करने या नई सुविधा का सुझाव देने के लिए हमसे संपर्क कर सकते हैं।</string>
+    
+    <string name="profile_filter_dialog_title">टाइमलाइन फ़िल्टर करें</string>
+    <string name="profile_filter_dialog_date_section">दिनांक</string>
+    <string name="profile_filter_dialog_type_section">इवेंट प्रकार</string>
+    <string name="profile_filter_btn_apply">लागू करें</string>
+    <string name="profile_filter_btn_text">फ़िल्टर</string>
+    
+    <!-- Timeline Filters -->
+    <string name="filter_date_today">आज</string>
+    <string name="filter_date_7_days">पिछले 7 दिन</string>
+    <string name="filter_date_30_days">पिछले 30 दिन</string>
+    <string name="filter_date_all">पूरा समय</string>
+    
+    <string name="filter_type_all">सभी इवेंट</string>
+    <string name="filter_type_restrictions">प्रतिबंध इवेंट</string>
+    <string name="filter_type_limits">सीमा इवेंट</string>
+    <string name="filter_type_permissions">अनुमति इवेंट</string>
+    <string name="filter_type_data_actions">डेटा क्रियाएं</string>
+
+    <string name="profile_only_my_quotes">केवल मेरे विचार दिखाएं</string>
+
+    <!-- Levels -->
+    <string name="level_name_1">नौसिखिया</string>
+    <string name="level_name_2">नियंत्रण प्राप्त करना</string>
+    <string name="level_name_3">केंद्रित</string>
+    <string name="level_name_4">संतुलित उपयोगकर्ता</string>
+    <string name="level_name_5">डिजिटल अनुशासन</string>
+    <string name="level_name_6">पूर्ण नियंत्रण</string>
+    
+    <string name="level_note_1">स्तर 2 (नियंत्रण प्राप्त करना) के लिए 3 दिन की निरंतर सफलता आवश्यक है।</string>
+    <string name="level_note_2">स्तर 3 (केंद्रित) के लिए 7 दिन की निरंतर सफलता आवश्यक है।</string>
+    <string name="level_note_3">स्तर 4 (संतुलित उपयोगकर्ता) के लिए 15 दिन की निरंतर सफलता आवश्यक है।</string>
+    <string name="level_note_4">स्तर 5 (डिजिटल अनुशासन) के लिए 30 दिन की निरंतर सफलता आवश्यक है।</string>
+    <string name="level_note_5">स्तर 6 (पूर्ण नियंत्रण) के लिए 60 दिन की निरंतर सफलता आवश्यक है।</string>
+    <string name="level_note_max">बधाई हो! आप उच्चतम नियंत्रण स्तर पर हैं।</string>
+
+    <string name="profile_permissions_all_active">सभी अनुमतियां सक्रिय हैं</string>
+    <string name="profile_permissions_missing">अनुमतियां गायब हैं</string>
+    <string name="profile_permission_state_ok">सक्रिय</string>
+    <string name="profile_permission_state_missing">गायब</string>
+
+    <string name="profile_weekly_success_days_format">%1$d/7 दिन</string>
+    <string name="profile_redemption_progress_format">%1$d / %2$d दिन</string>
+    <string name="profile_level_format">स्तर %1$d</string>
+    <string name="profile_streak_title">सफलता की लकीर</string>
+    <string name="profile_protected_apps_title">सक्रिय सुरक्षा</string>
+    <string name="profile_weekly_summary_title">साप्ताहिक सारांश</string>
+    <string name="btn_ok">ठीक है</string>
+    <string name="btn_info_desc">जानकारी</string>
+    <string name="profile_saved_time_title">बचाया गया / संरक्षित समय</string>
+    <string name="protected_tab_active_format">%1$s सक्रिय</string>
+    <string name="protected_tab_reached_limit">सीमा समाप्त</string>
+    <string name="perm_guidance_text">प्रत्येक अनुमति कार्ड पर टैप करें, खुलने वाली Android सेटिंग स्क्रीन में Limitra खोजें, और आवश्यक अनुमति सक्षम करें। फिर अगला चरण पूरा करने के लिए वापस आएं।</string>
+    <string name="profile_notifications_title">सूचनाएं</string>
+    <string name="profile_notifications_desc">सीमा चेतावनी और स्थिति सूचनाएं दिखाएं।</string>
 </resources>

@@ -1,31 +1,52 @@
-project_name: gardiyan2
-version: 1.1
-
+version: "2"
+type: backend
 tech_stack:
-  language: Kotlin
-  ui_framework: Jetpack Compose
-  architecture: MVVM
-  database: Room ORM (SQLite)
-  background_services:
-    - Android Service
-    - Android Foreground Service
-    - Android Accessibility Service
-  job_scheduler: WorkManager
-  testing_frameworks:
-    - JUnit4
-    - Robolectric
-    - Roborazzi
-
+  - Kotlin
+  - Jetpack Compose
+  - Android SDK
+  - Room Database
+  - SharedPreferences
+  - WorkManager
 features:
-  - name: Restricted App Management
-    description: Allows users to add, update, and remove application packages to restrict their usage time.
-  - name: App Usage Monitoring
-    description: Monitors active application usage using UsageStatsManager and Accessibility Service to detect when a restricted app is in the foreground.
-  - name: Blocking Overlay Screen
-    description: Displays a system overlay window (BlockOverlayService) over restricted applications once their daily time limit is reached.
-  - name: Persistent Logging
-    description: Logs critical actions such as permission changes, restrictions added/removed, and overlay events.
-  - name: Permissions Verification
-    description: Requests and verifies crucial Android permissions including Overlay, Usage Stats, Accessibility, Notification, and Battery Optimization.
-  - name: Hardened Unblocking
-    description: Implements a protected 5-second long press mechanism (cancelAllWithFiveSecondHold) as the only way to disable monitoring and unlock restricted apps.
+  - name: Restriction Management
+    description: Add, update and remove application restrictions and daily limits.
+    files:
+      - app/src/main/java/com/gardiyan/app/viewmodel/GuardianViewModel.kt
+      - app/src/main/java/com/gardiyan/app/ui/screens/ProtectedAppsScreen.kt
+    endpoints:
+      - method: POST
+        path: /restrictions/add
+        description: Add a new application restriction
+        auth_required: false
+        response_schema:
+          "200": Success
+      - method: DELETE
+        path: /restrictions/remove
+        description: Remove an application restriction
+        auth_required: false
+        response_schema:
+          "200": Success
+      - method: GET
+        path: /restrictions/list
+        description: Get list of active restricted apps
+        auth_required: false
+        response_schema:
+          "200": Restriction[]
+  - name: Quote Management
+    description: Save, edit and delete custom motivational quotes.
+    files:
+      - app/src/main/java/com/gardiyan/app/ui/screens/SavedQuotesScreen.kt
+    endpoints:
+      - method: POST
+        path: /quotes/add
+        description: Add a new custom quote
+        auth_required: false
+        response_schema:
+          "200": Quote
+      - method: DELETE
+        path: /quotes/delete
+        description: Delete a custom quote
+        auth_required: false
+        response_schema:
+          "200": Success
+known_limitations: []

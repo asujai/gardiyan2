@@ -8,6 +8,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 
 enum class AppThemeMode {
     SYSTEM, LIGHT, DARK
@@ -28,8 +30,8 @@ fun MyApplicationTheme(
     val context = LocalContext.current
     val systemInDark = isSystemInDarkTheme()
     
-    // Tema modunu SharedPreferences'tan okuyup eşitleyelim
-    LaunchedEffect(Unit) {
+    // Senkron olarak SharedPreferences'tan oku ve global state'leri güncelle
+    remember(context) {
         val prefs = context.getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
         val savedMode = prefs.getString("theme_mode", AppThemeMode.DARK.name) ?: AppThemeMode.DARK.name
         val restoredMode = runCatching { AppThemeMode.valueOf(savedMode) }.getOrDefault(AppThemeMode.DARK)
@@ -44,6 +46,7 @@ fun MyApplicationTheme(
         } else {
             restoredPalette
         }
+        true
     }
 
     val isDark = when (currentThemeMode.value) {
@@ -77,11 +80,13 @@ fun MyApplicationTheme(
         )
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }
 
 fun updateThemeMode(context: Context, mode: AppThemeMode) {

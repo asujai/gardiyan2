@@ -253,48 +253,49 @@ class GuardianRepository(
         val nowWall = timeProvider.currentTimeMillis()
         val nowElapsed = timeProvider.elapsedRealtime()
         
-        // Eğer SharedPreferences tamamen boşsa, bu uygulamanın ilk kez çalıştığını gösterir.
-        // Bu durumda son sıfırlama bilgilerini şimdiki zaman olarak kaydedelim,
-        // ancak veritabanındaki bayat (lastResetDate != today) olan kayıtları da sıfırlayalım.
         val isFirstInit = lastResetLocalDate.isEmpty() || lastResetWallClockMillis == 0L
-        
-        // Reset koşulu 1: Tarih değişti mi?
         val isDateChanged = isFirstInit || (today != lastResetLocalDate)
         
-        // Reset koşulu 2: Güvenli minimum süre geçti mi? (En az 22 saat)
         var isTimePassed = isFirstInit
-        val minIntervalMillis = 22 * 3600 * 1000L // 22 saat
+        val minIntervalMillis = 12 * 3600 * 1000L // 12 saat
         
         if (!isFirstInit) {
-            // Zaman manipülasyonu (saat/tarih geri alınma) kontrolü
             val isTimeManipulatedBackwards = nowWall < lastResetWallClockMillis
             
             if (isTimeManipulatedBackwards) {
-                // Zaman geriye alınmış, reset yapma, log kaydet
+                if (com.gardiyan.app.BuildConfig.DEBUG) {
+                    android.util.Log.w("GuardianRepository", "Geri zaman manipülasyonu engellendi. nowWall: $nowWall, lastResetWallClock: $lastResetWallClockMillis")
+                }
                 insertLog("SECURITY_WARNING", "", "Sistem saatinin geriye alındığı tespit edildi. Limitler sıfırlanmadı.")
                 return
             }
             
-            // Cihaz yeniden başlatılmış mı?
             val isRebooted = nowElapsed < lastResetElapsedRealtime
             
             if (!isRebooted) {
-                // Cihaz yeniden başlatılmamış. Monotonic zaman farkını kullanabiliriz.
                 val elapsedDiff = nowElapsed - lastResetElapsedRealtime
                 if (elapsedDiff >= minIntervalMillis) {
                     isTimePassed = true
                 }
+                if (com.gardiyan.app.BuildConfig.DEBUG) {
+                    android.util.Log.d("GuardianRepository", "Zaman geçiş kontrolü (Monotonic): elapsedDiff=${elapsedDiff}ms, min=${minIntervalMillis}ms, isTimePassed=$isTimePassed")
+                }
             } else {
-                // Cihaz yeniden başlatılmış. Monotonic zaman sıfırlandığı için wall clock farkını yedek olarak kullanıyoruz.
                 val wallDiff = nowWall - lastResetWallClockMillis
                 if (wallDiff >= minIntervalMillis) {
                     isTimePassed = true
                 }
+                if (com.gardiyan.app.BuildConfig.DEBUG) {
+                    android.util.Log.d("GuardianRepository", "Zaman geçiş kontrolü (Wall clock/Rebooted): wallDiff=${wallDiff}ms, min=${minIntervalMillis}ms, isTimePassed=$isTimePassed")
+                }
             }
         }
         
+        if (com.gardiyan.app.BuildConfig.DEBUG) {
+            android.util.Log.d("GuardianRepository", "resetDailyCountersIfNeeded: isDateChanged=$isDateChanged, isTimePassed=$isTimePassed, isFirstInit=$isFirstInit, today=$today, lastResetLocalDate=$lastResetLocalDate")
+        }
+
         if (isDateChanged && isTimePassed) {
-            // Reset şartları sağlandı!
             val restrictedApps = guardianDao.getAllRestrictedAppsSync()
             var anyReset = false
             restrictedApps.forEach { app ->
@@ -302,6 +303,9 @@ class GuardianRepository(
                     anyReset = true
                     val newLimit = if (app.nextDayLimitMinutes > 0) app.nextDayLimitMinutes else app.dailyLimitMinutes
                     val newActiveDays = app.nextDayActiveDays.ifEmpty { app.activeDays }
+                    if (com.gardiyan.app.BuildConfig.DEBUG) {
+                        android.util.Log.d("GuardianRepository", "Sıfırlanıyor: ${app.appName} (${app.packageName}), yeni limit: ${newLimit}dk")
+                    }
                     guardianDao.updateRestrictedApp(
                         app.copy(
                             dailyLimitMinutes = newLimit,
@@ -320,12 +324,10 @@ class GuardianRepository(
             }
             
             if (anyReset && !isFirstInit) {
-                // Sıfırlanan bildirim flag'lerini temizlemek için "gardiyan_notifications" SharedPreferences temizliği
                 val notifPrefs = context.getSharedPreferences("gardiyan_notifications", Context.MODE_PRIVATE)
                 notifPrefs.edit().clear().apply()
             }
             
-            // SharedPreferences reset değerlerini güncelle
             prefs.edit().apply {
                 putString("lastResetLocalDate", today)
                 putLong("lastResetWallClockMillis", nowWall)
@@ -338,7 +340,9 @@ class GuardianRepository(
                 insertLog("DAILY_RESET", "", "Günlük limitler sıfırlandı. Yeni gün: $today")
             }
         } else if (isDateChanged && !isTimePassed) {
-            // Zaman açığı engellendi! (Tarih ileri alınmış ama 22 saat geçmemiş)
+            if (com.gardiyan.app.BuildConfig.DEBUG) {
+                android.util.Log.w("GuardianRepository", "Erken günlük sıfırlama engellendi! Zaman aşımı yetersiz.")
+            }
             insertLog("RESET_PREVENTED", "", "Tarih değişimi algılandı ancak güvenlik süresi henüz dolmadı. Limitlerin erken sıfırlanması engellendi.")
         }
     }
@@ -604,33 +608,52 @@ class GuardianRepository(
             val now = System.currentTimeMillis()
             val deltaMs = now - session.lastSeenAtMillis
             
-            // Eğer deltaMs anormal derecede büyükse (örneğin 30 saniyeden uzun süredir heartbeat atılamadıysa),
-            // bunu makul bir değere kısıtlarız veya hiç düşmeyiz. Normal şartlarda 2.5 saniyedir.
-            if (deltaMs in 1..30000L) {
-                val deltaSec = (deltaMs / 1000L).toInt()
-                if (deltaSec > 0) {
-                    val app = guardianDao.getRestrictedAppByIdSync(session.appId)
-                    if (app != null && app.isActive && !app.isFailed) {
-                        val newRemaining = (app.remainingSecondsToday - deltaSec).coerceAtLeast(0)
-                        guardianDao.updateRestrictedApp(
-                            app.copy(
-                                remainingSecondsToday = newRemaining,
-                                remainingMinutesToday = newRemaining / 60
-                            )
-                        )
-                        if (newRemaining <= 0) {
-                            failRestrictedApp(app.id)
-                        }
-                    }
+            if (deltaMs > 30000L) {
+                // Anormal gecikme durumunda zamanlayıcıyı sıfırla, süre düşme ama izlemeyi güncelle
+                if (com.gardiyan.app.BuildConfig.DEBUG) {
+                    android.util.Log.d("GuardianRepository", "Anormal gecikme tespit edildi (delta: ${deltaMs}ms), süre düşülmeden lastSeen güncellendi.")
                 }
+                val updated = session.copy(
+                    lastSeenAtMillis = now,
+                    updatedAtMillis = now
+                )
+                guardianDao.updateActiveSession(updated)
+                return
             }
 
-            // session'ı son görülme zamanıyla güncelle
-            val updated = session.copy(
-                lastSeenAtMillis = now,
-                updatedAtMillis = now
-            )
-            guardianDao.updateActiveSession(updated)
+            val deltaSec = (deltaMs / 1000L).toInt()
+            if (deltaSec > 0) {
+                val app = guardianDao.getRestrictedAppByIdSync(session.appId)
+                if (app != null && app.isActive && !app.isFailed) {
+                    val newRemaining = (app.remainingSecondsToday - deltaSec).coerceAtLeast(0)
+                    if (com.gardiyan.app.BuildConfig.DEBUG) {
+                        android.util.Log.d("GuardianRepository", "Süre düşülüyor: Paket=$packageName, Geçen saniye=$deltaSec, Kalan saniye=$newRemaining, usedToday=${app.dailyLimitMinutes * 60 - newRemaining}")
+                    }
+                    guardianDao.updateRestrictedApp(
+                        app.copy(
+                            remainingSecondsToday = newRemaining,
+                            remainingMinutesToday = newRemaining / 60
+                        )
+                    )
+                    if (newRemaining <= 0) {
+                        if (com.gardiyan.app.BuildConfig.DEBUG) {
+                            android.util.Log.d("GuardianRepository", "Limit doldu! failRestrictedApp tetikleniyor. Paket=$packageName")
+                        }
+                        failRestrictedApp(app.id)
+                    }
+                }
+
+                // session'ı son görülme zamanıyla güncelle (artık milisaniyeleri koruyarak)
+                val updated = session.copy(
+                    lastSeenAtMillis = now - (deltaMs % 1000L),
+                    updatedAtMillis = now
+                )
+                guardianDao.updateActiveSession(updated)
+            } else {
+                if (com.gardiyan.app.BuildConfig.DEBUG) {
+                    android.util.Log.v("GuardianRepository", "Milisaniye birikiyor, saniye değişmedi. deltaMs=$deltaMs, paket=$packageName")
+                }
+            }
 
             val lastLogTime = lastSessionUpdateLogTime[packageName] ?: 0L
             if (now - lastLogTime > 30000L) {

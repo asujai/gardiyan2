@@ -1307,3 +1307,37 @@
 {"timestamp":"2026-06-07T20:06:34.212Z","level":"debug","message":"[TunnelClient] Stream proxy finished: 14ed79cb-d567-41ca-8f03-326ba72ab048 (proxy_wdVc2WfLEBzXvGsF, tunnel_0UFlXOHuT5u1tC3g, stream 74)","context":{"tunnelVersion":"2"}}
 {"timestamp":"2026-06-07T20:06:36.534Z","level":"info","message":"Test execution completed","context":{"projectId":"cbaa799d-4b56-46ce-b324-8a768a8161f9","totalTests":10}}
 {"timestamp":"2026-06-07T20:06:36.535Z","level":"warn","message":"[TunnelClient] Tunnel tcp closed: tunnel_0UFlXOHuT5u1tC3g","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:33.052Z","level":"debug","message":"Generate code and execute params","context":{"projectName":"gardiyan2","projectPath":"c:\\Users\\abdul\\gardiyan2","testIds":[],"serverMode":"development"}}
+{"timestamp":"2026-06-10T19:26:33.066Z","level":"error","message":"checkPortListening tcp error: 8080 localhost\nAggregateError"}
+{"timestamp":"2026-06-10T19:26:33.577Z","level":"error","message":"checkPortListening tcp error: 8080 localhost\nAggregateError"}
+{"timestamp":"2026-06-10T19:26:34.088Z","level":"error","message":"checkPortListening tcp error: 8080 localhost\nAggregateError"}
+{"timestamp":"2026-06-10T19:26:34.597Z","level":"error","message":"checkPortListening tcp error: 8080 localhost\nAggregateError"}
+{"timestamp":"2026-06-10T19:26:35.104Z","level":"info","message":"checkPortListening tcp failed, trying http fallback: 8080 localhost"}
+{"timestamp":"2026-06-10T19:26:35.115Z","level":"error","message":"checkPortListening http check failed: http://localhost:8080/ TypeError: fetch failed"}
+{"timestamp":"2026-06-10T19:26:35.115Z","level":"info","message":"Attempting to start server (attempt 1/3)"}
+{"timestamp":"2026-06-10T19:26:35.115Z","level":"error","message":"checkPortListening failed (tcp + http): 8080 localhost"}
+{"timestamp":"2026-06-10T19:26:35.118Z","level":"info","message":"HTTP server started successfully on port 63757"}
+{"timestamp":"2026-06-10T19:26:37.039Z","level":"info","message":"proxy: [REDACTED]proxy.tun.testsprite.com:9090"}
+{"timestamp":"2026-06-10T19:26:37.039Z","level":"info","message":"[TunnelClient] Tunnel client started","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:37.188Z","level":"debug","message":"[TunnelClient] Control message: {\"type\":\"Ack\"}","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:37.040Z","level":"info","message":"Tunnel probe attempt 1/2 through proxy.tun.testsprite.com:9090 to http://localhost:8080..."}
+{"timestamp":"2026-06-10T19:26:37.039Z","level":"info","message":"Verifying tunnel connectivity..."}
+{"timestamp":"2026-06-10T19:26:37.037Z","level":"info","message":"[TunnelClient] Control websocket connected","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:40.118Z","level":"debug","message":"[TunnelClient] Control message: {\"type\":\"RequestTunnel\",\"payload\":{\"tunnel_connection_id\":\"tunnel_Q97lxHl0uP6H4RYw\",\"target_host\":\"localhost\",\"target_port\":8080}}","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:40.118Z","level":"debug","message":"[TunnelClient] RequestTunnel received: tunnel_Q97lxHl0uP6H4RYw","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:40.129Z","level":"info","message":"[TunnelClient] Starting tunnel runtime on demand: tunnel_Q97lxHl0uP6H4RYw","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:40.485Z","level":"info","message":"[TunnelClient] Tunnel tcp connected: tunnel_Q97lxHl0uP6H4RYw","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:40.889Z","level":"debug","message":"[TunnelClient] Stream open: 9a5179f3-0c6b-49ae-b794-a4957d098577 (proxy_sF3MJFHuAbUSOv9N, tunnel_Q97lxHl0uP6H4RYw, stream 2)","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:40.889Z","level":"info","message":"[TunnelClient] Open request 9a5179f3-0c6b-49ae-b794-a4957d098577 (proxy_sF3MJFHuAbUSOv9N, tunnel_Q97lxHl0uP6H4RYw, stream 2): localhost:8080","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:40.892Z","level":"warn","message":"[TunnelClient] Target connect failed: Target connect failed for localhost:8080: ","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:41.356Z","level":"warn","message":"Tunnel probe attempt 1 failed: socket hang up — retrying in 3s..."}
+{"timestamp":"2026-06-10T19:26:44.367Z","level":"info","message":"Tunnel probe attempt 2/2 through proxy.tun.testsprite.com:9090 to http://localhost:8080..."}
+{"timestamp":"2026-06-10T19:26:45.316Z","level":"debug","message":"[TunnelClient] Stream open: 9b943f98-967a-46b8-878e-8eb025c86aee (proxy_trZeySxTqk2XrvIS, tunnel_Q97lxHl0uP6H4RYw, stream 4)","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:45.320Z","level":"warn","message":"[TunnelClient] Target connect failed: Target connect failed for localhost:8080: ","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:45.613Z","level":"error","message":"Tunnel probe failed after 2 attempts: socket hang up"}
+{"timestamp":"2026-06-10T19:26:45.316Z","level":"info","message":"[TunnelClient] Open request 9b943f98-967a-46b8-878e-8eb025c86aee (proxy_trZeySxTqk2XrvIS, tunnel_Q97lxHl0uP6H4RYw, stream 4): localhost:8080","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:45.614Z","level":"error","message":"Failed to generate and execute tests: Error: socket hang up\n    at Socket.socketOnEnd (node:_http_client:599:25)\n    at Socket.emit (node:events:520:35)\n    at endReadableNT (node:internal/streams/readable:1701:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)","context":{}}
+{"timestamp":"2026-06-10T19:26:45.615Z","level":"debug","message":"[TunnelClient] Yamux session closed: tunnel_Q97lxHl0uP6H4RYw"}
+{"timestamp":"2026-06-10T19:26:45.614Z","level":"info","message":"Error occurred. Cleaning up tunnel..."}
+{"timestamp":"2026-06-10T19:26:45.616Z","level":"warn","message":"[TunnelClient] Tunnel tcp closed: tunnel_Q97lxHl0uP6H4RYw","context":{"tunnelVersion":"2"}}
+{"timestamp":"2026-06-10T19:26:45.616Z","level":"info","message":"[TunnelClient] Tunnel tunnel_Q97lxHl0uP6H4RYw reconnect disabled","context":{"tunnelVersion":"2"}}

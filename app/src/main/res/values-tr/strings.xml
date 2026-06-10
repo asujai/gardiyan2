@@ -421,4 +421,87 @@
     <string name="discipline_detail_active_series">Aktif Seri</string>
     <string name="discipline_detail_back_to_active">Aktif Seriye Dön</string>
     <string name="discipline_detail_series_label">Seri %1$d</string>
+
+    <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_add_title">Yeni Söz Ekle</string>
+    <string name="saved_quotes_edit_title">Sözü Düzenle</string>
+    <string name="saved_quotes_btn_add">EKLE</string>
+    <string name="saved_quotes_btn_update">GÜNCELLE</string>
+    <string name="saved_quotes_list_title_format">Kayıtlı Sözler (%1$d)</string>
+    <string name="saved_quotes_empty">Henüz kaydedilmiş bir söz bulunmuyor.</string>
+    <string name="btn_back_desc">Geri</string>
+    <string name="btn_delete_desc">Sil</string>
+
+    <!-- Profile Screen Info -->
+    <string name="profile_level_detail_title">Dijital Seviye Detayı</string>
+    <string name="profile_level_detail_desc">Mevcut Seviyeniz: %1$s (Seviye %2$d)\n\nSeviyeler ve Gereksinimler:\n• Seviye 1: Başlangıç\n• Seviye 2: Kontrol Kazanıyor (3 gün kesintisiz başarı)\n• Seviye 3: Odaklı (7 gün kesintisiz başarı)\n• Seviye 4: Dengeli Kullanıcı (15 gün kesintisiz başarı)\n• Seviye 5: Dijital Disiplin (30 gün kesintisiz başarı)\n• Seviye 6: Tam Kontrol (60 gün kesintisiz başarı)\n\nKısıtlamaları ihlal etmeden her başarılı gün serinizi artırır ve sonraki seviyeye geçmenizi sağlar.</string>
+    <string name="profile_redemption_progress">Telafi İlerlemesi</string>
+    <string name="profile_next_level_progress">Sonraki Seviyeye İlerleme</string>
+    <string name="profile_custom_quote_always">Özel Söz (Her Zaman)</string>
+    <string name="profile_custom_quote_mix">Özel Söz (Karışık)</string>
+    <string name="profile_default_quotes">Varsayılan Sözler</string>
+    <string name="profile_digital_control_progress">Dijital Kontrol İlerlemesi</string>
+    
+    <string name="profile_theme_dialog_title">Görünüm Ayarları</string>
+    <string name="profile_theme_dialog_mode_section">Görünüm Modu</string>
+    <string name="profile_theme_dialog_palette_section">Renk Teması</string>
+    
+    <string name="profile_language_dialog_title">Dil Seçimi</string>
+    <string name="profile_support_dialog_title">Destek ve Geri Bildirim</string>
+    <string name="profile_support_dialog_desc">Sorun bildirmek veya yeni bir özellik önermek için bizimle iletişime geçebilirsiniz.</string>
+    
+    <string name="profile_filter_dialog_title">Zaman Tünelini Filtrele</string>
+    <string name="profile_filter_dialog_date_section">Tarih</string>
+    <string name="profile_filter_dialog_type_section">Olay Türü</string>
+    <string name="profile_filter_btn_apply">Uygula</string>
+    <string name="profile_filter_btn_text">Filtrele</string>
+    
+    <!-- Timeline Filters -->
+    <string name="filter_date_today">Bugün</string>
+    <string name="filter_date_7_days">Son 7 gün</string>
+    <string name="filter_date_30_days">Son 30 gün</string>
+    <string name="filter_date_all">Tüm zamanlar</string>
+    
+    <string name="filter_type_all">Tüm olaylar</string>
+    <string name="filter_type_restrictions">Kısıtlama olayları</string>
+    <string name="filter_type_limits">Limit olayları</string>
+    <string name="filter_type_permissions">İzin olayları</string>
+    <string name="filter_type_data_actions">Veri işlemleri</string>
+
+    <string name="profile_only_my_quotes">Sadece benim sözlerimi göster</string>
+
+    <!-- Levels -->
+    <string name="level_name_1">Başlangıç</string>
+    <string name="level_name_2">Kontrol Kazanıyor</string>
+    <string name="level_name_3">Odaklı</string>
+    <string name="level_name_4">Dengeli Kullanıcı</string>
+    <string name="level_name_5">Dijital Disiplin</string>
+    <string name="level_name_6">Tam Kontrol</string>
+    
+    <string name="level_note_1">Seviye 2 (Kontrol Kazanıyor) olmak için 3 gün kesintisiz başarı gerekir.</string>
+    <string name="level_note_2">Seviye 3 (Odaklı) olmak için 7 gün kesintisiz başarı gerekir.</string>
+    <string name="level_note_3">Seviye 4 (Dengeli Kullanıcı) olmak için 15 gün kesintisiz başarı gerekir.</string>
+    <string name="level_note_4">Seviye 5 (Dijital Disiplin) olmak için 30 gün kesintisiz başarı gerekir.</string>
+    <string name="level_note_5">Seviye 6 (Tam Kontrol) olmak için 60 gün kesintisiz başarı gerekir.</string>
+    <string name="level_note_max">Tebrikler! En yüksek kontrol seviyesindesiniz.</string>
+
+    <string name="profile_permissions_all_active">Tüm izinler aktif</string>
+    <string name="profile_permissions_missing">Eksik izin var</string>
+    <string name="profile_permission_state_ok">Aktif</string>
+    <string name="profile_permission_state_missing">Eksik</string>
+
+    <string name="profile_weekly_success_days_format">%1$d/7 Gün</string>
+    <string name="profile_redemption_progress_format">%1$d / %2$d Gün</string>
+    <string name="profile_level_format">SEVİYE %1$d</string>
+    <string name="profile_streak_title">BAŞARI SERİSİ</string>
+    <string name="profile_protected_apps_title">AKTİF KORUMA</string>
+    <string name="profile_weekly_summary_title">HAFTALIK ÖZET</string>
+    <string name="btn_ok">TAMAM</string>
+    <string name="btn_info_desc">Bilgi</string>
+    <string name="profile_saved_time_title">KORUNAN SÜRE</string>
+    <string name="protected_tab_active_format">%1$s aktif</string>
+    <string name="protected_tab_reached_limit">Limiti Dolanlar</string>
+    <string name="perm_guidance_text">Her izin kartına dokunun, açılan Android ayarları ekranında Limitra\'yı bulun ve gerekli izni etkinleştirin. Ardından bir sonraki adımı tamamlamak için geri dönün.</string>
+    <string name="profile_notifications_title">Bildirimler</string>
+    <string name="profile_notifications_desc">Limit uyarılarını ve durum bildirimlerini göster.</string>
 </resources>

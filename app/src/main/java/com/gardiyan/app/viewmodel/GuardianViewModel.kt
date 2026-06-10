@@ -403,9 +403,24 @@ class GuardianViewModel(context: Context) : ViewModel() {
 
     fun openUsageStatsSettings(context: Context) {
         val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+            data = android.net.Uri.parse("package:${context.packageName}")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-        context.startActivity(intent)
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            val fallback = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            try {
+                context.startActivity(fallback)
+            } catch (e2: Exception) {
+                val settingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                try { context.startActivity(settingsIntent) } catch (e3: Exception) {}
+            }
+        }
     }
 
     fun hasOverlayPermission(context: Context): Boolean {
@@ -423,7 +438,14 @@ class GuardianViewModel(context: Context) : ViewModel() {
             val fallbackIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
-            context.startActivity(fallbackIntent)
+            try {
+                context.startActivity(fallbackIntent)
+            } catch (e2: Exception) {
+                val settingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                try { context.startActivity(settingsIntent) } catch (e3: Exception) {}
+            }
         }
     }
 
@@ -479,10 +501,30 @@ class GuardianViewModel(context: Context) : ViewModel() {
     }
 
     fun openAccessibilitySettings(context: Context) {
+        val componentName = ComponentName(context, AppBlockAccessibilityService::class.java).flattenToString()
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+            val args = android.os.Bundle().apply {
+                putString(":settings:fragment_args_key", componentName)
+            }
+            putExtra(":settings:fragment_args_key", componentName)
+            putExtra(":settings:show_fragment_args", args)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-        context.startActivity(intent)
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            val fallback = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            try {
+                context.startActivity(fallback)
+            } catch (e2: Exception) {
+                val settingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                try { context.startActivity(settingsIntent) } catch (e3: Exception) {}
+            }
+        }
     }
 
     fun isBatteryOptimizationIgnored(context: Context): Boolean {
@@ -509,7 +551,10 @@ class GuardianViewModel(context: Context) : ViewModel() {
                 }
                 context.startActivity(fallback)
             } catch (e2: Exception) {
-                e2.printStackTrace()
+                val settingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                try { context.startActivity(settingsIntent) } catch (e3: Exception) {}
             }
         }
     }
@@ -542,7 +587,11 @@ class GuardianViewModel(context: Context) : ViewModel() {
             val fallback = Intent(Settings.ACTION_SETTINGS).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
-            context.startActivity(fallback)
+            try {
+                context.startActivity(fallback)
+            } catch (e2: Exception) {
+                // Zaten safe fallback
+            }
         }
     }
 

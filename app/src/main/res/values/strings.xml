@@ -428,4 +428,87 @@
     <string name="discipline_detail_active_series">Active Series</string>
     <string name="discipline_detail_back_to_active">Return to Active Series</string>
     <string name="discipline_detail_series_label">Series %1$d</string>
+
+    <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_add_title">Add New Quote</string>
+    <string name="saved_quotes_edit_title">Edit Quote</string>
+    <string name="saved_quotes_btn_add">ADD</string>
+    <string name="saved_quotes_btn_update">UPDATE</string>
+    <string name="saved_quotes_list_title_format">Saved Quotes (%1$d)</string>
+    <string name="saved_quotes_empty">No saved quotes yet.</string>
+    <string name="btn_back_desc">Back</string>
+    <string name="btn_delete_desc">Delete</string>
+
+    <!-- Profile Screen Info -->
+    <string name="profile_level_detail_title">Digital Level Details</string>
+    <string name="profile_level_detail_desc">Your Current Level: %1$s (Level %2$d)\n\nLevels and Requirements:\n• Level 1: Rookie\n• Level 2: Gaining Control (3 days uninterrupted success)\n• Level 3: Focused (7 days uninterrupted success)\n• Level 4: Balanced User (15 days uninterrupted success)\n• Level 5: Digital Discipline (30 days uninterrupted success)\n• Level 6: Full Control (60 days uninterrupted success)\n\nEach successful day without violating restrictions increases your streak and allows you to level up.</string>
+    <string name="profile_redemption_progress">Redemption Progress</string>
+    <string name="profile_next_level_progress">Next Level Progress</string>
+    <string name="profile_custom_quote_always">Custom Quote (Always)</string>
+    <string name="profile_custom_quote_mix">Custom Quote (Mixed)</string>
+    <string name="profile_default_quotes">Default Quotes</string>
+    <string name="profile_digital_control_progress">Digital Control Progress</string>
+    
+    <string name="profile_theme_dialog_title">Appearance Settings</string>
+    <string name="profile_theme_dialog_mode_section">Appearance Mode</string>
+    <string name="profile_theme_dialog_palette_section">Color Theme</string>
+    
+    <string name="profile_language_dialog_title">Language Selection</string>
+    <string name="profile_support_dialog_title">Support and Feedback</string>
+    <string name="profile_support_dialog_desc">You can contact us to report a problem or suggest a new feature.</string>
+    
+    <string name="profile_filter_dialog_title">Filter Timeline</string>
+    <string name="profile_filter_dialog_date_section">Date</string>
+    <string name="profile_filter_dialog_type_section">Event Type</string>
+    <string name="profile_filter_btn_apply">Apply</string>
+    <string name="profile_filter_btn_text">Filter</string>
+    
+    <!-- Timeline Filters -->
+    <string name="filter_date_today">Today</string>
+    <string name="filter_date_7_days">Last 7 days</string>
+    <string name="filter_date_30_days">Last 30 days</string>
+    <string name="filter_date_all">All time</string>
+    
+    <string name="filter_type_all">All events</string>
+    <string name="filter_type_restrictions">Restriction events</string>
+    <string name="filter_type_limits">Limit events</string>
+    <string name="filter_type_permissions">Permission events</string>
+    <string name="filter_type_data_actions">Data actions</string>
+
+    <string name="profile_only_my_quotes">Show only my quotes</string>
+
+    <!-- Levels -->
+    <string name="level_name_1">Rookie</string>
+    <string name="level_name_2">Gaining Control</string>
+    <string name="level_name_3">Focused</string>
+    <string name="level_name_4">Balanced User</string>
+    <string name="level_name_5">Digital Discipline</string>
+    <string name="level_name_6">Full Control</string>
+    
+    <string name="level_note_1">Level 2 (Gaining Control) requires 3 days of uninterrupted success.</string>
+    <string name="level_note_2">Level 3 (Focused) requires 7 days of uninterrupted success.</string>
+    <string name="level_note_3">Level 4 (Balanced User) requires 15 days of uninterrupted success.</string>
+    <string name="level_note_4">Level 5 (Digital Discipline) requires 30 days of uninterrupted success.</string>
+    <string name="level_note_5">Level 6 (Full Control) requires 60 days of uninterrupted success.</string>
+    <string name="level_note_max">Congratulations! You are at the highest control level.</string>
+
+    <string name="profile_permissions_all_active">All permissions active</string>
+    <string name="profile_permissions_missing">Missing permissions</string>
+    <string name="profile_permission_state_ok">Active</string>
+    <string name="profile_permission_state_missing">Missing</string>
+
+    <string name="profile_weekly_success_days_format">%1$d/7 Days</string>
+    <string name="profile_redemption_progress_format">%1$d / %2$d Days</string>
+    <string name="profile_level_format">LEVEL %1$d</string>
+    <string name="profile_streak_title">SUCCESS STREAK</string>
+    <string name="profile_protected_apps_title">ACTIVE PROTECTION</string>
+    <string name="profile_weekly_summary_title">WEEKLY SUMMARY</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_info_desc">Information</string>
+    <string name="profile_saved_time_title">Gained / Protected Time</string>
+    <string name="protected_tab_active_format">%1$s active</string>
+    <string name="protected_tab_reached_limit">Limit Reached</string>
+    <string name="perm_guidance_text">Tap each permission card, find Limitra in the Android settings screen that opens, and enable the required permission. Then return to complete the next step.</string>
+    <string name="profile_notifications_title">Notifications</string>
+    <string name="profile_notifications_desc">Show limit warnings and status notifications.</string>
 </resources>

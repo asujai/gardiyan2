@@ -415,4 +415,92 @@
     <string name="profile_weekly_summary_dialog_title">Weekly Summary Details</string>
     <string name="profile_weekly_summary_dialog_desc">You fully complied with the restriction rules for a total of %1$d days this week.\n\nCompleting weekly goals reinforces your digital discipline and increases your focus time.</string>
     <string name="quote_author_anonymous">Anonymous</string>
+    <string name="discipline_detail_title">Historique de Discipline</string>
+    <string name="discipline_detail_completed_series">Séries Complétées</string>
+    <string name="discipline_detail_active_series">Série Active</string>
+    <string name="discipline_detail_back_to_active">Retourner à la Série Active</string>
+    <string name="discipline_detail_series_label">Série %1$d</string>
+
+    <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_add_title">Ajouter une Citation</string>
+    <string name="saved_quotes_edit_title">Modifier la Citation</string>
+    <string name="saved_quotes_btn_add">AJOUTER</string>
+    <string name="saved_quotes_btn_update">METTRE À JOUR</string>
+    <string name="saved_quotes_list_title_format">Citations Enregistrées (%1$d)</string>
+    <string name="saved_quotes_empty">Aucune citation enregistrée pour le moment.</string>
+    <string name="btn_back_desc">Retour</string>
+    <string name="btn_delete_desc">Supprimer</string>
+
+    <!-- Profile Screen Info -->
+    <string name="profile_level_detail_title">Détails du Niveau Numérique</string>
+    <string name="profile_level_detail_desc">Votre niveau actuel: %1$s (Niveau %2$d)\n\nNiveaux et conditions:\n• Niveau 1: Débutant\n• Niveau 2: Prise de Contrôle (3 jours de succès consécutifs)\n• Niveau 3: Focalisé (7 jours de succès consécutifs)\n• Niveau 4: Utilisateur Équilibré (15 jours de succès consécutifs)\n• Niveau 5: Discipline Numérique (30 jours de succès consécutifs)\n• Niveau 6: Contrôle Total (60 jours de succès consécutifs)\n\nChaque jour de succès sans enfreindre les restrictions augmente votre série et vous permet de monter de niveau.</string>
+    <string name="profile_redemption_progress">Progression de Rachat</string>
+    <string name="profile_next_level_progress">Progression vers le Niveau Suivant</string>
+    <string name="profile_custom_quote_always">Citation personnalisée (Toujours)</string>
+    <string name="profile_custom_quote_mix">Citation personnalisée (Mélangée)</string>
+    <string name="profile_default_quotes">Citations par Défaut</string>
+    <string name="profile_digital_control_progress">Progression de Contrôle Numérique</string>
+    
+    <string name="profile_theme_dialog_title">Paramètres d\'Apparence</string>
+    <string name="profile_theme_dialog_mode_section">Mode d\'Apparence</string>
+    <string name="profile_theme_dialog_palette_section">Thème de Couleur</string>
+    
+    <string name="profile_language_dialog_title">Sélection de la Langue</string>
+    <string name="profile_support_dialog_title">Support et Commentaires</string>
+    <string name="profile_support_dialog_desc">Vous pouvez nous contacter pour signaler un problème ou suggérer une nouvelle fonctionnalité.</string>
+    
+    <string name="profile_filter_dialog_title">Filtrer l\'Historique</string>
+    <string name="profile_filter_dialog_date_section">Date</string>
+    <string name="profile_filter_dialog_type_section">Type d\'Événement</string>
+    <string name="profile_filter_btn_apply">Appliquer</string>
+    <string name="profile_filter_btn_text">Filtrer</string>
+    
+    <!-- Timeline Filters -->
+    <string name="filter_date_today">Aujourd\'hui</string>
+    <string name="filter_date_7_days">7 derniers jours</string>
+    <string name="filter_date_30_days">30 derniers jours</string>
+    <string name="filter_date_all">Depuis le début</string>
+    
+    <string name="filter_type_all">Tous les événements</string>
+    <string name="filter_type_restrictions">Événements de restriction</string>
+    <string name="filter_type_limits">Événements de limite</string>
+    <string name="filter_type_permissions">Événements d\'autorisation</string>
+    <string name="filter_type_data_actions">Actions sur les données</string>
+
+    <string name="profile_only_my_quotes">Afficher uniquement mes citations</string>
+
+    <!-- Levels -->
+    <string name="level_name_1">Débutant</string>
+    <string name="level_name_2">Prise de Contrôle</string>
+    <string name="level_name_3">Focalisé</string>
+    <string name="level_name_4">Utilisateur Équilibré</string>
+    <string name="level_name_5">Discipline Numérique</string>
+    <string name="level_name_6">Contrôle Total</string>
+    
+    <string name="level_note_1">Le niveau 2 (Prise de Contrôle) requiert 3 jours de succès consécutifs.</string>
+    <string name="level_note_2">Le niveau 3 (Focalisé) requiert 7 jours de succès consécutifs.</string>
+    <string name="level_note_3">Le niveau 4 (Utilisateur Équilibré) requiert 15 jours de succès consécutifs.</string>
+    <string name="level_note_4">Le niveau 5 (Discipline Numérique) requiert 30 jours de succès consécutifs.</string>
+    <string name="level_note_5">Le niveau 6 (Controle Total) requiert 60 jours de succès consécutifs.</string> <!-- "Contrôle Total" -->
+    <string name="level_note_max">Félicitations! Vous êtes au niveau de contrôle le plus élevé.</string>
+
+    <string name="profile_permissions_all_active">Toutes les autorisations sont actives</string>
+    <string name="profile_permissions_missing">Autorisations manquantes</string>
+    <string name="profile_permission_state_ok">Actif</string>
+    <string name="profile_permission_state_missing">Manquant</string>
+
+    <string name="profile_weekly_success_days_format">%1$d/7 Jours</string>
+    <string name="profile_redemption_progress_format">%1$d / %2$d Jours</string>
+    <string name="profile_level_format">NIVEAU %1$d</string>
+    <string name="profile_streak_title">SÉRIE DE SUCCÈS</string>
+    <string name="profile_protected_apps_title">PROTECTION ACTIVE</string>
+    <string name="profile_weekly_summary_title">RÉSUMÉ HEBDOMADAIRE</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_info_desc">Informations</string>
+    <string name="profile_saved_time_title">Temps Gagné / Protégé</string>
+    <string name="protected_tab_active_format">%1$s actif</string>
+    <string name="protected_tab_reached_limit">Limite atteinte</string>
+    <string name="perm_guidance_text">Appuyez sur chaque carte de permission, trouvez Limitra dans l\'écran de configuration Android qui s\'ouvre, puis activez la permission requise. Revenez ensuite pour terminer l\'étape suivante.</string>
+    <string name="profile_notifications_title">Notifications</string>
+    <string name="profile_notifications_desc">Afficher les avertissements de limite et les notifications d\'état.</string>
 </resources>

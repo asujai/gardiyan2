@@ -256,24 +256,26 @@ fun ProfileScreen(
     val redemptionStreakGoal = session?.redemptionStreakGoal?.coerceAtLeast(1) ?: 2
     val consecutiveSuccessDays = session?.consecutiveSuccessDays ?: 0
 
-    val levelName = when (level) {
-        1 -> "Başlangıç"
-        2 -> "Kontrol Kazanıyor"
-        3 -> "Odaklı"
-        4 -> "Dengeli Kullanıcı"
-        5 -> "Dijital Disiplin"
-        6 -> "Tam Kontrol"
-        else -> "Başlangıç"
+    val levelNameRes = when (level) {
+        1 -> R.string.level_name_1
+        2 -> R.string.level_name_2
+        3 -> R.string.level_name_3
+        4 -> R.string.level_name_4
+        5 -> R.string.level_name_5
+        6 -> R.string.level_name_6
+        else -> R.string.level_name_1
     }
+    val levelName = stringResource(levelNameRes)
 
-    val nextLevelNote = when (level) {
-        1 -> "Seviye 2 (Kontrol Kazanıyor) olmak için 3 gün kesintisiz başarı gerekir."
-        2 -> "Seviye 3 (Odaklı) olmak için 7 gün kesintisiz başarı gerekir."
-        3 -> "Seviye 4 (Dengeli Kullanıcı) olmak için 15 gün kesintisiz başarı gerekir."
-        4 -> "Seviye 5 (Dijital Disiplin) olmak için 30 gün kesintisiz başarı gerekir."
-        5 -> "Seviye 6 (Tam Kontrol) olmak için 60 gün kesintisiz başarı gerekir."
-        else -> "Tebrikler! En yüksek kontrol seviyesindesiniz."
+    val nextLevelNoteRes = when (level) {
+        1 -> R.string.level_note_1
+        2 -> R.string.level_note_2
+        3 -> R.string.level_note_3
+        4 -> R.string.level_note_4
+        5 -> R.string.level_note_5
+        else -> R.string.level_note_max
     }
+    val nextLevelNote = stringResource(nextLevelNoteRes)
 
     val levelProgress = when (level) {
         1 -> (consecutiveSuccessDays.toFloat() / 3f).coerceIn(0f, 1f)
@@ -292,11 +294,11 @@ fun ProfileScreen(
     if (hasBadge && activeRedemptionDaysLeft > 0) {
         val completedDays = (redemptionStreakGoal - activeRedemptionDaysLeft).coerceAtLeast(0)
         progress = completedDays.toFloat() / redemptionStreakGoal.toFloat()
-        progressLabel = "Telafi İlerlemesi"
-        progressText = "$completedDays / $redemptionStreakGoal Gün"
+        progressLabel = stringResource(R.string.profile_redemption_progress)
+        progressText = stringResource(R.string.profile_redemption_progress_format, completedDays, redemptionStreakGoal)
         progressColor = DangerRed
     } else {
-        progressLabel = "Sonraki Seviyeye İlerleme"
+        progressLabel = stringResource(R.string.profile_next_level_progress)
         progressColor = SuccessGreen
         progress = levelProgress
         progressText = "${(levelProgress * 100).toInt()}%"
@@ -329,18 +331,10 @@ fun ProfileScreen(
     if (showLevelDetailDialog) {
         AlertDialog(
             onDismissRequest = { showLevelDetailDialog = false },
-            title = { Text("Dijital Seviye Detayı", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_level_detail_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 Text(
-                    "Mevcut Seviyeniz: $levelName (Seviye $level)\n\n" +
-                    "Seviyeler ve Gereksinimler:\n" +
-                    "• Seviye 1: Başlangıç\n" +
-                    "• Seviye 2: Kontrol Kazanıyor (3 gün kesintisiz başarı)\n" +
-                    "• Seviye 3: Odaklı (7 gün kesintisiz başarı)\n" +
-                    "• Seviye 4: Dengeli Kullanıcı (15 gün kesintisiz başarı)\n" +
-                    "• Seviye 5: Dijital Disiplin (30 gün kesintisiz başarı)\n" +
-                    "• Seviye 6: Tam Kontrol (60 gün kesintisiz başarı)\n\n" +
-                    "Kısıtlamaları ihlal etmeden her başarılı gün serinizi artırır ve sonraki seviyeye geçmenizi sağlar.",
+                    stringResource(R.string.profile_level_detail_desc, levelName, level),
                     color = MutedGray, fontSize = 13.sp, lineHeight = 18.sp
                 )
             },
@@ -349,7 +343,7 @@ fun ProfileScreen(
                     onClick = { showLevelDetailDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Kapat", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_close), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -565,15 +559,15 @@ fun ProfileScreen(
         val currentPalette = currentThemePalette.value
         AlertDialog(
             onDismissRequest = { showThemeDialog = false },
-            title = { Text("Görünüm Ayarları", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_theme_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Görünüm Modu", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
+                    Text(stringResource(R.string.profile_theme_dialog_mode_section), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf(
-                            AppThemeMode.SYSTEM to "Sistem Varsayılanı",
-                            AppThemeMode.LIGHT to "Açık Tema",
-                            AppThemeMode.DARK to "Koyu Tema"
+                            AppThemeMode.SYSTEM to stringResource(R.string.profile_theme_system_default),
+                            AppThemeMode.LIGHT to stringResource(R.string.profile_theme_light),
+                            AppThemeMode.DARK to stringResource(R.string.profile_theme_dark)
                         ).forEach { (mode, label) ->
                             Row(
                                 modifier = Modifier
@@ -595,13 +589,13 @@ fun ProfileScreen(
                     
                     HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
                     
-                    Text("Renk Teması", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
+                    Text(stringResource(R.string.profile_theme_dialog_palette_section), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf(
-                            AppThemePalette.BLUE to "Mavi Tema",
-                            AppThemePalette.MONOCHROME to "Siyah Beyaz",
-                            AppThemePalette.RED to "Kırmızı Tema",
-                            AppThemePalette.PREMIUM_DARK to "Premium Koyu"
+                            AppThemePalette.BLUE to stringResource(R.string.profile_theme_blue),
+                            AppThemePalette.MONOCHROME to stringResource(R.string.profile_theme_bw),
+                            AppThemePalette.RED to stringResource(R.string.profile_theme_red),
+                            AppThemePalette.PREMIUM_DARK to stringResource(R.string.profile_theme_premium)
                         ).forEach { (palette, label) ->
                             Row(
                                 modifier = Modifier
@@ -627,7 +621,7 @@ fun ProfileScreen(
                     onClick = { showThemeDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Tamam", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_ok), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -648,11 +642,12 @@ fun ProfileScreen(
             "ar" to "العربية",
             "hi" to "हिन्दी",
             "id" to "Bahasa Indonesia",
-            "ru" to "Русский"
+            "ru" to "Русский",
+            "th" to "Thai / ไทย"
         )
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
-            title = { Text("Dil Seçimi", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_language_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp),
@@ -692,7 +687,7 @@ fun ProfileScreen(
                     onClick = { showLanguageDialog = false },
                     colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
                 ) {
-                    Text("Kapat")
+                    Text(stringResource(R.string.btn_close))
                 }
             },
             containerColor = DarkCharcoal,
@@ -808,7 +803,7 @@ fun ProfileScreen(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(
-                                    text = if (editingQuoteId != null) "GÜNCELLE" else "EKLE",
+                                    text = if (editingQuoteId != null) stringResource(R.string.saved_quotes_btn_update) else stringResource(R.string.saved_quotes_btn_add),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -885,7 +880,7 @@ fun ProfileScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Sadece benim sözlerimi göster",
+                            text = stringResource(R.string.profile_only_my_quotes),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = PureBlack
@@ -906,7 +901,7 @@ fun ProfileScreen(
                     onClick = { showQuoteSettingsDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("TAMAM", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_ok), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -932,7 +927,7 @@ fun ProfileScreen(
 
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
-            title = { Text("Hakkında", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_about_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -993,7 +988,7 @@ fun ProfileScreen(
                     onClick = { showAboutDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Kapat", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_close), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -1004,10 +999,10 @@ fun ProfileScreen(
     if (showSupportInfoDialog) {
         AlertDialog(
             onDismissRequest = { showSupportInfoDialog = false },
-            title = { Text("Destek ve Geri Bildirim", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_support_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 Text(
-                    text = "Sorun bildirmek veya yeni bir özellik önermek için bizimle iletişime geçebilirsiniz.",
+                    text = stringResource(R.string.profile_support_dialog_desc),
                     color = MutedGray,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
@@ -1018,7 +1013,7 @@ fun ProfileScreen(
                     onClick = { showSupportInfoDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Kapat", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_close), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -1044,7 +1039,7 @@ fun ProfileScreen(
                     onClick = { showPermissionInfoDialog = null },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Kapat", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.btn_close), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -1055,10 +1050,10 @@ fun ProfileScreen(
     if (showFilterDialog) {
         AlertDialog(
             onDismissRequest = { showFilterDialog = false },
-            title = { Text("Zaman Tünelini Filtrele", fontWeight = FontWeight.Bold, color = PureBlack) },
+            title = { Text(stringResource(R.string.profile_filter_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Tarih", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
+                    Text(stringResource(R.string.profile_filter_dialog_date_section), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         TimelineDateFilter.entries.forEach { dateOpt ->
                             Row(
@@ -1074,14 +1069,14 @@ fun ProfileScreen(
                                     colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(dateOpt.label, color = PureBlack, fontSize = 13.sp)
+                                Text(stringResource(dateOpt.labelResId), color = PureBlack, fontSize = 13.sp)
                             }
                         }
                     }
                     
                     HorizontalDivider(color = BorderGray, thickness = 0.8.dp)
                     
-                    Text("Olay Türü", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
+                    Text(stringResource(R.string.profile_filter_dialog_type_section), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         TimelineTypeFilter.entries.forEach { typeOpt ->
                             Row(
@@ -1097,7 +1092,7 @@ fun ProfileScreen(
                                     colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(typeOpt.label, color = PureBlack, fontSize = 13.sp)
+                                Text(stringResource(typeOpt.labelResId), color = PureBlack, fontSize = 13.sp)
                             }
                         }
                     }
@@ -1108,7 +1103,7 @@ fun ProfileScreen(
                     onClick = { showFilterDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text("Uygula", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.profile_filter_btn_apply), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -1146,7 +1141,7 @@ fun ProfileScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (isTimelineVisible) {
                         TextButton(onClick = { showFilterDialog = true }) {
-                            Text(text = "Filtrele", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = SuccessGreen)
+                            Text(text = stringResource(R.string.profile_filter_btn_text), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = SuccessGreen)
                         }
                     }
                     IconButton(
@@ -1177,7 +1172,7 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
-                        text = "${filterDate.label} · ${filterType.label}",
+                        text = "${stringResource(filterDate.labelResId)} · ${stringResource(filterType.labelResId)}",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = MutedGray
@@ -1420,7 +1415,7 @@ fun ProfileScreen(
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(
-                                    text = if (allOk) "Tüm izinler aktif" else "Eksik izin var",
+                                    text = if (allOk) stringResource(R.string.profile_permissions_all_active) else stringResource(R.string.profile_permissions_missing),
                                     fontSize = 11.sp,
                                     color = MutedGray,
                                     fontWeight = FontWeight.Medium
@@ -1513,7 +1508,8 @@ fun ProfileScreen(
                     "ar" to "العربية",
                     "hi" to "हिन्दी",
                     "id" to "Bahasa Indonesia",
-                    "ru" to "Русский"
+                    "ru" to "Русский",
+                    "th" to "Thai / ไทย"
                 )
                 val currentLangLabel = languages.firstOrNull { it.first == currentLang }?.second ?: "English"
                 SettingsRow(
@@ -1523,15 +1519,62 @@ fun ProfileScreen(
                 )
             }
 
+            // 3ab. Bildirimler
+            item {
+                val prefs = remember { context.getSharedPreferences("gardiyan_settings", android.content.Context.MODE_PRIVATE) }
+                var notificationsEnabledState by remember {
+                    mutableStateOf(prefs.getBoolean("notifications_enabled", true))
+                }
+
+                val isAndroid13OrAbove = android.os.Build.VERSION.SDK_INT >= 33
+                val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+                ) { isGranted ->
+                    if (isGranted) {
+                        prefs.edit().putBoolean("notifications_enabled", true).apply()
+                        notificationsEnabledState = true
+                    } else {
+                        prefs.edit().putBoolean("notifications_enabled", false).apply()
+                        notificationsEnabledState = false
+                    }
+                }
+
+                LaunchedEffect(isNotificationsEnabled) {
+                    if (isAndroid13OrAbove && !isNotificationsEnabled) {
+                        notificationsEnabledState = false
+                        prefs.edit().putBoolean("notifications_enabled", false).apply()
+                    }
+                }
+
+                SettingsSwitchRow(
+                    title = stringResource(R.string.profile_notifications_title),
+                    description = stringResource(R.string.profile_notifications_desc),
+                    checked = notificationsEnabledState,
+                    onCheckedChange = { checked ->
+                        if (checked) {
+                            if (isAndroid13OrAbove && !viewModel.areNotificationsEnabled(context)) {
+                                permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                            } else {
+                                prefs.edit().putBoolean("notifications_enabled", true).apply()
+                                notificationsEnabledState = true
+                            }
+                        } else {
+                            prefs.edit().putBoolean("notifications_enabled", false).apply()
+                            notificationsEnabledState = false
+                        }
+                    }
+                )
+            }
+
             // 3b. Koruma Ekranı Sözü
             item {
                 val prefs = remember { context.getSharedPreferences("gardiyan_settings", android.content.Context.MODE_PRIVATE) }
                 val hasCustom = prefs.getBoolean("has_custom_quote", false)
                 val customPref = prefs.getString("custom_quote_preference", "mix") ?: "mix"
                 val valueText = if (hasCustom) {
-                    if (customPref == "always") "Özel Söz (Her Zaman)" else "Özel Söz (Karışık)"
+                    if (customPref == "always") stringResource(R.string.profile_custom_quote_always) else stringResource(R.string.profile_custom_quote_mix)
                 } else {
-                    "Varsayılan Sözler"
+                    stringResource(R.string.profile_default_quotes)
                 }
 
                 SettingsRow(
@@ -1638,7 +1681,7 @@ fun ProfileScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "SEVİYE $level",
+                            text = stringResource(R.string.profile_level_format, level),
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.ExtraBold,
@@ -1660,7 +1703,7 @@ fun ProfileScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = "Dijital Kontrol İlerlemesi", fontSize = 10.sp, color = MutedGray)
+                                Text(text = stringResource(R.string.profile_digital_control_progress), fontSize = 10.sp, color = MutedGray)
                                 Text(
                                     text = "${(levelProgress * 100).toInt()}%",
                                     fontSize = 10.sp,
@@ -1723,7 +1766,7 @@ fun ProfileScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "BAŞARI SERİSİ",
+                                        text = stringResource(R.string.profile_streak_title),
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MutedGray
@@ -1731,7 +1774,7 @@ fun ProfileScreen(
                                     Text(text = "🔥", fontSize = 14.sp)
                                 }
                                 Text(
-                                    text = "$consecutiveSuccessDays Gün",
+                                    text = stringResource(R.string.profile_streak_days, consecutiveSuccessDays),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
                                     color = PureBlack
@@ -1740,7 +1783,7 @@ fun ProfileScreen(
                         }
 
                         // Saved Time Card
-                        val timeDisplayStr = if (totalSavedMillis > 0) formatUsageDuration(totalSavedMillis) else "Henüz veri yok"
+                        val timeDisplayStr = if (totalSavedMillis > 0) formatUsageDuration(totalSavedMillis) else stringResource(R.string.profile_saved_time_no_data)
                         Card(
                             onClick = { showSavedTimeDetailDialog = true },
                             modifier = Modifier
@@ -1762,7 +1805,7 @@ fun ProfileScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "KORUNAN SÜRE",
+                                        text = stringResource(R.string.profile_saved_time_title),
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MutedGray
@@ -1805,7 +1848,7 @@ fun ProfileScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "AKTİF KORUMA",
+                                        text = stringResource(R.string.profile_protected_apps_title),
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MutedGray
@@ -1813,7 +1856,7 @@ fun ProfileScreen(
                                     Text(text = "🛡️", fontSize = 14.sp)
                                 }
                                 Text(
-                                    text = "${activeApps.size} Uygulama",
+                                    text = stringResource(R.string.profile_protected_apps, activeApps.size),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
                                     color = PureBlack
@@ -1843,7 +1886,7 @@ fun ProfileScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "HAFTALIK ÖZET",
+                                        text = stringResource(R.string.profile_weekly_summary_title),
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MutedGray
@@ -1851,7 +1894,7 @@ fun ProfileScreen(
                                     Text(text = "📅", fontSize = 14.sp)
                                 }
                                 Text(
-                                    text = "$weeklySuccessDays/7 Gün",
+                                    text = stringResource(R.string.profile_weekly_success_days_format, weeklySuccessDays),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
                                     color = PureBlack
@@ -1954,7 +1997,7 @@ private fun HealthRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = if (isOk) "Aktif" else "Eksik",
+                text = if (isOk) stringResource(R.string.profile_permission_state_ok) else stringResource(R.string.profile_permission_state_missing),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isOk) SuccessGreen else DangerRed
@@ -1965,7 +2008,7 @@ private fun HealthRow(
             ) {
                 Icon(
                     imageVector = Icons.Default.Info,
-                    contentDescription = "Bilgi",
+                    contentDescription = stringResource(R.string.btn_info_desc),
                     tint = MutedGray,
                     modifier = Modifier.size(16.dp)
                 )
@@ -2024,7 +2067,7 @@ private fun SettingsRow(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
-                            contentDescription = "Bilgi",
+                            contentDescription = stringResource(R.string.btn_info_desc),
                             tint = MutedGray,
                             modifier = Modifier.size(16.dp)
                         )
@@ -2048,19 +2091,19 @@ fun HeaderSection(session: UserSessionEntity?) {
     // DashboardHeader artık ana header. Bu fonksiyon geriye uyumluluk için korunuyor.
 }
 
-enum class TimelineDateFilter(val label: String) {
-    TODAY("Bugün"),
-    LAST_7_DAYS("Son 7 gün"),
-    LAST_30_DAYS("Son 30 gün"),
-    ALL_TIME("Tüm zamanlar")
+enum class TimelineDateFilter(val labelResId: Int) {
+    TODAY(R.string.filter_date_today),
+    LAST_7_DAYS(R.string.filter_date_7_days),
+    LAST_30_DAYS(R.string.filter_date_30_days),
+    ALL_TIME(R.string.filter_date_all)
 }
 
-enum class TimelineTypeFilter(val label: String) {
-    ALL("Tüm olaylar"),
-    RESTRICTIONS("Kısıtlama olayları"),
-    LIMITS("Limit olayları"),
-    PERMISSIONS("İzin olayları"),
-    DATA_ACTIONS("Veri işlemleri")
+enum class TimelineTypeFilter(val labelResId: Int) {
+    ALL(R.string.filter_type_all),
+    RESTRICTIONS(R.string.filter_type_restrictions),
+    LIMITS(R.string.filter_type_limits),
+    PERMISSIONS(R.string.filter_type_permissions),
+    DATA_ACTIONS(R.string.filter_type_data_actions)
 }
 
 data class CustomQuoteItem(
@@ -2133,5 +2176,57 @@ fun saveCustomQuotes(prefs: android.content.SharedPreferences, list: List<Custom
         prefs.edit().putString("custom_quotes_json", array.toString()).apply()
     } catch (e: java.lang.Exception) {
         e.printStackTrace()
+    }
+}
+
+@Composable
+private fun SettingsSwitchRow(
+    title: String,
+    description: String? = null,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                Text(
+                    text = title,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PureBlack
+                )
+                if (description != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = description,
+                        fontSize = 10.sp,
+                        color = MutedGray,
+                        lineHeight = 14.sp
+                    )
+                }
+            }
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = PureWhite,
+                    checkedTrackColor = SuccessGreen,
+                    uncheckedThumbColor = MutedGray,
+                    uncheckedTrackColor = BorderGray
+                )
+            )
+        }
     }
 }

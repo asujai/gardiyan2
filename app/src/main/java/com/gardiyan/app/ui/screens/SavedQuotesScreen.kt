@@ -51,7 +51,7 @@ fun SavedQuotesScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Geri",
+                            contentDescription = stringResource(R.string.btn_back_desc),
                             tint = PureBlack
                         )
                     }
@@ -83,7 +83,7 @@ fun SavedQuotesScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = if (editingQuoteId != null) "Sözü Düzenle" else "Yeni Söz Ekle",
+                        text = if (editingQuoteId != null) stringResource(R.string.saved_quotes_edit_title) else stringResource(R.string.saved_quotes_add_title),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = PureBlack
@@ -129,7 +129,7 @@ fun SavedQuotesScreen(
                                 },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("İptal", color = MutedGray, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.btn_cancel), color = MutedGray, fontWeight = FontWeight.Bold)
                             }
                         }
 
@@ -172,7 +172,7 @@ fun SavedQuotesScreen(
                             modifier = Modifier.weight(if (editingQuoteId != null) 1f else 2f)
                         ) {
                             Text(
-                                text = if (editingQuoteId != null) "GÜNCELLE" else "EKLE",
+                                text = if (editingQuoteId != null) stringResource(R.string.saved_quotes_btn_update) else stringResource(R.string.saved_quotes_btn_add),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -183,7 +183,7 @@ fun SavedQuotesScreen(
 
             // Liste Bölümü
             Text(
-                text = "Kayıtlı Sözler (${customQuotesList.size})",
+                text = stringResource(R.string.saved_quotes_list_title_format, customQuotesList.size),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = PureBlack
@@ -197,7 +197,7 @@ fun SavedQuotesScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Henüz kaydedilmiş bir söz bulunmuyor.",
+                        text = stringResource(R.string.saved_quotes_empty),
                         fontSize = 13.sp,
                         color = MutedGray
                     )
@@ -276,7 +276,7 @@ fun SavedQuotesScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Close,
-                                        contentDescription = "Sil",
+                                        contentDescription = stringResource(R.string.btn_delete_desc),
                                         tint = DangerRed,
                                         modifier = Modifier.size(18.dp)
                                     )

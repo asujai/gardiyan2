@@ -62,6 +62,10 @@ class ServiceKeepAliveWorker(
     }
 
     private fun sendBatteryWarningNotification(context: Context) {
+        val prefs = context.getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("notifications_enabled", true)) {
+            return
+        }
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? android.app.NotificationManager ?: return
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

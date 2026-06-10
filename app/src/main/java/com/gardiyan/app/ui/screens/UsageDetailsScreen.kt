@@ -79,7 +79,7 @@ fun UsageDetailsScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.btn_back_desc),
                             tint = PureBlack
                         )
                     }

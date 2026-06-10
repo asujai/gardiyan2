@@ -1,18 +1,18 @@
 {
-  "status": "commited",
+  "status": "init",
   "type": "backend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:8080",
+  "localEndpoint": "http://localhost:8080/",
   "backendAuthType": "public",
   "executionArgs": {
     "projectName": "gardiyan2",
     "projectPath": "c:\\Users\\abdul\\gardiyan2",
     "testIds": [],
-    "additionalInstruction": "Please run tests against http://localhost:8080 where the mock API server is running.",
-    "serverMode": "production",
+    "additionalInstruction": "This is an Android Jetpack Compose app. Please run logic-based unit tests or backend logic simulation tests.",
+    "serverMode": "development",
     "envs": {
       "API_KEY": "sk-user-ID3zf8Dwm0LKFfJ0efppyfVe0cRD9ERwL5PtAouDfd8TuaGE_BilxFqNhAWkFckMfX1sYud4o39s_1OqKCaxU77lKF7fYL6G97z4rxs9CyIaVWz4R1SWXc3bW8uLdOF_JkI"
     }
   },
-  "serverPort": 62774
+  "serverPort": 63772
 }

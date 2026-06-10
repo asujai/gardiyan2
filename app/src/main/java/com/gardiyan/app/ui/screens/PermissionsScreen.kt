@@ -38,7 +38,7 @@ fun PermissionsScreen(
     onNavigateToDashboard: () -> Unit
 ) {
     val context = LocalContext.current
-    val hasAllPermissions = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted && isNotificationsEnabled
+    val hasAllPermissions = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted
 
     var showAccessibilityDialog by remember { mutableStateOf(false) }
     var showUsageDialog by remember { mutableStateOf(false) }
@@ -270,6 +270,22 @@ fun PermissionsScreen(
                 fontSize = 12.sp,
                 color = MutedGray,
                 lineHeight = 18.sp
+            )
+        }
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, PureBlack.copy(alpha = 0.05f), RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(containerColor = PureBlack.copy(alpha = 0.02f)),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.perm_guidance_text),
+                fontSize = 12.sp,
+                color = MutedGray,
+                lineHeight = 18.sp,
+                modifier = Modifier.padding(16.dp)
             )
         }
 

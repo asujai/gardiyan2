@@ -415,4 +415,92 @@
     <string name="profile_weekly_summary_dialog_title">Weekly Summary Details</string>
     <string name="profile_weekly_summary_dialog_desc">You fully complied with the restriction rules for a total of %1$d days this week.\n\nCompleting weekly goals reinforces your digital discipline and increases your focus time.</string>
     <string name="quote_author_anonymous">Anonymous</string>
+    <string name="discipline_detail_title">Disziplin-Verlauf</string>
+    <string name="discipline_detail_completed_series">Abgeschlossene Serien</string>
+    <string name="discipline_detail_active_series">Aktive Serie</string>
+    <string name="discipline_detail_back_to_active">Zur aktiven Serie zurückkehren</string>
+    <string name="discipline_detail_series_label">Serie %1$d</string>
+
+    <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_add_title">Neues Zitat hinzufügen</string>
+    <string name="saved_quotes_edit_title">Zitat bearbeiten</string>
+    <string name="saved_quotes_btn_add">HINZUFÜGEN</string>
+    <string name="saved_quotes_btn_update">AKTUALISIEREN</string>
+    <string name="saved_quotes_list_title_format">Gespeicherte Zitate (%1$d)</string>
+    <string name="saved_quotes_empty">Noch keine gespeicherten Zitate vorhanden.</string>
+    <string name="btn_back_desc">Zurück</string>
+    <string name="btn_delete_desc">Löschen</string>
+
+    <!-- Profile Screen Info -->
+    <string name="profile_level_detail_title">Details zur digitalen Stufe</string>
+    <string name="profile_level_detail_desc">Deine aktuelle Stufe: %1$s (Stufe %2$d)\n\nStufen und Anforderungen:\n• Stufe 1: Anfänger\n• Stufe 2: Kontrolle erlangen (3 Tage ununterbrochener Erfolg)\n• Stufe 3: Fokussiert (7 Tage ununterbrochener Erfolg)\n• Stufe 4: Ausgewogener Nutzer (15 Tage ununterbrochener Erfolg)\n• Stufe 5: Digitale Disziplin (30 Tage ununterbrochener Erfolg)\n• Stufe 6: Volle Kontrolle (60 Tage ununterbrochener Erfolg)\n\nJeder erfolgreiche Tag ohne Verletzung der Einschränkungen erhöht deine Serie und ermöglicht dir den Stufenaufstieg.</string>
+    <string name="profile_redemption_progress">Wiedergutmachungs-Fortschritt</string>
+    <string name="profile_next_level_progress">Fortschritt zur nächsten Stufe</string>
+    <string name="profile_custom_quote_always">Benutzerdefiniertes Zitat (Immer)</string>
+    <string name="profile_custom_quote_mix">Benutzerdefiniertes Zitat (Gemischt)</string>
+    <string name="profile_default_quotes">Standard-Zitate</string>
+    <string name="profile_digital_control_progress">Digitaler Kontrollfortschritt</string>
+    
+    <string name="profile_theme_dialog_title">Darstellungseinstellungen</string>
+    <string name="profile_theme_dialog_mode_section">Darstellungsmodus</string>
+    <string name="profile_theme_dialog_palette_section">Farbthema</string>
+    
+    <string name="profile_language_dialog_title">Sprachauswahl</string>
+    <string name="profile_support_dialog_title">Support und Feedback</string>
+    <string name="profile_support_dialog_desc">Sie können uns kontaktieren, um ein Problem zu melden oder eine neue Funktion vorzuschlagen.</string>
+    
+    <string name="profile_filter_dialog_title">Timeline filtern</string>
+    <string name="profile_filter_dialog_date_section">Datum</string>
+    <string name="profile_filter_dialog_type_section">Ereignistyp</string>
+    <string name="profile_filter_btn_apply">Anwenden</string>
+    <string name="profile_filter_btn_text">Filtern</string>
+    
+    <!-- Timeline Filters -->
+    <string name="filter_date_today">Heute</string>
+    <string name="filter_date_7_days">Letzte 7 Tage</string>
+    <string name="filter_date_30_days">Letzte 30 Tage</string>
+    <string name="filter_date_all">Gesamte Zeit</string>
+    
+    <string name="filter_type_all">Alle Ereignisse</string>
+    <string name="filter_type_restrictions">Einschränkungs-Ereignisse</string>
+    <string name="filter_type_limits">Limit-Ereignisse</string>
+    <string name="filter_type_permissions">Berechtigungs-Ereignisse</string>
+    <string name="filter_type_data_actions">Datenaktionen</string>
+
+    <string name="profile_only_my_quotes">Nur meine Zitate anzeigen</string>
+
+    <!-- Levels -->
+    <string name="level_name_1">Anfänger</string>
+    <string name="level_name_2">Kontrolle erlangen</string>
+    <string name="level_name_3">Fokussiert</string>
+    <string name="level_name_4">Ausgewogener Nutzer</string>
+    <string name="level_name_5">Digitale Disziplin</string>
+    <string name="level_name_6">Volle Kontrolle</string>
+    
+    <string name="level_note_1">Stufe 2 (Kontrolle erlangen) erfordert 3 Tage ununterbrochenen Erfolg.</string>
+    <string name="level_note_2">Stufe 3 (Fokussiert) erfordert 7 Tage ununterbrochenen Erfolg.</string>
+    <string name="level_note_3">Stufe 4 (Ausgewogener Nutzer) erfordert 15 Tage ununterbrochenen Erfolg.</string>
+    <string name="level_note_4">Stufe 5 (Digitale Disziplin) erfordert 30 Tage ununterbrochenen Erfolg.</string>
+    <string name="level_note_5">Stufe 6 (Volle Kontrolle) erfordert 60 Tage ununterbrochenen Erfolg.</string>
+    <string name="level_note_max">Herzlichen Glückwunsch! Du bist auf der höchsten Kontrollstufe.</string>
+
+    <string name="profile_permissions_all_active">Alle Berechtigungen aktiv</string>
+    <string name="profile_permissions_missing">Fehlende Berechtigungen</string>
+    <string name="profile_permission_state_ok">Aktiv</string>
+    <string name="profile_permission_state_missing">Fehlt</string>
+
+    <string name="profile_weekly_success_days_format">%1$d/7 Tage</string>
+    <string name="profile_redemption_progress_format">%1$d / %2$d Tage</string>
+    <string name="profile_level_format">STUFE %1$d</string>
+    <string name="profile_streak_title">ERFOLGSSERIE</string>
+    <string name="profile_protected_apps_title">AKTIVER SCHUTZ</string>
+    <string name="profile_weekly_summary_title">WÖCHENTLICHE ZUSAMMENFASSUNG</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_info_desc">Information</string>
+    <string name="profile_saved_time_title">Gewonnene / Geschützte Zeit</string>
+    <string name="protected_tab_active_format">%1$s aktiv</string>
+    <string name="protected_tab_reached_limit">Limit erreicht</string>
+    <string name="perm_guidance_text">Tippen Sie auf jede Berechtigungskarte, suchen Sie Limitra im sich öffnenden Android-Einstellungsbildschirm und aktivieren Sie die erforderliche Berechtigung. Kehren Sie dann zurück, um den nächsten Schritt abzuschließen.</string>
+    <string name="profile_notifications_title">Benachrichtigungen</string>
+    <string name="profile_notifications_desc">Limitwarnungen und Statusbenachrichtigungen anzeigen.</string>
 </resources>

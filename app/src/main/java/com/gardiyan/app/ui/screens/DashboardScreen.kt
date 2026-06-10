@@ -269,7 +269,8 @@ private fun DisciplineSummary(
                         ) {
                             repeat(7) { colIndex ->
                                 val cellIndex = rowIndex * 7 + colIndex
-                                val status = dayStatuses.getOrNull(cellIndex) ?: DayStatus.NONE
+                                val reversedIndex = 20 - cellIndex
+                                val status = dayStatuses.getOrNull(reversedIndex) ?: DayStatus.NONE
                                 val cellColor = when (status) {
                                     DayStatus.SUCCESS -> SuccessGreen
                                     DayStatus.FAILURE -> DangerRed

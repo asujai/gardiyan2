@@ -202,6 +202,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
         val foregroundPackage = event.packageName?.toString() ?: return
 
+        if (com.gardiyan.app.BuildConfig.DEBUG) {
+            Log.d(TAG, "onAccessibilityEvent: foregroundPackage=$foregroundPackage, className=${event.className}")
+        }
+
         if (
             foregroundPackage == packageName &&
             event.className?.toString() == MainActivity::class.java.name
@@ -436,6 +440,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         repository.getActiveRestrictedAppsForTodaySync()
                     }
 
+                    if (com.gardiyan.app.BuildConfig.DEBUG) {
+                        Log.d(TAG, "handleForegroundChange: foregroundPackage=$foregroundPackage, activeAppsCount=${activeApps.size}")
+                    }
+
                     if (activeApps.isEmpty()) {
                         if (BlockOverlayService.isLockOverlayVisible.get()) {
                             BlockOverlayService.hideLockOverlay()
@@ -449,7 +457,14 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
                     val matchingApp = activeApps.firstOrNull { it.packageName == foregroundPackage }
 
+                    if (com.gardiyan.app.BuildConfig.DEBUG) {
+                        Log.d(TAG, "handleForegroundChange: matchingApp=${matchingApp?.appName ?: "null"} (packageName=$foregroundPackage)")
+                    }
+
                     if (currentTrackedPackage != null && currentTrackedPackage != foregroundPackage) {
+                        if (com.gardiyan.app.BuildConfig.DEBUG) {
+                            Log.d(TAG, "handleForegroundChange: Exiting previously tracked app: $currentTrackedPackage")
+                        }
                         handleExit(repository, activeApps)
                     }
 
@@ -482,6 +497,9 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     }
 
                     if (matchingApp.remainingSecondsToday <= 0 || matchingApp.isFailed) {
+                        if (com.gardiyan.app.BuildConfig.DEBUG) {
+                            Log.w(TAG, "Limit already reached or failed for: ${matchingApp.appName}. Triggering lock overlay.")
+                        }
                         tickJob?.cancel()
                         tickJob = null
                         entryTimeMillis = 0L
@@ -505,6 +523,9 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         }
                     } else {
                         val remaining = matchingApp.remainingSecondsToday
+                        if (com.gardiyan.app.BuildConfig.DEBUG) {
+                            Log.d(TAG, "Timer starting for ${matchingApp.appName}. Remaining time: ${remaining}s")
+                        }
                         tickJob?.cancel()
                         tickJob = a11yScope.launch {
                             try {
@@ -656,6 +677,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
     }
 
     private fun sendThresholdNotification(appName: String, messageTemplateResId: Int) {
+        val prefs = getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("notifications_enabled", true)) {
+            return
+        }
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
             ?: return
 

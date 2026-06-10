@@ -415,4 +415,92 @@
     <string name="profile_weekly_summary_dialog_title">Weekly Summary Details</string>
     <string name="profile_weekly_summary_dialog_desc">You fully complied with the restriction rules for a total of %1$d days this week.\n\nCompleting weekly goals reinforces your digital discipline and increases your focus time.</string>
     <string name="quote_author_anonymous">Anonymous</string>
+    <string name="discipline_detail_title">Historial de Disciplina</string>
+    <string name="discipline_detail_completed_series">Series Completadas</string>
+    <string name="discipline_detail_active_series">Serie Activa</string>
+    <string name="discipline_detail_back_to_active">Volver a la Serie Activa</string>
+    <string name="discipline_detail_series_label">Serie %1$d</string>
+
+    <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_add_title">Añadir Nueva Frase</string>
+    <string name="saved_quotes_edit_title">Editar Frase</string>
+    <string name="saved_quotes_btn_add">AÑADIR</string>
+    <string name="saved_quotes_btn_update">ACTUALIZAR</string>
+    <string name="saved_quotes_list_title_format">Frases Guardadas (%1$d)</string>
+    <string name="saved_quotes_empty">Aún no hay frases guardadas.</string>
+    <string name="btn_back_desc">Atrás</string>
+    <string name="btn_delete_desc">Eliminar</string>
+
+    <!-- Profile Screen Info -->
+    <string name="profile_level_detail_title">Detalles del Nivel Digital</string>
+    <string name="profile_level_detail_desc">Tu nivel actual: %1$s (Nivel %2$d)\n\nNiveles y requisitos:\n• Nivel 1: Principiante\n• Nivel 2: Ganando Control (3 días de éxito ininterrumpido)\n• Nivel 3: Enfocado (7 días de éxito ininterrumpido)\n• Nivel 4: Usuario Equilibrado (15 días de éxito ininterrumpido)\n• Nivel 5: Disciplina Digital (30 días de éxito ininterrumpido)\n• Nivel 6: Control Total (60 días de éxito ininterrumpido)\n\nCada día exitoso sin violar las restricciones aumenta tu racha y te permite subir de nivel.</string>
+    <string name="profile_redemption_progress">Progreso de Redención</string>
+    <string name="profile_next_level_progress">Progreso al Siguiente Nivel</string>
+    <string name="profile_custom_quote_always">Frase personalizada (Siempre)</string>
+    <string name="profile_custom_quote_mix">Frase personalizada (Mezclada)</string>
+    <string name="profile_default_quotes">Frases Predeterminadas</string>
+    <string name="profile_digital_control_progress">Progreso de Control Digital</string>
+    
+    <string name="profile_theme_dialog_title">Ajustes de Apariencia</string>
+    <string name="profile_theme_dialog_mode_section">Modo de Apariencia</string>
+    <string name="profile_theme_dialog_palette_section">Tema de Color</string>
+    
+    <string name="profile_language_dialog_title">Selección de Idioma</string>
+    <string name="profile_support_dialog_title">Soporte y Comentarios</string>
+    <string name="profile_support_dialog_desc">Puede contactarnos para reportar un problema o sugerir una nueva función.</string>
+    
+    <string name="profile_filter_dialog_title">Filtrar Línea de Tiempo</string>
+    <string name="profile_filter_dialog_date_section">Fecha</string>
+    <string name="profile_filter_dialog_type_section">Tipo de Evento</string>
+    <string name="profile_filter_btn_apply">Aplicar</string>
+    <string name="profile_filter_btn_text">Filtrar</string>
+    
+    <!-- Timeline Filters -->
+    <string name="filter_date_today">Hoy</string>
+    <string name="filter_date_7_days">Últimos 7 días</string>
+    <string name="filter_date_30_days">Últimos 30 días</string>
+    <string name="filter_date_all">Todo el tiempo</string>
+    
+    <string name="filter_type_all">Todos los eventos</string>
+    <string name="filter_type_restrictions">Eventos de restricción</string>
+    <string name="filter_type_limits">Eventos de límite</string>
+    <string name="filter_type_permissions">Eventos de permiso</string>
+    <string name="filter_type_data_actions">Acciones de datos</string>
+
+    <string name="profile_only_my_quotes">Mostrar solo mis frases</string>
+
+    <!-- Levels -->
+    <string name="level_name_1">Principiante</string>
+    <string name="level_name_2">Ganando Control</string>
+    <string name="level_name_3">Enfocado</string>
+    <string name="level_name_4">Usuario Equilibrado</string>
+    <string name="level_name_5">Disciplina Digital</string>
+    <string name="level_name_6">Control Total</string>
+    
+    <string name="level_note_1">El Nivel 2 (Ganando Control) requiere 3 días de éxito ininterrumpido.</string>
+    <string name="level_note_2">El Nivel 3 (Enfocado) requiere 7 días de éxito ininterrumpido.</string>
+    <string name="level_note_3">El Nivel 4 (Usuario Equilibrado) requiere 15 días de éxito ininterrumpido.</string>
+    <string name="level_note_4">El Nivel 5 (Disciplina Digital) requiere 30 días de éxito ininterrumpido.</string>
+    <string name="level_note_5">El Nivel 6 (Control Total) requiere 60 days of success ininterrumpido.</string> <!-- "60 días de éxito ininterrumpido" -->
+    <string name="level_note_max">¡Felicidades! Estás en el nivel de control más alto.</string>
+
+    <string name="profile_permissions_all_active">Todos los permisos activos</string>
+    <string name="profile_permissions_missing">Permisos faltantes</string>
+    <string name="profile_permission_state_ok">Activo</string>
+    <string name="profile_permission_state_missing">Falta</string>
+
+    <string name="profile_weekly_success_days_format">%1$d/7 Días</string>
+    <string name="profile_redemption_progress_format">%1$d / %2$d Días</string>
+    <string name="profile_level_format">NIVEL %1$d</string>
+    <string name="profile_streak_title">RACHA DE ÉXITO</string>
+    <string name="profile_protected_apps_title">PROTECCIÓN ACTIVA</string>
+    <string name="profile_weekly_summary_title">RESUMEN SEMANAL</string>
+    <string name="btn_ok">Aceptar</string>
+    <string name="btn_info_desc">Información</string>
+    <string name="profile_saved_time_title">Tiempo Ganado / Protegido</string>
+    <string name="protected_tab_active_format">%1$s activo</string>
+    <string name="protected_tab_reached_limit">Límite alcanzado</string>
+    <string name="perm_guidance_text">Toque en cada tarjeta de permiso, busque Limitra en la pantalla de configuración de Android que se abre y active el permiso requerido. Luego regrese para completar el siguiente paso.</string>
+    <string name="profile_notifications_title">Notificaciones</string>
+    <string name="profile_notifications_desc">Mostrar advertencias de límite y notificaciones de estado.</string>
 </resources>

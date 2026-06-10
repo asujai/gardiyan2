@@ -33,7 +33,7 @@ fun AppNavGraph(
     isBatteryExempted: Boolean,
     isNotificationsEnabled: Boolean
 ) {
-    val hasAllPermissions = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted && isNotificationsEnabled
+    val hasAllPermissions = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted
 
     NavHost(
         navController = navController,
