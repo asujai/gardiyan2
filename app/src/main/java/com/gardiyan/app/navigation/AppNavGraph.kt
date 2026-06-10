@@ -9,6 +9,9 @@ import com.gardiyan.app.ui.screens.PermissionsScreen
 import com.gardiyan.app.ui.screens.ProfileScreen
 import com.gardiyan.app.ui.screens.ProtectedAppsScreen
 import com.gardiyan.app.ui.screens.SetupTargetScreen
+import com.gardiyan.app.ui.screens.DisciplineDetailScreen
+import com.gardiyan.app.ui.screens.UsageDetailsScreen
+import com.gardiyan.app.ui.screens.SavedQuotesScreen
 import com.gardiyan.app.viewmodel.GuardianViewModel
 
 const val ROUTE_PERMISSIONS = "permissions"
@@ -16,6 +19,9 @@ const val ROUTE_DASHBOARD = "dashboard"
 const val ROUTE_PROTECTED = "protected"
 const val ROUTE_SETUP = "setup"
 const val ROUTE_SETTINGS = "settings"
+const val ROUTE_DISCIPLINE_DETAIL = "discipline_detail"
+const val ROUTE_USAGE_DETAILS = "usage_details"
+const val ROUTE_SAVED_QUOTES = "saved_quotes"
 
 @Composable
 fun AppNavGraph(
@@ -60,6 +66,12 @@ fun AppNavGraph(
                         launchSingleTop = true
                         restoreState = true
                     }
+                },
+                onNavigateToDisciplineDetail = {
+                    navController.navigate(ROUTE_DISCIPLINE_DETAIL)
+                },
+                onNavigateToUsageDetails = {
+                    navController.navigate(ROUTE_USAGE_DETAILS)
                 }
             )
         }
@@ -86,7 +98,27 @@ fun AppNavGraph(
                 isUsageEnabled = isUsageEnabled,
                 isAccessibilityEnabled = isAccessibilityEnabled,
                 isBatteryExempted = isBatteryExempted,
-                isNotificationsEnabled = isNotificationsEnabled
+                isNotificationsEnabled = isNotificationsEnabled,
+                onNavigateToSavedQuotes = {
+                    navController.navigate(ROUTE_SAVED_QUOTES)
+                }
+            )
+        }
+        composable(ROUTE_DISCIPLINE_DETAIL) {
+            DisciplineDetailScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(ROUTE_USAGE_DETAILS) {
+            UsageDetailsScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(ROUTE_SAVED_QUOTES) {
+            SavedQuotesScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }

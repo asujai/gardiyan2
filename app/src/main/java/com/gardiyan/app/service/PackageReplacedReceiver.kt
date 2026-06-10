@@ -23,7 +23,7 @@ class PackageReplacedReceiver : BroadcastReceiver() {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val db = GuardianDatabase.getDatabase(context.applicationContext)
-                    val repository = GuardianRepository(db.guardianDao())
+                    val repository = GuardianRepository(context.applicationContext, db.guardianDao())
                     val hasActiveRestrictions = repository.getActiveRestrictedAppsSync().isNotEmpty()
 
                     if (hasActiveRestrictions) {

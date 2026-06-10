@@ -139,7 +139,7 @@
     <string name="profile_theme_red">Tema Merah</string>
     <string name="profile_theme_premium">Premium Gelap</string>
     <string name="profile_mail_subject">Dukungan dan Saran Limitra</string>
-    <string name="profile_mail_body">Halo tim Limitra,\n\nMasalah / saran saya:\n\n---\nAplikasi: Limitra\nVersi: %1$s\nAndroid: %2$s\nPerangkat: %3$s</string>
+    <string name="profile_mail_body">Halo tim Limitra,\n\nMasalah / saran saya:</string>
     <string name="profile_mail_error">Aplikasi email tidak ditemukan.</string>
     <string name="profile_timeline_empty">Belum ada catatan linimasa.</string>
     <string name="profile_timeline_filter_empty">Tidak ditemukan catatan untuk filter ini.</string>
@@ -234,7 +234,7 @@
     <string name="rank_progress_text_disciplined">Seri: %1$d/7 Hari</string>
     <string name="rank_progress_max">Rangk Maksimal</string>
     <string name="profile_settings">PENGATURAN</string>
-    <string name="profile_title">PROFIL PERLINDUNGAN</string>
+    <string name="profile_title">PROFIL</string>
     <string name="profile_about_title">TENTANG</string>
     <string name="profile_about_desc">Limitra adalah aplikasi kesehatan digital yang membantu Anda menetapkan batasan sehat untuk aplikasi yang dipilih.</string>
     <string name="btn_close">Tutup</string>

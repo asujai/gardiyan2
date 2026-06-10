@@ -143,7 +143,7 @@
     <string name="profile_theme_red">Red Theme</string>
     <string name="profile_theme_premium">Premium Dark</string>
     <string name="profile_mail_subject">Limitra Support and Suggestion</string>
-    <string name="profile_mail_body">Hello Limitra team,\n\nMy problem / suggestion:\n\n---\nApp: Limitra\nVersion: %1$s\nAndroid: %2$s\nDevice: %3$s</string>
+    <string name="profile_mail_body">Hello Limitra team,\n\nMy problem / suggestion:</string>
     <string name="profile_mail_error">No email app found.</string>
     <string name="profile_timeline_empty">No timeline records yet.</string>
     <string name="profile_timeline_filter_empty">No records found for this filter.</string>
@@ -238,7 +238,7 @@
     <string name="rank_progress_text_disciplined">Streak: %1$d/7 Days</string>
     <string name="rank_progress_max">Maximum Rank</string>
     <string name="profile_settings">SETTINGS</string>
-    <string name="profile_title">PROTECTION PROFILE</string>
+    <string name="profile_title">PROFILE</string>
     <string name="profile_about_title">ABOUT</string>
     <string name="profile_about_desc">Limitra is a digital wellness app that helps you set healthy boundaries for selected apps.</string>
     <string name="btn_close">Close</string>
@@ -283,6 +283,7 @@
     <string name="settings_quote_pref_always">Always show my quote</string>
     <string name="settings_quote_pref_mix">Mix my quote with default quotes</string>
     <string name="settings_quote_empty_error">Quote text cannot be empty.</string>
+    <string name="saved_quotes_title">Saved Quotes</string>
     <string name="btn_save">Save</string>
     <string name="btn_delete">Delete</string>
 
@@ -422,4 +423,9 @@
     <string name="profile_weekly_summary_dialog_title">Weekly Summary Details</string>
     <string name="profile_weekly_summary_dialog_desc">You fully complied with the restriction rules for a total of %1$d days this week.\n\nCompleting weekly goals reinforces your digital discipline and increases your focus time.</string>
     <string name="quote_author_anonymous">Anonymous</string>
+    <string name="discipline_detail_title">Discipline History</string>
+    <string name="discipline_detail_completed_series">Completed Series</string>
+    <string name="discipline_detail_active_series">Active Series</string>
+    <string name="discipline_detail_back_to_active">Return to Active Series</string>
+    <string name="discipline_detail_series_label">Series %1$d</string>
 </resources>

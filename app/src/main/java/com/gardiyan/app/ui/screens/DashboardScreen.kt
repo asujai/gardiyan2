@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gardiyan.app.data.model.AppUsageSummary
 import com.gardiyan.app.data.model.UsagePeriod
+import com.gardiyan.app.data.model.DayStatus
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.ui.components.UsageRankingSection
 import com.gardiyan.app.ui.components.formatUsageDuration
@@ -65,16 +66,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 
-private enum class DayStatus {
-    SUCCESS, FAILURE, PROGRESS, NONE
-}
-
 @Composable
 fun DashboardScreen(
     viewModel: GuardianViewModel,
     onNavigateToSetup: () -> Unit,
     onNavigateToProtected: () -> Unit,
-    onNavigateToUsageDetails: () -> Unit = {}
+    onNavigateToUsageDetails: () -> Unit = {},
+    onNavigateToDisciplineDetail: () -> Unit = {}
 ) {
     val session by viewModel.userSession.collectAsState()
     val restrictedApps by viewModel.restrictedApps.collectAsState()
@@ -183,7 +181,7 @@ fun DashboardScreen(
         item {
             DisciplineSummary(
                 dayStatuses = dayStatuses,
-                onProtectedClick = onNavigateToProtected
+                onDetailClick = onNavigateToDisciplineDetail
             )
         }
         item { Spacer(modifier = Modifier.height(12.dp)) }
@@ -240,7 +238,7 @@ private fun TodayOverviewCard(
 @Composable
 private fun DisciplineSummary(
     dayStatuses: List<DayStatus>,
-    onProtectedClick: () -> Unit
+    onDetailClick: () -> Unit
 ) {
     Column {
         Text(
@@ -254,7 +252,7 @@ private fun DisciplineSummary(
             modifier = Modifier
                 .fillMaxWidth()
                 .border(1.dp, BorderGray, RoundedCornerShape(24.dp))
-                .clickable { onProtectedClick() },
+                .clickable { onDetailClick() },
             colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
             shape = RoundedCornerShape(24.dp)
         ) {
@@ -284,6 +282,7 @@ private fun DisciplineSummary(
                                         .aspectRatio(1f)
                                         .clip(RoundedCornerShape(6.dp))
                                         .background(cellColor)
+                                        .border(0.5.dp, BorderGray.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
                                 )
                             }
                         }

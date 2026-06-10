@@ -1,17 +1,24 @@
 package com.gardiyan.app.data.repository
 
+import android.content.Context
 import com.gardiyan.app.data.local.dao.GuardianDao
 import com.gardiyan.app.data.local.entity.ActiveUsageSessionEntity
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.data.local.entity.StatusLogEntity
 import com.gardiyan.app.data.local.entity.UserSessionEntity
+import com.gardiyan.app.data.time.TimeProvider
+import com.gardiyan.app.data.time.SystemTimeProvider
 import kotlinx.coroutines.flow.Flow
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class GuardianRepository(private val guardianDao: GuardianDao) {
+class GuardianRepository(
+    private val context: Context,
+    private val guardianDao: GuardianDao,
+    private val timeProvider: TimeProvider = SystemTimeProvider()
+) {
 
     companion object {
         const val ALL_DAYS = "Pzt,Sal,Çar,Per,Cum,Cmt,Paz"
@@ -105,7 +112,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
     }
 
     suspend fun getActiveRestrictedAppsForTodaySync(): List<RestrictedAppEntity> {
-        val today = todayDayLabel()
+        val today = timeProvider.todayDayLabel()
         return getActiveRestrictedAppsSync().filter { app ->
             val days = app.activeDays.split(",").map { it.trim() }.filter { it.isNotEmpty() }
             days.isEmpty() || days.contains(today)
@@ -129,7 +136,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         dailyLimitMinutes: Int,
         activeDays: String = ALL_DAYS
     ): Long {
-        val today = todayKey()
+        val today = timeProvider.localDateString()
         val safeDailyLimitMinutes = dailyLimitMinutes.coerceIn(1, MAX_DAILY_LIMIT_MINUTES)
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
         return if (existing != null) {
@@ -175,7 +182,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         testSeconds: Int,
         activeDays: String = ALL_DAYS
     ): Long {
-        val today = todayKey()
+        val today = timeProvider.localDateString()
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
         val safeTestSeconds = testSeconds.coerceIn(1, MAX_DAILY_LIMIT_MINUTES * 60)
         val dailyLimitMinutes = (safeTestSeconds + 59) / 60
@@ -229,7 +236,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
     }
 
     suspend fun resetRestrictedApp(id: Long) {
-        guardianDao.resetRestrictedApp(id, todayKey())
+        guardianDao.resetRestrictedApp(id, timeProvider.localDateString())
     }
 
     suspend fun updateRestrictedApp(app: RestrictedAppEntity) {
@@ -237,27 +244,103 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
     }
 
     suspend fun resetDailyCountersIfNeeded() {
-        val today = todayKey()
-        guardianDao.getAllRestrictedAppsSync()
-            .filter { it.lastResetDate != today }
-            .forEach { app ->
-                val newLimit = if (app.nextDayLimitMinutes > 0) app.nextDayLimitMinutes else app.dailyLimitMinutes
-                val newActiveDays = app.nextDayActiveDays.ifEmpty { app.activeDays }
-                guardianDao.updateRestrictedApp(
-                    app.copy(
-                        dailyLimitMinutes = newLimit,
-                        remainingMinutesToday = newLimit,
-                        remainingSecondsToday = newLimit * 60,
-                        isFailed = false,
-                        activeDays = newActiveDays,
-                        lastResetDate = today,
-                        nextDayLimitMinutes = 0,
-                        nextDayActiveDays = "",
-                        lastLimitUpdateDate = "",
-                        todayMinLimitMinutes = 0
-                    )
-                )
+        val prefs = context.getSharedPreferences("gardiyan_secure_reset_prefs", Context.MODE_PRIVATE)
+        val lastResetLocalDate = prefs.getString("lastResetLocalDate", "") ?: ""
+        val lastResetWallClockMillis = prefs.getLong("lastResetWallClockMillis", 0L)
+        val lastResetElapsedRealtime = prefs.getLong("lastResetElapsedRealtime", 0L)
+        
+        val today = timeProvider.localDateString()
+        val nowWall = timeProvider.currentTimeMillis()
+        val nowElapsed = timeProvider.elapsedRealtime()
+        
+        // Eğer SharedPreferences tamamen boşsa, bu uygulamanın ilk kez çalıştığını gösterir.
+        // Bu durumda son sıfırlama bilgilerini şimdiki zaman olarak kaydedelim,
+        // ancak veritabanındaki bayat (lastResetDate != today) olan kayıtları da sıfırlayalım.
+        val isFirstInit = lastResetLocalDate.isEmpty() || lastResetWallClockMillis == 0L
+        
+        // Reset koşulu 1: Tarih değişti mi?
+        val isDateChanged = isFirstInit || (today != lastResetLocalDate)
+        
+        // Reset koşulu 2: Güvenli minimum süre geçti mi? (En az 22 saat)
+        var isTimePassed = isFirstInit
+        val minIntervalMillis = 22 * 3600 * 1000L // 22 saat
+        
+        if (!isFirstInit) {
+            // Zaman manipülasyonu (saat/tarih geri alınma) kontrolü
+            val isTimeManipulatedBackwards = nowWall < lastResetWallClockMillis
+            
+            if (isTimeManipulatedBackwards) {
+                // Zaman geriye alınmış, reset yapma, log kaydet
+                insertLog("SECURITY_WARNING", "", "Sistem saatinin geriye alındığı tespit edildi. Limitler sıfırlanmadı.")
+                return
             }
+            
+            // Cihaz yeniden başlatılmış mı?
+            val isRebooted = nowElapsed < lastResetElapsedRealtime
+            
+            if (!isRebooted) {
+                // Cihaz yeniden başlatılmamış. Monotonic zaman farkını kullanabiliriz.
+                val elapsedDiff = nowElapsed - lastResetElapsedRealtime
+                if (elapsedDiff >= minIntervalMillis) {
+                    isTimePassed = true
+                }
+            } else {
+                // Cihaz yeniden başlatılmış. Monotonic zaman sıfırlandığı için wall clock farkını yedek olarak kullanıyoruz.
+                val wallDiff = nowWall - lastResetWallClockMillis
+                if (wallDiff >= minIntervalMillis) {
+                    isTimePassed = true
+                }
+            }
+        }
+        
+        if (isDateChanged && isTimePassed) {
+            // Reset şartları sağlandı!
+            val restrictedApps = guardianDao.getAllRestrictedAppsSync()
+            var anyReset = false
+            restrictedApps.forEach { app ->
+                if (app.lastResetDate != today) {
+                    anyReset = true
+                    val newLimit = if (app.nextDayLimitMinutes > 0) app.nextDayLimitMinutes else app.dailyLimitMinutes
+                    val newActiveDays = app.nextDayActiveDays.ifEmpty { app.activeDays }
+                    guardianDao.updateRestrictedApp(
+                        app.copy(
+                            dailyLimitMinutes = newLimit,
+                            remainingMinutesToday = newLimit,
+                            remainingSecondsToday = newLimit * 60,
+                            isFailed = false,
+                            activeDays = newActiveDays,
+                            lastResetDate = today,
+                            nextDayLimitMinutes = 0,
+                            nextDayActiveDays = "",
+                            lastLimitUpdateDate = "",
+                            todayMinLimitMinutes = 0
+                        )
+                    )
+                }
+            }
+            
+            if (anyReset && !isFirstInit) {
+                // Sıfırlanan bildirim flag'lerini temizlemek için "gardiyan_notifications" SharedPreferences temizliği
+                val notifPrefs = context.getSharedPreferences("gardiyan_notifications", Context.MODE_PRIVATE)
+                notifPrefs.edit().clear().apply()
+            }
+            
+            // SharedPreferences reset değerlerini güncelle
+            prefs.edit().apply {
+                putString("lastResetLocalDate", today)
+                putLong("lastResetWallClockMillis", nowWall)
+                putLong("lastResetElapsedRealtime", nowElapsed)
+                putString("lastResetTimezoneId", timeProvider.timezoneId())
+                apply()
+            }
+            
+            if (anyReset && !isFirstInit) {
+                insertLog("DAILY_RESET", "", "Günlük limitler sıfırlandı. Yeni gün: $today")
+            }
+        } else if (isDateChanged && !isTimePassed) {
+            // Zaman açığı engellendi! (Tarih ileri alınmış ama 22 saat geçmemiş)
+            insertLog("RESET_PREVENTED", "", "Tarih değişimi algılandı ancak güvenlik süresi henüz dolmadı. Limitlerin erken sıfırlanması engellendi.")
+        }
     }
 
     suspend fun cancelAllActiveTargets() {
@@ -561,7 +644,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         val session = guardianDao.getActiveSessionSync() ?: return
         val now = System.currentTimeMillis()
         val elapsedMs = now - session.lastSeenAtMillis
-        val elapsedSec = (elapsedMs / 1000L).toInt().coerceAtLeast(0)
+        val elapsedSec = (elapsedMs / 1000L).toInt().coerceIn(0, 5)
 
         val app = guardianDao.getRestrictedAppByIdSync(session.appId)
         if (app != null && app.isActive && !app.isFailed) {
@@ -594,7 +677,7 @@ class GuardianRepository(private val guardianDao: GuardianDao) {
         for (session in sessions) {
             if (now - session.lastSeenAtMillis > 30000L) {
                 val elapsedMs = now - session.lastSeenAtMillis
-                val elapsedSec = (elapsedMs / 1000L).toInt().coerceAtLeast(0)
+                val elapsedSec = (elapsedMs / 1000L).toInt().coerceIn(0, 5)
 
                 val app = guardianDao.getRestrictedAppByIdSync(session.appId)
                 if (app != null && app.isActive && !app.isFailed) {

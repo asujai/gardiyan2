@@ -103,7 +103,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
         Log.i(TAG, "Accessibility service connected")
 
         val db = GuardianDatabase.getDatabase(applicationContext)
-        val repository = GuardianRepository(db.guardianDao())
+        val repository = GuardianRepository(applicationContext, db.guardianDao())
         a11yScope.launch {
             try {
                 // Öncelikle bayat oturumları temizle
@@ -148,7 +148,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
         Log.w(TAG, "Accessibility service unbound")
 
         val db = GuardianDatabase.getDatabase(applicationContext)
-        val repository = GuardianRepository(db.guardianDao())
+        val repository = GuardianRepository(applicationContext, db.guardianDao())
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 repository.closeActiveSession("Servis sonlandırıldı (Unbind)")
@@ -174,7 +174,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
         usageStatsPollingJob = null
 
         val db = GuardianDatabase.getDatabase(applicationContext)
-        val repository = GuardianRepository(db.guardianDao())
+        val repository = GuardianRepository(applicationContext, db.guardianDao())
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 repository.closeActiveSession("Servis sonlandırıldı (Destroy)")
@@ -241,7 +241,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
             Log.i(TAG, "UsageStats polling started with adaptive interval")
 
             val db = GuardianDatabase.getDatabase(applicationContext)
-            val repository = GuardianRepository(db.guardianDao())
+            val repository = GuardianRepository(applicationContext, db.guardianDao())
 
             var startupTicksLeft = 60 // İlk 15 saniye boyu hızlı denetim (60 * 250ms = 15s)
             var lastEventTimeForRapidCheck = 0L
@@ -367,7 +367,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
     /**
      * UsageStatsManager.queryEvents() ile son 5 saniye içindeki en son
-     * MOVE_TO_FOREGROUND event'ini bularak aktif foreground uygulamasını döndürür.
+     * ACTIVITY_RESUMED event'ini bularak aktif foreground uygulamasını döndürür.
      */
     private data class ForegroundEvent(
         val packageName: String,
@@ -388,7 +388,15 @@ class AppBlockAccessibilityService : AccessibilityService() {
             val event = UsageEvents.Event()
             while (usageEvents.hasNextEvent()) {
                 usageEvents.getNextEvent(event)
-                if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                // MOVE_TO_FOREGROUND was deprecated in API 29 in favor of ACTIVITY_RESUMED
+                val isResumed = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    event.eventType == UsageEvents.Event.ACTIVITY_RESUMED
+                } else {
+                    @Suppress("DEPRECATION")
+                    event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND
+                }
+                
+                if (isResumed) {
                     lastForegroundEvent = ForegroundEvent(event.packageName, event.timeStamp)
                 }
             }
@@ -423,7 +431,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     currentForegroundPackage = foregroundPackage
 
                     val db = GuardianDatabase.getDatabase(applicationContext)
-                    val repository = GuardianRepository(db.guardianDao())
+                    val repository = GuardianRepository(applicationContext, db.guardianDao())
                     val activeApps = withContext(Dispatchers.IO) {
                         repository.getActiveRestrictedAppsForTodaySync()
                     }
@@ -554,7 +562,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 BlockOverlayService.hideLockOverlay()
 
                 val db = GuardianDatabase.getDatabase(applicationContext)
-                val repository = GuardianRepository(db.guardianDao())
+                val repository = GuardianRepository(applicationContext, db.guardianDao())
                 withContext(Dispatchers.IO) {
                     repository.closeActiveSession("Limitra açıldı")
                 }

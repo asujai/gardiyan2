@@ -141,7 +141,7 @@
     <string name="profile_theme_red">Kırmızı Tema</string>
     <string name="profile_theme_premium">Premium Koyu</string>
     <string name="profile_mail_subject">Limitra Destek ve Öneri</string>
-    <string name="profile_mail_body">Merhaba Limitra ekibi,\n\nSorunum / önerim:\n\n---\nUygulama: Limitra\nVersiyon: %1$s\nAndroid: %2$s\nCihaz: %3$s</string>
+    <string name="profile_mail_body">Merhaba Limitra ekibi,\n\nSorunum / önerim:</string>
     <string name="profile_mail_error">Mail gönderebilecek bir uygulama bulunamadı.</string>
     <string name="profile_timeline_empty">Zaman tüneli kaydı henüz bulunmuyor.</string>
     <string name="profile_timeline_filter_empty">Bu filtre için gösterilecek kayıt bulunmuyor.</string>
@@ -236,7 +236,7 @@
     <string name="rank_progress_text_disciplined">Seri: %1$d/7 Gün</string>
     <string name="rank_progress_max">Maksimum Rütbe</string>
     <string name="profile_settings">AYARLAR</string>
-    <string name="profile_title">KORUMA PROFİLİ</string>
+    <string name="profile_title">PROFİL</string>
     <string name="profile_about_title">HAKKINDA</string>
     <string name="profile_about_desc">Limitra, seçtiğiniz uygulamalara sağlıklı kullanım sınırları koymanıza yardımcı olan bir dijital denge uygulamasıdır.</string>
     <string name="btn_close">Kapat</string>
@@ -280,6 +280,7 @@
     <string name="settings_quote_pref_always">Her zaman benim sözümü göster</string>
     <string name="settings_quote_pref_mix">Benim sözümü varsayılan sözlerle karıştır</string>
     <string name="settings_quote_empty_error">Söz metni boş olamaz.</string>
+    <string name="saved_quotes_title">Kaydedilen Sözler</string>
     <string name="quote_text_1">Bize verilen ömrün kısa olduğunu söyleyemeyiz, sadece biz onun çoğunu boşa harcıyoruz.</string>
     <string name="quote_author_1">Seneca</string>
     <string name="quote_text_2">İnsanlar kişisel mülklerini koruma konusunda son derece cimridir; ancak konu zamanı çarçur etmeye geldiğinde, cömert olmanın tek doğru olduğu bu tek şeyde son derece savurgandırlar.</string>
@@ -415,4 +416,9 @@
     <string name="btn_delete">Sil</string>
     <string name="overlay_brand_icon" translatable="false">🛡️</string>
     <string name="overlay_initial_countdown" translatable="false">00:10</string>
+    <string name="discipline_detail_title">Disiplin Geçmişi</string>
+    <string name="discipline_detail_completed_series">Tamamlanan Seriler</string>
+    <string name="discipline_detail_active_series">Aktif Seri</string>
+    <string name="discipline_detail_back_to_active">Aktif Seriye Dön</string>
+    <string name="discipline_detail_series_label">Seri %1$d</string>
 </resources>

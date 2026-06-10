@@ -16,7 +16,7 @@ class BootReceiver : BroadcastReceiver() {
             val pendingResult = goAsync()
             val appContext = context.applicationContext
             val db = GuardianDatabase.getDatabase(appContext)
-            val repository = GuardianRepository(db.guardianDao())
+            val repository = GuardianRepository(appContext, db.guardianDao())
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {

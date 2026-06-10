@@ -8,7 +8,7 @@ plugins {
 }
 
 val localProperties = Properties()
-val localPropertiesFile = rootProject.file("local.properties")
+val localPropertiesFile: java.io.File = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
   localPropertiesFile.inputStream().use {
     localProperties.load(it)
@@ -70,7 +70,7 @@ android {
   }
 }
 
-tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+tasks.withType<Test>().configureEach {
   systemProperty("user.language", "en")
   systemProperty("user.country", "US")
   jvmArgs("-Duser.language=en", "-Duser.country=US")
@@ -79,7 +79,7 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
 // Some unused dependencies are commented out below instead of being removed.
 // This makes it easy to add them back in the future if needed.
 dependencies {
-  implementation("androidx.appcompat:appcompat:1.6.1")
+  implementation(libs.androidx.appcompat)
   implementation(platform(libs.androidx.compose.bom))
   // implementation(libs.accompanist.permissions)
   implementation(libs.androidx.activity.compose)

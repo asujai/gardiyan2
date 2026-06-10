@@ -139,7 +139,7 @@
     <string name="profile_theme_red">Tema Vermelho</string>
     <string name="profile_theme_premium">Escuro Premium</string>
     <string name="profile_mail_subject">Limitra Suporte e Sugestão</string>
-    <string name="profile_mail_body">Olá equipe Limitra,\n\nMeu problema / sugestão:\n\n---\nAplicativo: Limitra\nVersão: %1$s\nAndroid: %2$s\nDispositivo: %3$s</string>
+    <string name="profile_mail_body">Olá equipe Limitra,\n\nMeu problema / sugestão:</string>
     <string name="profile_mail_error">Nenhum aplicativo de e-mail encontrado.</string>
     <string name="profile_timeline_empty">Nenhum registro na linha do tempo ainda.</string>
     <string name="profile_timeline_filter_empty">Nenhum registro encontrado para este filtro.</string>
@@ -234,7 +234,7 @@
     <string name="rank_progress_text_disciplined">Série: %1$d/7 Dias</string>
     <string name="rank_progress_max">Rango Máximo</string>
     <string name="profile_settings">CONFIGURAÇÕES</string>
-    <string name="profile_title">PERFIL DE PROTEÇÃO</string>
+    <string name="profile_title">PERFIL</string>
     <string name="profile_about_title">SOBRE</string>
     <string name="profile_about_desc">Limitra é um aplicativo de bem-estar digital que ajuda você a definir limites saudáveis para os aplicativos selecionados.</string>
     <string name="btn_close">Fechar</string>

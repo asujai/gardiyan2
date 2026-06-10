@@ -139,7 +139,7 @@
     <string name="profile_theme_red">रेड थीम</string>
     <string name="profile_theme_premium">प्रीमियम डार्क</string>
     <string name="profile_mail_subject">Limitra सहायता और सुझाव</string>
-    <string name="profile_mail_body">नमस्ते Limitra टीम,\n\nमेरी समस्या / सुझाव:\n\n---\nऐप: Limitra\nसंस्करण: %1$s\nAndroid: %2$s\nडिवाइस: %3$s</string>
+    <string name="profile_mail_body">नमस्ते Limitra टीम,\n\nमेरी समस्या / सुझाव:</string>
     <string name="profile_mail_error">कोई ईमेल ऐप नहीं मिला।</string>
     <string name="profile_timeline_empty">टाइमलाइन में अभी तक कोई रिकॉर्ड नहीं है।</string>
     <string name="profile_timeline_filter_empty">इस फ़िल्टर के लिए कोई रिकॉर्ड नहीं मिला।</string>
@@ -234,7 +234,7 @@
     <string name="rank_progress_text_disciplined">सिलसिला: %1$d/7 दिन</string>
     <string name="rank_progress_max">अधिकतम रैंक</string>
     <string name="profile_settings">सेटिंग्स</string>
-    <string name="profile_title">सुरक्षा प्रोफ़ाइल</string>
+    <string name="profile_title">प्रोफ़ाइल</string>
     <string name="profile_about_title">के बारे में</string>
     <string name="profile_about_desc">गार्डियन एक डिजिटल वेलनेस ऐप है जो आपको चयनित ऐप्स के लिए स्वस्थ सीमाएं निर्धारित करने में मदद करता है।</string>
     <string name="btn_close">बंद करें</string>

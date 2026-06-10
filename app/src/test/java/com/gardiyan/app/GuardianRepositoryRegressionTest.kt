@@ -29,7 +29,7 @@ class GuardianRepositoryRegressionTest {
         database = Room.inMemoryDatabaseBuilder(context, GuardianDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        repository = GuardianRepository(database.guardianDao())
+        repository = GuardianRepository(context, database.guardianDao())
     }
 
     @After
@@ -308,5 +308,244 @@ class GuardianRepositoryRegressionTest {
         val result = repository.getRestrictedAppByIdSync(id)!!
         val remaining = result.remainingSecondsToday
         assertTrue(remaining in 1795..1798)
+    }
+
+    @Test
+    fun `closeActiveSession caps maximum subtracted duration to 5 seconds even on long delays`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 30)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        
+        repository.startSession(app)
+        
+        val dbSession = database.guardianDao().getActiveSessionSync()!!
+        database.guardianDao().updateActiveSession(
+            dbSession.copy(
+                entryAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L,
+                lastSeenAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L
+            )
+        )
+        
+        repository.closeActiveSession("Test Close Long Delay")
+        
+        val result = repository.getRestrictedAppByIdSync(id)!!
+        val remaining = result.remainingSecondsToday
+        assertEquals(1795, remaining)
+    }
+
+    @Test
+    fun `cleanupStaleSessions caps maximum subtracted duration to 5 seconds even on long delays`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 30)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        
+        repository.startSession(app)
+        
+        val dbSession = database.guardianDao().getActiveSessionSync()!!
+        database.guardianDao().updateActiveSession(
+            dbSession.copy(
+                entryAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L,
+                lastSeenAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L
+            )
+        )
+        
+        repository.cleanupStaleSessions()
+        
+        val result = repository.getRestrictedAppByIdSync(id)!!
+        val remaining = result.remainingSecondsToday
+        assertEquals(1795, remaining)
+    }
+
+    // --- Yeni Zaman Açığı ve Günlük Reset Testleri ---
+
+    class TestTimeProvider(
+        var mockTimeMillis: Long = System.currentTimeMillis(),
+        var mockElapsedRealtime: Long = android.os.SystemClock.elapsedRealtime(),
+        var mockLocalDateString: String = "2026-06-10",
+        var mockTimezoneId: String = "UTC"
+    ) : com.gardiyan.app.data.time.TimeProvider {
+        override fun currentTimeMillis(): Long = mockTimeMillis
+        override fun elapsedRealtime(): Long = mockElapsedRealtime
+        override fun localDateString(): String = mockLocalDateString
+        override fun timezoneId(): String = mockTimezoneId
+        override fun todayDayLabel(): String {
+            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+            val date = sdf.parse(mockLocalDateString) ?: java.util.Date()
+            val cal = java.util.Calendar.getInstance()
+            cal.time = date
+            return when (cal.get(java.util.Calendar.DAY_OF_WEEK)) {
+                java.util.Calendar.MONDAY -> "Pzt"
+                java.util.Calendar.TUESDAY -> "Sal"
+                java.util.Calendar.WEDNESDAY -> "Çar"
+                java.util.Calendar.THURSDAY -> "Per"
+                java.util.Calendar.FRIDAY -> "Cum"
+                java.util.Calendar.SATURDAY -> "Cmt"
+                java.util.Calendar.SUNDAY -> "Paz"
+                else -> ""
+            }
+        }
+    }
+
+    @Test
+    fun `resetDailyCountersIfNeeded does not reset if date has not changed`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 1000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+        
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        database.guardianDao().updateRestrictedApp(
+            database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+        
+        // İlk kaydetme (lastReset properties initialization)
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // 24 saat geçsin ama tarih değişmesin (örneğin timezone/saat manipülasyonu)
+        testProvider.mockTimeMillis += 24 * 3600 * 1000L
+        testProvider.mockElapsedRealtime += 24 * 3600 * 1000L
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Sıfırlama olmamalı çünkü tarih aynı kalmış
+        val result = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(0, result.remainingSecondsToday)
+        assertTrue(result.isFailed)
+    }
+
+    @Test
+    fun `resetDailyCountersIfNeeded does not reset if date changed but less than 22 hours passed`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 1000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+        
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        database.guardianDao().updateRestrictedApp(
+            database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Tarih ertesi güne alınmış ama sadece 5 saat geçmiş
+        testProvider.mockLocalDateString = "2026-06-11"
+        testProvider.mockTimeMillis += 5 * 3600 * 1000L
+        testProvider.mockElapsedRealtime += 5 * 3600 * 1000L
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Sıfırlama yapılmamalıdır
+        val result = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(0, result.remainingSecondsToday)
+        assertTrue(result.isFailed)
+    }
+
+    @Test
+    fun `resetDailyCountersIfNeeded resets if date changed and at least 22 hours passed`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 1000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+        
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        database.guardianDao().updateRestrictedApp(
+            database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Tarih ertesi gün ve 23 saat geçmiş
+        testProvider.mockLocalDateString = "2026-06-11"
+        testProvider.mockTimeMillis += 23 * 3600 * 1000L
+        testProvider.mockElapsedRealtime += 23 * 3600 * 1000L
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Sıfırlanmış olmalıdır
+        val result = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(1800, result.remainingSecondsToday)
+        assertFalse(result.isFailed)
+    }
+
+    @Test
+    fun `resetDailyCountersIfNeeded blocks reset if time is manipulated backwards`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 1000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+        
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        database.guardianDao().updateRestrictedApp(
+            database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Kullanıcı saati/tarihi geriye çekmiş
+        testProvider.mockLocalDateString = "2026-06-09"
+        testProvider.mockTimeMillis -= 10 * 3600 * 1000L
+        testProvider.mockElapsedRealtime += 10 * 3600 * 1000L
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Sıfırlama olmamalı
+        val result = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(0, result.remainingSecondsToday)
+        assertTrue(result.isFailed)
+    }
+
+    @Test
+    fun `resetDailyCountersIfNeeded handles reboot correctly if wall clock passed`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 50000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+        
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        database.guardianDao().updateRestrictedApp(
+            database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Cihaz reboot edildi (elapsedRealtime 0'a yakın bir değere düştü), ama tarih değişti ve wall clock 24 saat geçti
+        testProvider.mockLocalDateString = "2026-06-11"
+        testProvider.mockTimeMillis += 24 * 3600 * 1000L
+        testProvider.mockElapsedRealtime = 5000L // Reboot sonrası 5. saniye
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Sıfırlanmış olmalıdır (reboot dayanıklılığı)
+        val result = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(1800, result.remainingSecondsToday)
+        assertFalse(result.isFailed)
     }
 }

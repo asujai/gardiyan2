@@ -31,7 +31,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
 
     private val appContext = context.applicationContext
     private val db = GuardianDatabase.getDatabase(appContext)
-    private val repository = GuardianRepository(db.guardianDao())
+    private val repository = GuardianRepository(appContext, db.guardianDao())
 
     val userSession: StateFlow<UserSessionEntity?> = repository.userSession
         .stateIn(

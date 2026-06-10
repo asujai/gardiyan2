@@ -38,6 +38,8 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import java.lang.ref.WeakReference
 import android.annotation.SuppressLint
+import android.graphics.Typeface
+import androidx.core.content.res.ResourcesCompat
 
 /**
  * Foreground Service — 10 saniye sonsuz döngüde kilit ekranı.
@@ -359,33 +361,78 @@ class BlockOverlayService : Service() {
             val quoteText = overlayView.findViewById<TextView>(R.id.quoteText)
             val quoteAuthorText = overlayView.findViewById<TextView>(R.id.quoteAuthorText)
 
+            // Yazı Tipi (Font) Ayarlamaları
+            try {
+                quoteText?.typeface = Typeface.SERIF
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set serif typeface for quoteText: ${e.message}")
+            }
+
+            try {
+                val typefaceAuthor = ResourcesCompat.getFont(this, R.font.finytaels)
+                if (typefaceAuthor != null) {
+                    quoteAuthorText?.typeface = typefaceAuthor
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load custom author font: ${e.message}")
+            }
+
             val prefs = getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
-            val hasCustom = prefs.getBoolean("has_custom_quote", false)
-            val customText = prefs.getString("custom_quote_text", "") ?: ""
-            val customAuthor = prefs.getString("custom_quote_author", "") ?: ""
-            val customPref = prefs.getString("custom_quote_preference", "mix") ?: "mix"
+            val quotesJson = prefs.getString("custom_quotes_json", "[]") ?: "[]"
+            val showOnlyMyQuotes = prefs.getBoolean("show_only_my_quotes", false)
+
+            class CustomQuoteLocal(val text: String, val author: String, val isSelected: Boolean)
+            val customQuotes = mutableListOf<CustomQuoteLocal>()
+            try {
+                val array = org.json.JSONArray(quotesJson)
+                for (i in 0 until array.length()) {
+                    val obj = array.getJSONObject(i)
+                    val text = obj.optString("text", "")
+                    val author = obj.optString("author", "")
+                    val isSelected = obj.optBoolean("isSelected", true)
+                    if (text.isNotEmpty()) {
+                        customQuotes.add(CustomQuoteLocal(text, author, isSelected))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to parse custom quotes JSON: ${e.message}")
+            }
+
+            var selectedCustomQuotes = customQuotes.filter { it.isSelected }
+            if (selectedCustomQuotes.isEmpty() && customQuotes.isNotEmpty()) {
+                selectedCustomQuotes = customQuotes
+            }
+
+            val calendar = java.util.Calendar.getInstance()
+            val dayOfYear = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+            val year = calendar.get(java.util.Calendar.YEAR)
+            val seed = year * 365 + dayOfYear
 
             var finalQuoteText = ""
             var finalQuoteAuthor = ""
 
-            if (hasCustom && customText.isNotEmpty() && customPref == "always") {
-                finalQuoteText = customText
-                finalQuoteAuthor = customAuthor
+            if (showOnlyMyQuotes && selectedCustomQuotes.isNotEmpty()) {
+                val index = seed % selectedCustomQuotes.size
+                val q = selectedCustomQuotes[index]
+                finalQuoteText = q.text
+                finalQuoteAuthor = q.author
             } else {
-                val calendar = java.util.Calendar.getInstance()
-                val dayOfYear = calendar.get(java.util.Calendar.DAY_OF_YEAR)
-                val year = calendar.get(java.util.Calendar.YEAR)
-                val seed = year * 365 + dayOfYear
-
-                val totalDefaultQuotes = 54
-                val totalQuotes = if (hasCustom && customText.isNotEmpty() && customPref == "mix") 55 else 54
-                val selectedIndex = (seed % totalQuotes) + 1
-
-                if (selectedIndex == 55) {
-                    finalQuoteText = customText
-                    finalQuoteAuthor = customAuthor
+                if (selectedCustomQuotes.isNotEmpty()) {
+                    val totalQuotes = DefaultQuotes.list.size + selectedCustomQuotes.size
+                    val selectedIndex = seed % totalQuotes
+                    if (selectedIndex < DefaultQuotes.list.size) {
+                        val pair = DefaultQuotes.list.getOrNull(selectedIndex)
+                        finalQuoteText = if (pair != null && pair.first != 0) getString(pair.first) else ""
+                        finalQuoteAuthor = if (pair != null && pair.second != 0) getString(pair.second) else ""
+                    } else {
+                        val customIndex = selectedIndex - DefaultQuotes.list.size
+                        val q = selectedCustomQuotes[customIndex]
+                        finalQuoteText = q.text
+                        finalQuoteAuthor = q.author
+                    }
                 } else {
-                    val pair = DefaultQuotes.list.getOrNull(selectedIndex - 1)
+                    val index = seed % DefaultQuotes.list.size
+                    val pair = DefaultQuotes.list.getOrNull(index)
                     finalQuoteText = if (pair != null && pair.first != 0) getString(pair.first) else ""
                     finalQuoteAuthor = if (pair != null && pair.second != 0) getString(pair.second) else ""
                 }
@@ -414,7 +461,6 @@ class BlockOverlayService : Service() {
 
             val appTitleText = overlayView.findViewById<TextView>(R.id.appTitleText)
             val limitOverText = overlayView.findViewById<TextView>(R.id.limitOverText)
-            val explanationText = overlayView.findViewById<TextView>(R.id.explanationText)
             val returnToHomeText = overlayView.findViewById<TextView>(R.id.returnToHomeText)
 
             appTitleText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#2EC4B6" else "#0D9488"))
@@ -422,7 +468,6 @@ class BlockOverlayService : Service() {
             limitOverText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#EF4444" else "#DC2626"))
             quoteText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#E2E8F0" else "#334155"))
             quoteAuthorText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#475569"))
-            explanationText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#64748B"))
             returnToHomeText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#475569"))
 
             val params = WindowManager.LayoutParams(

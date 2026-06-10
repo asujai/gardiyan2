@@ -139,7 +139,7 @@
     <string name="profile_theme_red">Красная тема</string>
     <string name="profile_theme_premium">Премиум Темная</string>
     <string name="profile_mail_subject">Limitra Поддержка и предложения</string>
-    <string name="profile_mail_body">Здравствуйте, команда Limitra,\n\nМоя проблема / предложение:\n\n---\nПриложение: Limitra\nВерсия: %1$s\nAndroid: %2$s\nУстройство: %3$s</string>
+    <string name="profile_mail_body">Здравствуйте, команда Limitra,\n\nМоя проблема / предложение:</string>
     <string name="profile_mail_error">Приложение электронной почты не найдено.</string>
     <string name="profile_timeline_empty">Записей в ленте событий пока нет.</string>
     <string name="profile_timeline_filter_empty">Записей для этого фильтра не найдено.</string>
@@ -234,7 +234,7 @@
     <string name="rank_progress_text_disciplined">Серия: %1$d/7 дней</string>
     <string name="rank_progress_max">Максимальный ранг</string>
     <string name="profile_settings">НАСТРОЙКИ</string>
-    <string name="profile_title">ПРОФИЛЬ ЗАЩИТЫ</string>
+    <string name="profile_title">ПРОФИЛЬ</string>
     <string name="profile_about_title">О ПРИЛОЖЕНИИ</string>
     <string name="profile_about_desc">Limitra — это приложение для цифрового благополучия, которое помогает устанавливать здоровые ограничения для выбранных приложений.</string>
     <string name="btn_close">Закрыть</string>

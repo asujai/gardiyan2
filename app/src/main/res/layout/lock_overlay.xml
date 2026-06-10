@@ -23,11 +23,13 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/overlay_brand_icon"
-                android:textSize="14sp" />
+            <ImageView
+                android:id="@+id/brandIconImage"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:src="@drawable/limitra_brand_icon"
+                android:contentDescription="@string/app_name"
+                android:scaleType="fitCenter" />
 
             <TextView
                 android:id="@+id/appTitleText"
@@ -126,7 +128,7 @@
                 android:gravity="center"
                 android:text=""
                 android:textColor="#94A3B8"
-                android:textSize="11sp"
+                android:textSize="14sp"
                 android:fontFamily="sans-serif-medium"
                 android:letterSpacing="0.08" />
         </LinearLayout>
@@ -138,25 +140,12 @@
             android:layout_marginTop="24dp"
             android:background="#2E3A4E" />
 
-        <!-- Explanations -->
-        <TextView
-            android:id="@+id/explanationText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:gravity="center"
-            android:paddingHorizontal="8dp"
-            android:text="@string/overlay_protected_by_gardiyan"
-            android:textColor="#64748B"
-            android:textSize="10sp"
-            android:lineSpacingMultiplier="1.1" />
-
         <!-- Guide Footer -->
         <TextView
             android:id="@+id/returnToHomeText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:gravity="center"
             android:text="@string/overlay_return_to_home"
             android:textColor="#475569"

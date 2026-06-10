@@ -139,7 +139,7 @@
     <string name="profile_theme_red">السمة الحمراء</string>
     <string name="profile_theme_premium">داكن مميز</string>
     <string name="profile_mail_subject">الدعم والاقتراحات لتطبيق Limitra</string>
-    <string name="profile_mail_body">مرحباً بفريق Limitra،\n\nمشكلتي / اقتراحي:\n\n---\nالتطبيق: Limitra\nالإصدار: %1$s\nأندرويد: %2$s\nالجهاز: %3$s</string>
+    <string name="profile_mail_body">مرحباً بفريق Limitra،\n\nمشكلتي / اقتراحي:</string>
     <string name="profile_mail_error">لم يتم العثور على تطبيق بريد إلكتروني.</string>
     <string name="profile_timeline_empty">لا توجد سجلات في الخط الزمني بعد.</string>
     <string name="profile_timeline_filter_empty">لم يتم العثور على سجلات لهذا الفلتر.</string>
@@ -234,7 +234,7 @@
     <string name="rank_progress_text_disciplined">السلسلة: %1$d/7 يوم</string>
     <string name="rank_progress_max">الرتبة القصوى</string>
     <string name="profile_settings">الإعدادات</string>
-    <string name="profile_title">ملف الحماية</string>
+    <string name="profile_title">الملف الشخصي</string>
     <string name="profile_about_title">حول التطبيق</string>
     <string name="profile_about_desc">Limitra هو تطبيق للعناية بالصحة الرقمية يساعدك على وضع حدود صحية للتطبيقات المحددة.</string>
     <string name="btn_close">إغلاق</string>

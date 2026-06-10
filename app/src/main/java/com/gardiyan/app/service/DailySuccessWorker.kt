@@ -20,7 +20,7 @@ class DailySuccessWorker(
     override suspend fun doWork(): Result {
         return try {
             val db = GuardianDatabase.getDatabase(applicationContext)
-            val repository = GuardianRepository(db.guardianDao())
+            val repository = GuardianRepository(applicationContext, db.guardianDao())
 
             val sharedPref = applicationContext.getSharedPreferences("gardiyan_eval_prefs", Context.MODE_PRIVATE)
             val lastEvaluated = sharedPref.getString("last_evaluated_date", "")

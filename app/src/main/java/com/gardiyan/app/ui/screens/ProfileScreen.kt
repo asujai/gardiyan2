@@ -10,10 +10,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -48,7 +48,8 @@ fun ProfileScreen(
     isUsageEnabled: Boolean,
     isAccessibilityEnabled: Boolean,
     isBatteryExempted: Boolean,
-    isNotificationsEnabled: Boolean
+    isNotificationsEnabled: Boolean,
+    onNavigateToSavedQuotes: () -> Unit = {}
 ) {
     val session by viewModel.userSession.collectAsState()
     val logs by viewModel.allLogs.collectAsState()
@@ -701,10 +702,12 @@ fun ProfileScreen(
 
     if (showQuoteSettingsDialog) {
         val prefs = remember { context.getSharedPreferences("gardiyan_settings", android.content.Context.MODE_PRIVATE) }
-        var tempQuoteText by remember { mutableStateOf(prefs.getString("custom_quote_text", "") ?: "") }
-        var tempQuoteAuthor by remember { mutableStateOf(prefs.getString("custom_quote_author", "") ?: "") }
-        var tempPreference by remember { mutableStateOf(prefs.getString("custom_quote_preference", "mix") ?: "mix") }
-        val hasCustom = prefs.getBoolean("has_custom_quote", false)
+        var customQuotesList by remember { mutableStateOf(loadCustomQuotes(prefs)) }
+        var showOnlyMyQuotes by remember { mutableStateOf(prefs.getBoolean("show_only_my_quotes", false)) }
+        
+        var tempQuoteText by remember { mutableStateOf("") }
+        var tempQuoteAuthor by remember { mutableStateOf("") }
+        var editingQuoteId by remember { mutableStateOf<String?>(null) }
 
         AlertDialog(
             onDismissRequest = { showQuoteSettingsDialog = false },
@@ -717,8 +720,8 @@ fun ProfileScreen(
             },
             text = {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.settings_quote_dialog_desc),
@@ -727,139 +730,183 @@ fun ProfileScreen(
                         lineHeight = 16.sp
                     )
 
-                    OutlinedTextField(
-                        value = tempQuoteText,
-                        onValueChange = { tempQuoteText = it },
-                        label = { Text(stringResource(R.string.settings_quote_text_label)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PureBlack,
-                            unfocusedBorderColor = BorderGray,
-                            focusedLabelColor = PureBlack
-                        ),
-                        singleLine = false,
-                        maxLines = 4
-                    )
+                    // Ekleme / Duzenleme Formu
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, BorderGray.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+                        colors = CardDefaults.cardColors(containerColor = MatteSurface),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = tempQuoteText,
+                                onValueChange = { tempQuoteText = it },
+                                label = { Text(stringResource(R.string.settings_quote_text_label)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PureBlack,
+                                    unfocusedBorderColor = BorderGray,
+                                    focusedLabelColor = PureBlack
+                                ),
+                                singleLine = false,
+                                maxLines = 3
+                            )
 
-                    OutlinedTextField(
-                        value = tempQuoteAuthor,
-                        onValueChange = { tempQuoteAuthor = it },
-                        label = { Text(stringResource(R.string.settings_quote_author_label)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PureBlack,
-                            unfocusedBorderColor = BorderGray,
-                            focusedLabelColor = PureBlack
-                        ),
-                        singleLine = true
-                    )
+                            OutlinedTextField(
+                                value = tempQuoteAuthor,
+                                onValueChange = { tempQuoteAuthor = it },
+                                label = { Text(stringResource(R.string.settings_quote_author_label)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PureBlack,
+                                    unfocusedBorderColor = BorderGray,
+                                    focusedLabelColor = PureBlack
+                                ),
+                                singleLine = true
+                            )
 
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.settings_quote_pref_label),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PureBlack
-                    )
+                            Button(
+                                onClick = {
+                                    if (tempQuoteText.trim().isNotEmpty()) {
+                                        val authorText = tempQuoteAuthor.trim().ifEmpty { context.getString(R.string.quote_author_anonymous) }
+                                        if (editingQuoteId != null) {
+                                            customQuotesList = customQuotesList.map {
+                                                if (it.id == editingQuoteId) {
+                                                    it.copy(text = tempQuoteText.trim(), author = authorText)
+                                                } else it
+                                            }
+                                            editingQuoteId = null
+                                        } else {
+                                            val newItem = CustomQuoteItem(
+                                                id = System.currentTimeMillis().toString(),
+                                                text = tempQuoteText.trim(),
+                                                author = authorText,
+                                                isSelected = true
+                                            )
+                                            customQuotesList = customQuotesList + newItem
+                                        }
+                                        saveCustomQuotes(prefs, customQuotesList)
+                                        tempQuoteText = ""
+                                        tempQuoteAuthor = ""
+                                    } else {
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            context.getString(R.string.settings_quote_empty_error),
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = PureBlack,
+                                    contentColor = OnPureBlack
+                                ),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = if (editingQuoteId != null) "GÜNCELLE" else "EKLE",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    HorizontalDivider(color = BorderGray, thickness = 0.5.dp)
+
+                    // Kaydedilen Sozler Ozet Satiri
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showQuoteSettingsDialog = false
+                                onNavigateToSavedQuotes()
+                            }
+                            .border(1.dp, BorderGray.copy(alpha = 0.4f), RoundedCornerShape(12.dp)),
+                        colors = CardDefaults.cardColors(containerColor = MatteSurface),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable { tempPreference = "always" }
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(
-                                selected = tempPreference == "always",
-                                onClick = { tempPreference = "always" },
-                                colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
+                            Text(
+                                text = "📝",
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(end = 8.dp)
                             )
                             Text(
-                                text = stringResource(R.string.settings_quote_pref_always),
-                                fontSize = 11.sp,
-                                color = PureBlack
+                                text = stringResource(R.string.saved_quotes_title),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PureBlack,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .background(BorderGray.copy(alpha = 0.5f), CircleShape)
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = customQuotesList.size.toString(),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = PureBlack
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MutedGray,
+                                modifier = Modifier.size(16.dp)
                             )
                         }
+                    }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable { tempPreference = "mix" }
-                        ) {
-                            RadioButton(
-                                selected = tempPreference == "mix",
-                                onClick = { tempPreference = "mix" },
-                                colors = RadioButtonDefaults.colors(selectedColor = PureBlack)
-                            )
-                            Text(
-                                text = stringResource(R.string.settings_quote_pref_mix),
-                                fontSize = 11.sp,
-                                color = PureBlack
-                            )
-                        }
+                    HorizontalDivider(color = BorderGray, thickness = 0.5.dp)
+
+                    // Mod Secimi: "Sadece benim sözlerimi göster"
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showOnlyMyQuotes = !showOnlyMyQuotes
+                                prefs.edit().putBoolean("show_only_my_quotes", showOnlyMyQuotes).apply()
+                            }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Sadece benim sözlerimi göster",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PureBlack
+                        )
+                        Checkbox(
+                            checked = showOnlyMyQuotes,
+                            onCheckedChange = { isChecked ->
+                                showOnlyMyQuotes = isChecked
+                                prefs.edit().putBoolean("show_only_my_quotes", isChecked).apply()
+                            },
+                            colors = CheckboxDefaults.colors(checkedColor = PureBlack)
+                        )
                     }
                 }
             },
             confirmButton = {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (hasCustom) {
-                        Button(
-                            onClick = {
-                                prefs.edit().apply {
-                                    remove("custom_quote_text")
-                                    remove("custom_quote_author")
-                                    remove("custom_quote_preference")
-                                    putBoolean("has_custom_quote", false)
-                                    apply()
-                                }
-                                showQuoteSettingsDialog = false
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = SoftDangerRed,
-                                contentColor = DangerRed
-                            )
-                        ) {
-                            Text(stringResource(R.string.btn_delete), fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    Button(
-                        onClick = {
-                            if (tempQuoteText.trim().isNotEmpty()) {
-                                prefs.edit().apply {
-                                    putString("custom_quote_text", tempQuoteText.trim())
-                                    putString("custom_quote_author", tempQuoteAuthor.trim().ifEmpty { context.getString(R.string.quote_author_anonymous) })
-                                    putString("custom_quote_preference", tempPreference)
-                                    putBoolean("has_custom_quote", true)
-                                    apply()
-                                }
-                                showQuoteSettingsDialog = false
-                            } else {
-                                android.widget.Toast.makeText(
-                                    context,
-                                    context.getString(R.string.settings_quote_empty_error),
-                                    android.widget.Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = PureBlack,
-                            contentColor = OnPureBlack
-                        )
-                    ) {
-                        Text(stringResource(R.string.btn_save), fontWeight = FontWeight.Bold)
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(
+                Button(
                     onClick = { showQuoteSettingsDialog = false },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MutedGray)
+                    colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack)
                 ) {
-                    Text(stringResource(R.string.btn_cancel))
+                    Text("TAMAM", fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = DarkCharcoal,
@@ -1854,16 +1901,7 @@ private fun ThemeOptionRow(
 }
 
 private fun launchEmailIntent(context: android.content.Context) {
-    val unknownStr = context.getString(R.string.no_records)
-    val appVersion = runCatching {
-        val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-        pInfo.versionName ?: unknownStr
-    }.getOrDefault(unknownStr)
-
-    val androidVersion = android.os.Build.VERSION.RELEASE
-    val deviceModel = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"
-
-    val emailBody = context.getString(R.string.profile_mail_body, appVersion, androidVersion, deviceModel)
+    val emailBody = context.getString(R.string.profile_mail_body)
 
     val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
         data = android.net.Uri.parse("mailto:")
@@ -1994,7 +2032,7 @@ private fun SettingsRow(
                 }
                 if (showArrow) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
                         tint = MutedGray,
                         modifier = Modifier.size(20.dp)
@@ -2023,4 +2061,77 @@ enum class TimelineTypeFilter(val label: String) {
     LIMITS("Limit olayları"),
     PERMISSIONS("İzin olayları"),
     DATA_ACTIONS("Veri işlemleri")
+}
+
+data class CustomQuoteItem(
+    val id: String,
+    val text: String,
+    val author: String,
+    val isSelected: Boolean
+)
+
+fun loadCustomQuotes(prefs: android.content.SharedPreferences): List<CustomQuoteItem> {
+    val json = prefs.getString("custom_quotes_json", "[]") ?: "[]"
+    val list = mutableListOf<CustomQuoteItem>()
+    try {
+        val array = org.json.JSONArray(json)
+        for (i in 0 until array.length()) {
+            val obj = array.getJSONObject(i)
+            list.add(
+                CustomQuoteItem(
+                    id = obj.optString("id", ""),
+                    text = obj.optString("text", ""),
+                    author = obj.optString("author", ""),
+                    isSelected = obj.optBoolean("isSelected", true)
+                )
+            )
+        }
+    } catch (e: java.lang.Exception) {
+        e.printStackTrace()
+    }
+    
+    val oldText = prefs.getString("custom_quote_text", "") ?: ""
+    val oldAuthor = prefs.getString("custom_quote_author", "") ?: ""
+    val hasCustom = prefs.getBoolean("has_custom_quote", false)
+    if (hasCustom && oldText.isNotEmpty() && list.isEmpty()) {
+        val oldItem = CustomQuoteItem(
+            id = System.currentTimeMillis().toString(),
+            text = oldText,
+            author = oldAuthor,
+            isSelected = true
+        )
+        list.add(oldItem)
+        try {
+            val array = org.json.JSONArray().apply {
+                put(org.json.JSONObject().apply {
+                    put("id", oldItem.id)
+                    put("text", oldItem.text)
+                    put("author", oldItem.author)
+                    put("isSelected", oldItem.isSelected)
+                })
+            }
+            prefs.edit().putString("custom_quotes_json", array.toString()).apply()
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+    }
+    return list
+}
+
+fun saveCustomQuotes(prefs: android.content.SharedPreferences, list: List<CustomQuoteItem>) {
+    try {
+        val array = org.json.JSONArray()
+        for (item in list) {
+            val obj = org.json.JSONObject().apply {
+                put("id", item.id)
+                put("text", item.text)
+                put("author", item.author)
+                put("isSelected", item.isSelected)
+            }
+            array.put(obj)
+        }
+        prefs.edit().putString("custom_quotes_json", array.toString()).apply()
+    } catch (e: java.lang.Exception) {
+        e.printStackTrace()
+    }
 }

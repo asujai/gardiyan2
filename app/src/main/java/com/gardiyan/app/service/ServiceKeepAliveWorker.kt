@@ -23,7 +23,7 @@ class ServiceKeepAliveWorker(
     override suspend fun doWork(): Result {
         return try {
             val db = GuardianDatabase.getDatabase(applicationContext)
-            val repository = GuardianRepository(db.guardianDao())
+            val repository = GuardianRepository(applicationContext, db.guardianDao())
 
             val hasActiveRestrictions = withContext(Dispatchers.IO) {
                 repository.getActiveRestrictedAppsSync().isNotEmpty()

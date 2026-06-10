@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -109,7 +111,7 @@ fun SetupTargetScreen(
                             .size(40.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.btn_close),
                             tint = PureBlack,
                             modifier = Modifier.size(20.dp)
@@ -198,7 +200,7 @@ fun SetupTargetScreen(
                                     }
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Icon(
-                                        imageVector = Icons.Default.List,
+                                        imageVector = Icons.AutoMirrored.Filled.List,
                                         contentDescription = null,
                                         tint = MutedGray,
                                         modifier = Modifier.size(20.dp)
