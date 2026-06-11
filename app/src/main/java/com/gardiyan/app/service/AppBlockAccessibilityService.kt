@@ -342,7 +342,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     val km = getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
                     val isLocked = km?.isKeyguardLocked ?: false
 
-                    val overlayShouldBeVisible = currentTrackedPackage != null
+                    val trackedApp = currentTrackedPackage?.let { pkg ->
+                        cachedRestrictedApps.firstOrNull { it.packageName == pkg }
+                    }
+                    val overlayShouldBeVisible = trackedApp != null && (trackedApp.remainingSecondsToday <= 0 || trackedApp.isFailed)
                     val overlayIsVisible = BlockOverlayService.isLockOverlayVisible.get()
                     val isForegroundUnclear = currentForegroundPackage.isNullOrEmpty()
 
