@@ -488,8 +488,7 @@ class BlockOverlayService : Service() {
             visibleOverlayPackage = targetAppPackage
             isLockOverlayVisible.set(true)
 
-            startInfiniteLoop()
-            Log.i(TAG, "Lock overlay added for $targetAppName (Infinite loop active)")
+            Log.i(TAG, "Lock overlay added for $targetAppName")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to add lock overlay: ${e.message}", e)
         }
@@ -590,19 +589,7 @@ class BlockOverlayService : Service() {
         }
     }
 
-    private fun startInfiniteLoop() {
-        cycleJob?.cancel()
-        Log.d(TAG, "startInfiniteLoop: keeping overlay to front (no countdown)")
 
-        cycleJob = serviceScope.launch {
-            while (isLockOverlayVisible.get()) {
-                runOnUiThreadSafe {
-                    forceOverlayToFrontInternal()
-                }
-                kotlinx.coroutines.delay(2000L)
-            }
-        }
-    }
 
     @Suppress("DEPRECATION")
     private fun overlayWindowType(): Int {
