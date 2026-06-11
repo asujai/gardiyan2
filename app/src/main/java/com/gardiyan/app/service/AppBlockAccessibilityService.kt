@@ -289,6 +289,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
             var lastEventTimeForRapidCheck = 0L
             var currentPollIntervalMs = NORMAL_POLL_INTERVAL_MS
             var lastDailyResetCheckTime = 0L
+            var unclearForegroundTicks = 0
 
             while (isActive) {
                 try {
@@ -345,6 +346,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     val overlayIsVisible = BlockOverlayService.isLockOverlayVisible.get()
                     val isForegroundUnclear = currentForegroundPackage.isNullOrEmpty()
 
+                    if (!isForegroundUnclear) {
+                        unclearForegroundTicks = 0
+                    }
+
                     // Hızlı uygulama geçişi tespiti
                     var isRapidSwitching = false
                     if (lastAccessibilityForegroundAt > 0 && lastAccessibilityForegroundAt != lastEventTimeForRapidCheck) {
@@ -360,6 +365,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     if (!isScreenOn || isLocked) {
                         // Ekran kapalıysa veya cihaz kilitliyse hızlı polling'i tamamen iptal et
                         fastPollTicksLeft = 0
+                        unclearForegroundTicks = 0
                     } else {
                         if (startupTicksLeft > 0) {
                             suspiciousReason = "Servis başlangıcı"
@@ -370,7 +376,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         } else if (overlayShouldBeVisible && !overlayIsVisible) {
                             suspiciousReason = "Kilit ekranı görünmüyor (beklenen: $currentTrackedPackage)"
                         } else if (isForegroundUnclear) {
-                            suspiciousReason = "Ön plan paket bilgisi tanımsız"
+                            if (unclearForegroundTicks < 8) { // En fazla 2 saniye (8 * 250ms) hızlı denetle
+                                suspiciousReason = "Ön plan paket bilgisi tanımsız (geçici)"
+                                unclearForegroundTicks++
+                            }
                         } else if (isRapidSwitching) {
                             suspiciousReason = "Hızlı uygulama geçişi algılandı"
                         }
