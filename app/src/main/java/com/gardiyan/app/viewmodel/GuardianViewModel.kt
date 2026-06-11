@@ -66,6 +66,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
     init {
         viewModelScope.launch {
             repository.insertDefaultSessionIfMissing()
+            repository.evaluateMissedDays()
             repository.resetDailyCountersIfNeeded()
         }
     }

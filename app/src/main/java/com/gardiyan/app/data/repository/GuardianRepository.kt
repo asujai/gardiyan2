@@ -9,6 +9,8 @@ import com.gardiyan.app.data.local.entity.UserSessionEntity
 import com.gardiyan.app.data.time.TimeProvider
 import com.gardiyan.app.data.time.SystemTimeProvider
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -19,6 +21,8 @@ class GuardianRepository(
     private val guardianDao: GuardianDao,
     private val timeProvider: TimeProvider = SystemTimeProvider()
 ) {
+
+    private val resetMutex = Mutex()
 
     companion object {
         const val ALL_DAYS = "Pzt,Sal,Çar,Per,Cum,Cmt,Paz"
@@ -184,6 +188,11 @@ class GuardianRepository(
     ): Long {
         val today = timeProvider.localDateString()
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
+        if (!com.gardiyan.app.BuildConfig.DEBUG) {
+            if (existing != null) {
+                return existing.id
+            }
+        }
         val safeTestSeconds = testSeconds.coerceIn(1, MAX_DAILY_LIMIT_MINUTES * 60)
         val dailyLimitMinutes = (safeTestSeconds + 59) / 60
         return if (existing != null) {
@@ -244,106 +253,130 @@ class GuardianRepository(
     }
 
     suspend fun resetDailyCountersIfNeeded() {
-        val prefs = context.getSharedPreferences("gardiyan_secure_reset_prefs", Context.MODE_PRIVATE)
-        val lastResetLocalDate = prefs.getString("lastResetLocalDate", "") ?: ""
-        val lastResetWallClockMillis = prefs.getLong("lastResetWallClockMillis", 0L)
-        val lastResetElapsedRealtime = prefs.getLong("lastResetElapsedRealtime", 0L)
-        
-        val today = timeProvider.localDateString()
-        val nowWall = timeProvider.currentTimeMillis()
-        val nowElapsed = timeProvider.elapsedRealtime()
-        
-        val isFirstInit = lastResetLocalDate.isEmpty() || lastResetWallClockMillis == 0L
-        val isDateChanged = isFirstInit || (today != lastResetLocalDate)
-        
-        var isTimePassed = isFirstInit
-        val minIntervalMillis = 12 * 3600 * 1000L // 12 saat
-        
-        if (!isFirstInit) {
-            val isTimeManipulatedBackwards = nowWall < lastResetWallClockMillis
+        resetMutex.withLock {
+            val prefs = context.getSharedPreferences("gardiyan_secure_reset_prefs", Context.MODE_PRIVATE)
+            val lastResetLocalDate = prefs.getString("lastResetLocalDate", "") ?: ""
+            val lastResetWallClockMillis = prefs.getLong("lastResetWallClockMillis", 0L)
+            val lastResetElapsedRealtime = prefs.getLong("lastResetElapsedRealtime", 0L)
             
-            if (isTimeManipulatedBackwards) {
-                if (com.gardiyan.app.BuildConfig.DEBUG) {
-                    android.util.Log.w("GuardianRepository", "Geri zaman manipülasyonu engellendi. nowWall: $nowWall, lastResetWallClock: $lastResetWallClockMillis")
-                }
-                insertLog("SECURITY_WARNING", "", "Sistem saatinin geriye alındığı tespit edildi. Limitler sıfırlanmadı.")
-                return
-            }
+            // Son bilinen güvenli duvar saati kontrolü (geriye manipülasyon tespiti için)
+            val lastKnownWallClockMillis = prefs.getLong("lastKnownWallClockMillis", 0L)
             
-            val isRebooted = nowElapsed < lastResetElapsedRealtime
+            val today = timeProvider.localDateString()
+            val nowWall = timeProvider.currentTimeMillis()
+            val nowElapsed = timeProvider.elapsedRealtime()
             
-            if (!isRebooted) {
-                val elapsedDiff = nowElapsed - lastResetElapsedRealtime
-                if (elapsedDiff >= minIntervalMillis) {
-                    isTimePassed = true
-                }
-                if (com.gardiyan.app.BuildConfig.DEBUG) {
-                    android.util.Log.d("GuardianRepository", "Zaman geçiş kontrolü (Monotonic): elapsedDiff=${elapsedDiff}ms, min=${minIntervalMillis}ms, isTimePassed=$isTimePassed")
-                }
-            } else {
-                val wallDiff = nowWall - lastResetWallClockMillis
-                if (wallDiff >= minIntervalMillis) {
-                    isTimePassed = true
-                }
-                if (com.gardiyan.app.BuildConfig.DEBUG) {
-                    android.util.Log.d("GuardianRepository", "Zaman geçiş kontrolü (Wall clock/Rebooted): wallDiff=${wallDiff}ms, min=${minIntervalMillis}ms, isTimePassed=$isTimePassed")
-                }
-            }
-        }
-        
-        if (com.gardiyan.app.BuildConfig.DEBUG) {
-            android.util.Log.d("GuardianRepository", "resetDailyCountersIfNeeded: isDateChanged=$isDateChanged, isTimePassed=$isTimePassed, isFirstInit=$isFirstInit, today=$today, lastResetLocalDate=$lastResetLocalDate")
-        }
-
-        if (isDateChanged && isTimePassed) {
-            val restrictedApps = guardianDao.getAllRestrictedAppsSync()
-            var anyReset = false
-            restrictedApps.forEach { app ->
-                if (app.lastResetDate != today) {
-                    anyReset = true
-                    val newLimit = if (app.nextDayLimitMinutes > 0) app.nextDayLimitMinutes else app.dailyLimitMinutes
-                    val newActiveDays = app.nextDayActiveDays.ifEmpty { app.activeDays }
+            val isFirstInit = lastResetLocalDate.isEmpty() || lastResetWallClockMillis == 0L
+            val isDateChanged = isFirstInit || (today != lastResetLocalDate)
+            
+            var isTimePassed = isFirstInit
+            val minIntervalMillis = 22 * 3600 * 1000L // 22 saat sıfırlama kilidi
+            
+            if (!isFirstInit) {
+                // 1. Cihaz açıkken saati geriye alma kontrolü
+                val isTimeManipulatedBackwards = nowWall < lastResetWallClockMillis || (lastKnownWallClockMillis > 0L && nowWall < lastKnownWallClockMillis)
+                
+                if (isTimeManipulatedBackwards) {
                     if (com.gardiyan.app.BuildConfig.DEBUG) {
-                        android.util.Log.d("GuardianRepository", "Sıfırlanıyor: ${app.appName} (${app.packageName}), yeni limit: ${newLimit}dk")
+                        android.util.Log.w("GuardianRepository", "Geri zaman manipülasyonu engellendi. nowWall: $nowWall, lastResetWallClock: $lastResetWallClockMillis, lastKnownWall: $lastKnownWallClockMillis")
                     }
-                    guardianDao.updateRestrictedApp(
-                        app.copy(
-                            dailyLimitMinutes = newLimit,
-                            remainingMinutesToday = newLimit,
-                            remainingSecondsToday = newLimit * 60,
-                            isFailed = false,
-                            activeDays = newActiveDays,
-                            lastResetDate = today,
-                            nextDayLimitMinutes = 0,
-                            nextDayActiveDays = "",
-                            lastLimitUpdateDate = "",
-                            todayMinLimitMinutes = 0
-                        )
-                    )
+                    insertLog("SECURITY_WARNING", "", "Sistem saatinin geriye alındığı tespit edildi. Limitler sıfırlanmadı.")
+                    return
+                }
+                
+                val isRebooted = nowElapsed < lastResetElapsedRealtime
+                
+                if (!isRebooted) {
+                    val elapsedDiff = nowElapsed - lastResetElapsedRealtime
+                    if (elapsedDiff >= minIntervalMillis) {
+                        isTimePassed = true
+                    }
+                    if (com.gardiyan.app.BuildConfig.DEBUG) {
+                        android.util.Log.d("GuardianRepository", "Zaman geçiş kontrolü (Monotonic): elapsedDiff=${elapsedDiff}ms, min=${minIntervalMillis}ms, isTimePassed=$isTimePassed")
+                    }
+                } else {
+                    // 2. Reboot sonrası zaman manipülasyonu kontrolü (Boot Time analizi)
+                    val oldBootTime = lastResetWallClockMillis - lastResetElapsedRealtime
+                    val newBootTime = nowWall - nowElapsed
+                    val bootTimeDiff = newBootTime - oldBootTime
+                    
+                    // Boot Time farkı 15 dakikadan fazla geride ise geriye manipülasyon vardır
+                    if (bootTimeDiff < -15 * 60 * 1000L) {
+                        if (com.gardiyan.app.BuildConfig.DEBUG) {
+                            android.util.Log.w("GuardianRepository", "Reboot sonrası geri zaman manipülasyonu engellendi. bootTimeDiff: $bootTimeDiff")
+                        }
+                        insertLog("SECURITY_WARNING", "", "Reboot sonrası sistem saatinin geriye alındığı tespit edildi. Limitler sıfırlanmadı.")
+                        return
+                    }
+                    
+                    val wallDiff = nowWall - lastResetWallClockMillis
+                    if (wallDiff >= minIntervalMillis) {
+                        isTimePassed = true
+                    }
+                    if (com.gardiyan.app.BuildConfig.DEBUG) {
+                        android.util.Log.d("GuardianRepository", "Zaman geçiş kontrolü (Wall clock/Rebooted): wallDiff=${wallDiff}ms, min=${minIntervalMillis}ms, isTimePassed=$isTimePassed")
+                    }
                 }
             }
             
-            if (anyReset && !isFirstInit) {
-                val notifPrefs = context.getSharedPreferences("gardiyan_notifications", Context.MODE_PRIVATE)
-                notifPrefs.edit().clear().apply()
-            }
-            
-            prefs.edit().apply {
-                putString("lastResetLocalDate", today)
-                putLong("lastResetWallClockMillis", nowWall)
-                putLong("lastResetElapsedRealtime", nowElapsed)
-                putString("lastResetTimezoneId", timeProvider.timezoneId())
-                apply()
-            }
-            
-            if (anyReset && !isFirstInit) {
-                insertLog("DAILY_RESET", "", "Günlük limitler sıfırlandı. Yeni gün: $today")
-            }
-        } else if (isDateChanged && !isTimePassed) {
             if (com.gardiyan.app.BuildConfig.DEBUG) {
-                android.util.Log.w("GuardianRepository", "Erken günlük sıfırlama engellendi! Zaman aşımı yetersiz.")
+                android.util.Log.d("GuardianRepository", "resetDailyCountersIfNeeded: isDateChanged=$isDateChanged, isTimePassed=$isTimePassed, isFirstInit=$isFirstInit, today=$today, lastResetLocalDate=$lastResetLocalDate")
             }
-            insertLog("RESET_PREVENTED", "", "Tarih değişimi algılandı ancak güvenlik süresi henüz dolmadı. Limitlerin erken sıfırlanması engellendi.")
+
+            if (isDateChanged && isTimePassed) {
+                val restrictedApps = guardianDao.getAllRestrictedAppsSync()
+                var anyReset = false
+                restrictedApps.forEach { app ->
+                    if (app.lastResetDate != today) {
+                        anyReset = true
+                        val newLimit = if (app.nextDayLimitMinutes > 0) app.nextDayLimitMinutes else app.dailyLimitMinutes
+                        val newActiveDays = app.nextDayActiveDays.ifEmpty { app.activeDays }
+                        if (com.gardiyan.app.BuildConfig.DEBUG) {
+                            android.util.Log.d("GuardianRepository", "Sıfırlanıyor: ${app.appName} (${app.packageName}), yeni limit: ${newLimit}dk")
+                        }
+                        guardianDao.updateRestrictedApp(
+                            app.copy(
+                                dailyLimitMinutes = newLimit,
+                                remainingMinutesToday = newLimit,
+                                remainingSecondsToday = newLimit * 60,
+                                isFailed = false,
+                                activeDays = newActiveDays,
+                                lastResetDate = today,
+                                nextDayLimitMinutes = 0,
+                                nextDayActiveDays = "",
+                                lastLimitUpdateDate = "",
+                                todayMinLimitMinutes = 0
+                            )
+                        )
+                    }
+                }
+                
+                if (anyReset && !isFirstInit) {
+                    val notifPrefs = context.getSharedPreferences("gardiyan_notifications", Context.MODE_PRIVATE)
+                    notifPrefs.edit().clear().apply()
+                }
+                
+                prefs.edit().apply {
+                    putString("lastResetLocalDate", today)
+                    putLong("lastResetWallClockMillis", nowWall)
+                    putLong("lastResetElapsedRealtime", nowElapsed)
+                    putLong("lastKnownWallClockMillis", nowWall)
+                    putString("lastResetTimezoneId", timeProvider.timezoneId())
+                    apply()
+                }
+                
+                if (anyReset && !isFirstInit) {
+                    insertLog("DAILY_RESET", "", "Günlük limitler sıfırlandı. Yeni gün: $today")
+                }
+            } else if (isDateChanged && !isTimePassed) {
+                if (com.gardiyan.app.BuildConfig.DEBUG) {
+                    android.util.Log.w("GuardianRepository", "Erken günlük sıfırlama engellendi! Zaman aşımı yetersiz.")
+                }
+                insertLog("RESET_PREVENTED", "", "Tarih değişimi algılandı ancak güvenlik süresi henüz dolmadı. Limitlerin erken sıfırlanması engellendi.")
+            } else {
+                // Sadece son bilinen duvar saatini güncelle
+                prefs.edit().putLong("lastKnownWallClockMillis", nowWall).apply()
+            }
         }
     }
 
@@ -726,5 +759,59 @@ class GuardianRepository(
                 insertLog("STALE_SESSION_CLEANED", session.appName, "Bayatlayan aktif oturum temizlendi.")
             }
         }
+    }
+
+    suspend fun evaluateMissedDays() {
+        val sharedPref = context.getSharedPreferences("gardiyan_eval_prefs", Context.MODE_PRIVATE)
+        val lastEvaluated = sharedPref.getString("last_evaluated_date", "") ?: ""
+        
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val yesterdayCal = Calendar.getInstance()
+        yesterdayCal.add(Calendar.DAY_OF_YEAR, -1)
+        val yesterdayKey = sdf.format(yesterdayCal.time)
+        
+        if (lastEvaluated == yesterdayKey) {
+            return
+        }
+        
+        val datesToEvaluate = mutableListOf<String>()
+        val lastDate = try {
+            if (lastEvaluated.isNotEmpty()) sdf.parse(lastEvaluated) else null
+        } catch (e: Exception) {
+            null
+        }
+        
+        if (lastDate == null) {
+            datesToEvaluate.add(yesterdayKey)
+        } else {
+            val startCal = Calendar.getInstance()
+            startCal.time = lastDate
+            startCal.add(Calendar.DAY_OF_YEAR, 1)
+            
+            val yesterdayCompare = Calendar.getInstance()
+            yesterdayCompare.time = yesterdayCal.time
+            
+            startCal.set(Calendar.HOUR_OF_DAY, 0)
+            startCal.set(Calendar.MINUTE, 0)
+            startCal.set(Calendar.SECOND, 0)
+            startCal.set(Calendar.MILLISECOND, 0)
+            
+            yesterdayCompare.set(Calendar.HOUR_OF_DAY, 0)
+            yesterdayCompare.set(Calendar.MINUTE, 0)
+            yesterdayCompare.set(Calendar.SECOND, 0)
+            yesterdayCompare.set(Calendar.MILLISECOND, 0)
+            
+            while (!startCal.after(yesterdayCompare)) {
+                val key = sdf.format(startCal.time)
+                datesToEvaluate.add(key)
+                startCal.add(Calendar.DAY_OF_YEAR, 1)
+            }
+        }
+        
+        for (dateKey in datesToEvaluate) {
+            evaluateDailySuccess(dateKey)
+        }
+        
+        sharedPref.edit().putString("last_evaluated_date", yesterdayKey).apply()
     }
 }

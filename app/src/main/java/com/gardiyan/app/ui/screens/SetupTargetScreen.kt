@@ -82,9 +82,15 @@ fun SetupTargetScreen(
         installedApps.filterNot { it.second in activeRestrictedPackages }
     }
 
-    val presetChoices = listOf(
-        Pair(stringResource(R.string.setup_target_test_10s), 0)
-    )
+    val presetChoices = remember(context) {
+        if (com.gardiyan.app.BuildConfig.DEBUG) {
+            listOf(
+                Pair(context.getString(R.string.setup_target_test_10s), 0)
+            )
+        } else {
+            emptyList()
+        }
+    }
 
     val currentTotalMinutes = selectedHours * 60 + selectedMinutes
 

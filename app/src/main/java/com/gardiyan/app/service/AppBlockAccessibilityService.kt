@@ -10,6 +10,8 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.PowerManager
+import android.app.KeyguardManager
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import androidx.core.app.NotificationCompat
@@ -83,6 +85,12 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
         @Volatile
         var ignoreOwnPackageEventsUntil: Long = 0L
+
+        @Volatile
+        var cachedRestrictedApps: List<RestrictedAppEntity> = emptyList()
+
+        @Volatile
+        var fastPollTicksLeft: Int = 0
     }
 
     private val a11yJob = SupervisorJob()
@@ -96,6 +104,19 @@ class AppBlockAccessibilityService : AccessibilityService() {
     // UsageStats polling coroutine
     private var usageStatsPollingJob: Job? = null
 
+    // RAM cache helper metotları
+    private fun getCachedActiveRestrictedApps(): List<RestrictedAppEntity> {
+        return cachedRestrictedApps.filter { it.isActive }
+    }
+
+    private fun getCachedActiveRestrictedAppsForToday(): List<RestrictedAppEntity> {
+        val today = GuardianRepository.todayDayLabel()
+        return getCachedActiveRestrictedApps().filter { app ->
+            val days = app.activeDays.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+            days.isEmpty() || days.contains(today)
+        }
+    }
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
@@ -104,6 +125,21 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
         val db = GuardianDatabase.getDatabase(applicationContext)
         val repository = GuardianRepository(applicationContext, db.guardianDao())
+
+        // Kısıtlı uygulamalar listesini asenkron Flow ile dinle ve RAM'de önbelleğe al
+        a11yScope.launch {
+            try {
+                repository.restrictedApps.collect { apps ->
+                    cachedRestrictedApps = apps
+                    if (com.gardiyan.app.BuildConfig.DEBUG) {
+                        Log.d(TAG, "Restricted apps cache updated, count: ${apps.size}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error collecting restricted apps: ${e.message}")
+            }
+        }
+
         a11yScope.launch {
             try {
                 // Öncelikle bayat oturumları temizle
@@ -226,6 +262,8 @@ class AppBlockAccessibilityService : AccessibilityService() {
             return
         }
         lastAccessibilityForegroundAt = now
+        // A11y pencere değişim olayı geldiğinde geçici olarak hızlı polling'i tetikle
+        fastPollTicksLeft = 12 // 3 saniye boyunca hızlı polling yap (12 * 250ms = 3000ms)
 
         handleForegroundChange(foregroundPackage)
     }
@@ -250,15 +288,17 @@ class AppBlockAccessibilityService : AccessibilityService() {
             var startupTicksLeft = 60 // İlk 15 saniye boyu hızlı denetim (60 * 250ms = 15s)
             var lastEventTimeForRapidCheck = 0L
             var currentPollIntervalMs = NORMAL_POLL_INTERVAL_MS
+            var lastDailyResetCheckTime = 0L
 
             while (isActive) {
                 try {
                     val today = todayKey()
                     val evalPrefs = getSharedPreferences("gardiyan_eval_prefs", Context.MODE_PRIVATE)
                     val hasLoggedActiveToday = evalPrefs.getBoolean("logged_active_$today", false)
-                    val activeAppsForLog = withContext(Dispatchers.IO) {
-                        repository.getActiveRestrictedAppsSync()
-                    }
+                    
+                    // Veritabanı sorgusu yerine RAM önbelleğini kullan
+                    val activeAppsForLog = getCachedActiveRestrictedApps()
+                    
                     if (!hasLoggedActiveToday && activeAppsForLog.isNotEmpty()) {
                         withContext(Dispatchers.IO) {
                             repository.insertLog("ENGINE_ACTIVE", "", "Limitra koruma motoru aktif olarak çalışıyor.")
@@ -266,20 +306,41 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         evalPrefs.edit().putBoolean("logged_active_$today", true).apply()
                     }
 
+                    // Günlük sıfırlama denetimini her 250ms yerine 60 saniyede bire çek
+                    val now = System.currentTimeMillis()
+                    if (now - lastDailyResetCheckTime > 60000L) {
+                        lastDailyResetCheckTime = now
+                        withContext(Dispatchers.IO) {
+                            repository.resetDailyCountersIfNeeded()
+                        }
+                    }
+
                     currentTrackedPackage
                         ?.takeIf { it == currentForegroundPackage }
                         ?.let { pkg ->
-                            val app = withContext(Dispatchers.IO) {
-                                repository.updateSessionLastSeen(pkg)
-                                repository.getRestrictedAppByPackageSync(pkg)
-                            }
-                            if (app != null && app.isActive && !app.isFailed) {
-                                checkAndTriggerNotifications(app)
+                            val app = cachedRestrictedApps.firstOrNull { it.packageName == pkg }
+                            if (app != null) {
+                                withContext(Dispatchers.IO) {
+                                    repository.updateSessionLastSeen(pkg)
+                                }
+                                if (app.isActive && !app.isFailed) {
+                                    checkAndTriggerNotifications(app)
+                                }
                             }
                         }
 
-                    val now = System.currentTimeMillis()
-                    val a11yAge = now - lastAccessibilityForegroundAt
+                    // Ekran ve Kilit durumu tespiti
+                    val pm = getSystemService(Context.POWER_SERVICE) as? PowerManager
+                    val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                        pm?.isInteractive ?: true
+                    } else {
+                        @Suppress("DEPRECATION")
+                        pm?.isScreenOn ?: true
+                    }
+
+                    val km = getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+                    val isLocked = km?.isKeyguardLocked ?: false
+
                     val overlayShouldBeVisible = currentTrackedPackage != null
                     val overlayIsVisible = BlockOverlayService.isLockOverlayVisible.get()
                     val isForegroundUnclear = currentForegroundPackage.isNullOrEmpty()
@@ -296,17 +357,23 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
                     var suspiciousReason: String? = null
 
-                    if (startupTicksLeft > 0) {
-                        suspiciousReason = "Servis başlangıcı"
-                        startupTicksLeft--
-                    } else if (a11yAge > 8000L) {
-                        suspiciousReason = "A11y olayı gecikti (${a11yAge / 1000}sn)"
-                    } else if (overlayShouldBeVisible && !overlayIsVisible) {
-                        suspiciousReason = "Kilit ekranı görünmüyor (beklenen: $currentTrackedPackage)"
-                    } else if (isForegroundUnclear) {
-                        suspiciousReason = "Ön plan paket bilgisi tanımsız"
-                    } else if (isRapidSwitching) {
-                        suspiciousReason = "Hızlı uygulama geçişi algılandı"
+                    if (!isScreenOn || isLocked) {
+                        // Ekran kapalıysa veya cihaz kilitliyse hızlı polling'i tamamen iptal et
+                        fastPollTicksLeft = 0
+                    } else {
+                        if (startupTicksLeft > 0) {
+                            suspiciousReason = "Servis başlangıcı"
+                            startupTicksLeft--
+                        } else if (fastPollTicksLeft > 0) {
+                            suspiciousReason = "Geçici hızlı denetim aktif ($fastPollTicksLeft)"
+                            fastPollTicksLeft--
+                        } else if (overlayShouldBeVisible && !overlayIsVisible) {
+                            suspiciousReason = "Kilit ekranı görünmüyor (beklenen: $currentTrackedPackage)"
+                        } else if (isForegroundUnclear) {
+                            suspiciousReason = "Ön plan paket bilgisi tanımsız"
+                        } else if (isRapidSwitching) {
+                            suspiciousReason = "Hızlı uygulama geçişi algılandı"
+                        }
                     }
 
                     val interval = if (suspiciousReason != null) {
@@ -436,9 +503,9 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
                     val db = GuardianDatabase.getDatabase(applicationContext)
                     val repository = GuardianRepository(applicationContext, db.guardianDao())
-                    val activeApps = withContext(Dispatchers.IO) {
-                        repository.getActiveRestrictedAppsForTodaySync()
-                    }
+                    
+                    // Veritabanı sorgusu yerine RAM önbelleğini kullan
+                    val activeApps = getCachedActiveRestrictedAppsForToday()
 
                     if (com.gardiyan.app.BuildConfig.DEBUG) {
                         Log.d(TAG, "handleForegroundChange: foregroundPackage=$foregroundPackage, activeAppsCount=${activeApps.size}")
@@ -481,6 +548,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         entryTimeMillis = System.currentTimeMillis()
                         currentTrackedPackage = matchingApp.packageName
                         currentTrackedAppId = matchingApp.id
+                        
+                        // Kısıtlı uygulamaya geçiş yapıldığı için geçici olarak hızlı polling'i tetikle
+                        fastPollTicksLeft = 20 // 5 saniye boyunca hızlı denetle (20 * 250ms = 5000ms)
+                        
                         Log.d(TAG, "Target app entered: ${matchingApp.appName} (${matchingApp.packageName}) at $entryTimeMillis")
                         withContext(Dispatchers.IO) {
                             repository.startSession(matchingApp)

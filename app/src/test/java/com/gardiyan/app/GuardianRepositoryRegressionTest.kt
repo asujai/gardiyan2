@@ -548,4 +548,99 @@ class GuardianRepositoryRegressionTest {
         assertEquals(1800, result.remainingSecondsToday)
         assertFalse(result.isFailed)
     }
+
+    @Test
+    fun `resetDailyCountersIfNeeded blocks reset if rebooted but boot time indicates backward time manipulation`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 50000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+        
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        database.guardianDao().updateRestrictedApp(
+            database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Cihaz reboot edildi ama saat 1 gün GERİYE alındı
+        testProvider.mockLocalDateString = "2026-06-09"
+        testProvider.mockTimeMillis -= 24 * 3600 * 1000L // Geri alındı
+        testProvider.mockElapsedRealtime = 5000L // Reboot sonrası 5. saniye
+        
+        secureRepository.resetDailyCountersIfNeeded()
+        
+        // Sıfırlanma OLMAMALIDIR
+        val result = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(0, result.remainingSecondsToday)
+        assertTrue(result.isFailed)
+    }
+
+    @Test
+    fun `evaluateMissedDays successfully catches up on multiple missed days`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        repository.insertDefaultSessionIfMissing()
+        val id = repository.upsertRestrictedApp("test.package", "Test", 30)
+        
+        // Gecmis gunlerde de uygulamanin var sayilmasi icin createdAtMillis'i 10 gun geriye çekelim
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        repository.updateRestrictedApp(
+            app.copy(
+                createdAtMillis = System.currentTimeMillis() - 10 * 24 * 3600 * 1000L
+            )
+        )
+        
+        // 3 gün önce ve dün için ENGINE_ACTIVE log'ları ekleyelim ki başarı kazanılabilsin
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        
+        val cal3 = java.util.Calendar.getInstance()
+        cal3.add(java.util.Calendar.DAY_OF_YEAR, -3)
+        cal3.set(java.util.Calendar.HOUR_OF_DAY, 12)
+        cal3.set(java.util.Calendar.MINUTE, 0)
+        cal3.set(java.util.Calendar.SECOND, 0)
+        cal3.set(java.util.Calendar.MILLISECOND, 0)
+        val day3Key = sdf.format(cal3.time)
+        repository.insertLog("ENGINE_ACTIVE", "", "Engine active day -3", customTimestamp = cal3.timeInMillis)
+        
+        val cal2 = java.util.Calendar.getInstance()
+        cal2.add(java.util.Calendar.DAY_OF_YEAR, -2)
+        cal2.set(java.util.Calendar.HOUR_OF_DAY, 12)
+        cal2.set(java.util.Calendar.MINUTE, 0)
+        cal2.set(java.util.Calendar.SECOND, 0)
+        cal2.set(java.util.Calendar.MILLISECOND, 0)
+        val day2Key = sdf.format(cal2.time)
+        repository.insertLog("ENGINE_ACTIVE", "", "Engine active day -2", customTimestamp = cal2.timeInMillis)
+        
+        val cal1 = java.util.Calendar.getInstance()
+        cal1.add(java.util.Calendar.DAY_OF_YEAR, -1)
+        cal1.set(java.util.Calendar.HOUR_OF_DAY, 12)
+        cal1.set(java.util.Calendar.MINUTE, 0)
+        cal1.set(java.util.Calendar.SECOND, 0)
+        cal1.set(java.util.Calendar.MILLISECOND, 0)
+        val day1Key = sdf.format(cal1.time)
+        repository.insertLog("ENGINE_ACTIVE", "", "Engine active day -1", customTimestamp = cal1.timeInMillis)
+        
+        // gardiyan_eval_prefs'te last_evaluated_date olarak 4 gün öncesini set edelim
+        val cal4 = java.util.Calendar.getInstance()
+        cal4.add(java.util.Calendar.DAY_OF_YEAR, -4)
+        val day4Key = sdf.format(cal4.time)
+        
+        val sharedPref = context.getSharedPreferences("gardiyan_eval_prefs", Context.MODE_PRIVATE)
+        sharedPref.edit().putString("last_evaluated_date", day4Key).apply()
+        
+        repository.evaluateMissedDays()
+        
+        // evaluateMissedDays sonrasında last_evaluated_date dün (day1Key) olmalıdır
+        assertEquals(day1Key, sharedPref.getString("last_evaluated_date", ""))
+        
+        // Loglarda 3 adet SUCCESS_DAY olmalıdır
+        val logs = database.guardianDao().getAllLogsSync()
+        assertEquals(3, logs.count { it.eventType == "SUCCESS_DAY" })
+    }
 }
