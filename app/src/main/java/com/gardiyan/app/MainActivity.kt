@@ -137,53 +137,6 @@ fun MainNavigationContent(
         }
     }
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            val o = viewModel.hasOverlayPermission(context)
-            val u = viewModel.hasUsageStatsPermission(context)
-            val a = viewModel.isAccessibilityServiceEnabled(context)
-            val b = viewModel.isBatteryOptimizationIgnored(context)
-            val n = viewModel.areNotificationsEnabled(context)
-
-            if (o != isOverlayEnabled) {
-                if (o && !isOverlayEnabled) {
-                    android.widget.Toast.makeText(context, "✓ " + context.getString(R.string.perm_overlay_title), android.widget.Toast.LENGTH_SHORT).show()
-                }
-                viewModel.logCriticalAction("PERMISSION_CHANGED", "Sistem İzinleri", "Diğer uygulamaların üzerinde çizim izni: " + if (o) "VERİLDİ" else "ALINDI")
-                isOverlayEnabled = o
-            }
-            if (u != isUsageEnabled) {
-                if (u && !isUsageEnabled) {
-                    android.widget.Toast.makeText(context, "✓ " + context.getString(R.string.perm_usage_access_title), android.widget.Toast.LENGTH_SHORT).show()
-                }
-                viewModel.logCriticalAction("PERMISSION_CHANGED", "Sistem İzinleri", "Kullanım erişimi izni: " + if (u) "VERİLDİ" else "ALINDI")
-                isUsageEnabled = u
-            }
-            if (a != isAccessibilityEnabled) {
-                if (a && !isAccessibilityEnabled) {
-                    android.widget.Toast.makeText(context, "✓ " + context.getString(R.string.perm_accessibility_title), android.widget.Toast.LENGTH_SHORT).show()
-                }
-                viewModel.logCriticalAction("PERMISSION_CHANGED", "Sistem İzinleri", "Erişilebilirlik izni: " + if (a) "VERİLDİ" else "ALINDI")
-                isAccessibilityEnabled = a
-            }
-            if (b != isBatteryExempted) {
-                if (b && !isBatteryExempted) {
-                    android.widget.Toast.makeText(context, "✓ " + context.getString(R.string.perm_battery_title), android.widget.Toast.LENGTH_SHORT).show()
-                }
-                viewModel.logCriticalAction("PERMISSION_CHANGED", "Sistem İzinleri", "Pil optimizasyonu muafiyeti: " + if (b) "VERİLDİ" else "ALINDI")
-                isBatteryExempted = b
-            }
-            if (n != isNotificationsEnabled) {
-                if (n && !isNotificationsEnabled) {
-                    android.widget.Toast.makeText(context, "✓ " + context.getString(R.string.perm_notification_title), android.widget.Toast.LENGTH_SHORT).show()
-                }
-                viewModel.logCriticalAction("PERMISSION_CHANGED", "Sistem İzinleri", "Bildirim izni: " + if (n) "VERİLDİ" else "ALINDI")
-                isNotificationsEnabled = n
-            }
-            kotlinx.coroutines.delay(1000)
-        }
-    }
-
     val hasAllPermissions = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted
 
     LaunchedEffect(hasAllPermissions) {
