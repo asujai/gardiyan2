@@ -656,8 +656,8 @@ private fun HoldToDeleteButton(
                             isHolding = true
                             progress = 0f
                             onHoldStarted()
-                            val steps = 50
-                            val stepDelay = 5000L / steps
+                            val steps = 3000
+                            val stepDelay = 300000L / steps
                             val timerJob = coroutineScope.launch {
                                 for (i in 1..steps) {
                                     delay(stepDelay)
@@ -697,7 +697,7 @@ private fun HoldToDeleteButton(
                 Text(
                     text = when {
                         completed -> stringResource(R.string.protected_apps_removed)
-                        isHolding -> stringResource(R.string.protected_apps_dont_release, (progress * 5).toInt() + 1)
+                        isHolding -> stringResource(R.string.protected_apps_dont_release, 300 - (progress * 300).toInt())
                         else -> stringResource(R.string.protected_apps_remove_btn)
                     },
                     fontSize = 11.sp,

@@ -52,7 +52,7 @@
     <string name="duration_saved_mins">%1$ddk kazanıldı</string>
     <string name="hold_to_cancel_shields_down">Korumalar devre dışı bırakıldı.</string>
     <string name="hold_to_cancel_title">GÜVENLİK İPTALİ</string>
-    <string name="hold_to_cancel_instruction">Tüm kısıtlamaları kaldırmak için butona 5 saniye basılı tutun.</string>
+    <string name="hold_to_cancel_instruction">Tüm kısıtlamaları kaldırmak için butona 5 dakika basılı tutun.</string>
     <string name="hold_to_cancel_penalty">Ceza olarak level düşülecek ve kırmızı rozet uygulanacaktır.</string>
     <string name="protected_apps_title">Kısıtlama Yönetimi</string>
     <string name="protected_apps_desc">Süre sınırı koyduğunuz uygulamaları takip edin.</string>
@@ -70,10 +70,10 @@
     <string name="protected_apps_save_success">Değişiklikler başarıyla kaydedildi.</string>
     <string name="protected_apps_save_btn">DEĞİŞİKLİKLERİ KAYDET</string>
     <string name="protected_apps_settings">KORUMA AYARI</string>
-    <string name="protected_apps_remove_btn">KISITLAMAYI KALDIR (5sn BASILI TUT)</string>
+    <string name="protected_apps_remove_btn">KISITLAMAYI KALDIR (5dk BASILI TUT)</string>
     <string name="protected_apps_removed">✓ KALDIRILDI</string>
     <string name="protected_apps_dont_release">BIRAKMAYIN · %1$ds</string>
-    <string name="protected_apps_remove_instruction">Bu uygulamanın kısıtlamasını kaldırmak için butona 5 saniye basılı tutun.</string>
+    <string name="protected_apps_remove_instruction">Bu uygulamanın kısıtlamasını kaldırmak için butona 5 dakika basılı tutun.</string>
     <string name="setup_target_test_10s">Test (10sn)</string>
     <string name="setup_target_15m">15 Dk</string>
     <string name="setup_target_30m">30 Dk</string>
@@ -87,6 +87,7 @@
     <string name="setup_target_days">KORUMA GÜNLERİ</string>
     <string name="setup_target_error_no_app">Önce en az bir uygulama seçin</string>
     <string name="setup_target_error_no_day">Lütfen en az bir gün seçin</string>
+    <string name="setup_target_error_zero_duration">Lütfen 0 dakikadan büyük bir limit seçin</string>
     <string name="setup_target_toast_test_start">%1$d uygulama için hızlı test başlatıldı!</string>
     <string name="setup_target_toast_added">%1$d uygulama kısıtlamalara eklendi</string>
     <string name="setup_target_btn_test">HIZLI TESTİ BAŞLAT (10sn)</string>
@@ -188,7 +189,7 @@
     <string name="log_desc_restriction_deleted">%1$s kısıtlaması tamamen silindi.</string>
     <string name="log_desc_test_started">%1$s için hızlı koruma testi başlatıldı.</string>
     <string name="log_desc_counter_reset">%1$s için günlük sayaç sıfırlandı.</string>
-    <string name="log_desc_all_cleared">5 saniye basılı tutularak tüm kısıtlamalar kaldırıldı.</string>
+    <string name="log_desc_all_cleared">5 dakika basılı tutularak tüm kısıtlamalar kaldırıldı.</string>
     <string name="log_desc_violation">%1$s kısıtlama limiti aşıldığı için kilit ekranı açıldı.</string>
     <string name="log_desc_day_success">Bugünün hedefi başarıyla tamamlandı. Rütbeniz korundu!</string>
     <string name="log_desc_limit_changed">%1$s günlük limiti güncellendi.</string>

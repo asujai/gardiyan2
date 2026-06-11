@@ -52,7 +52,7 @@
     <string name="duration_saved_mins">تم كسب %1$d دقيقة</string>
     <string name="hold_to_cancel_shields_down">تم إيقاف الحماية.</string>
     <string name="hold_to_cancel_title">تجاوز الأمان</string>
-    <string name="hold_to_cancel_instruction">اضغط مع الاستمرار على الزر لمدة 5 ثوانٍ لإزالة جميع القيود.</string>
+    <string name="hold_to_cancel_instruction">اضغط مع الاستمرار على الزر لمدة 5 دقائق لإزالة جميع القيود.</string>
     <string name="hold_to_cancel_penalty">كعقوبة، سيتم خفض مستواك وتطبيق الشارة الحمراء.</string>
     <string name="protected_apps_title">تتبع القيود</string>
     <string name="protected_apps_desc">تتبع التطبيقات التي وضعت لها حدودًا زمنية.</string>
@@ -70,10 +70,10 @@
     <string name="protected_apps_save_success">تم حفظ التغييرات بنجاح.</string>
     <string name="protected_apps_save_btn">حفظ التغييرات</string>
     <string name="protected_apps_settings">إعدادات الحماية</string>
-    <string name="protected_apps_remove_btn">إزالة القيد (استمرار 5 ثوانٍ)</string>
+    <string name="protected_apps_remove_btn">إزالة القيد (استمرار 5 دقائق)</string>
     <string name="protected_apps_removed">✓ تم الحذف</string>
     <string name="protected_apps_dont_release">لا تفلت الزر · %1$d ثانية</string>
-    <string name="protected_apps_remove_instruction">اضغط مع الاستمرار على الزر لمدة 5 ثوانٍ لإزالة قيود هذا التطبيق.</string>
+    <string name="protected_apps_remove_instruction">اضغط مع الاستمرار على الزر لمدة 5 دقائق لإزالة قيود هذا التطبيق.</string>
     <string name="setup_target_test_10s">اختبار (10 ثوانٍ)</string>
     <string name="setup_target_15m">15 دقيقة</string>
     <string name="setup_target_30m">30 دقيقة</string>
@@ -186,7 +186,7 @@
     <string name="log_desc_restriction_deleted">تم حذف قيد %1$s بالكامل.</string>
     <string name="log_desc_test_started">بدأ اختبار الحماية السريع لـ %1$s.</string>
     <string name="log_desc_counter_reset">تم إعادة تعيين العداد اليومي لـ %1$s.</string>
-    <string name="log_desc_all_cleared">تمت إزالة جميع القيود بالضغط مع الاستمرار لمدة 5 ثوانٍ.</string>
+    <string name="log_desc_all_cleared">تمت إزالة جميع القيود بالضغط مع الاستمرار لمدة 5 دقائق.</string>
     <string name="log_desc_violation">تم فتح شاشة القفل بسبب تجاوز حد القيد لـ %1$s.</string>
     <string name="log_desc_day_success">اكتمل هدف اليوم بنجاح. تم الحفاظ على رتبتك!</string>
     <string name="log_desc_limit_changed">تم تحديث الحد اليومي لـ %1$s.</string>

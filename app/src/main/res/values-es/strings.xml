@@ -52,7 +52,7 @@
     <string name="duration_saved_mins">%1$dm ganados</string>
     <string name="hold_to_cancel_shields_down">Protecciones desactivadas.</string>
     <string name="hold_to_cancel_title">EVASIÓN DE SEGURIDAD</string>
-    <string name="hold_to_cancel_instruction">Mantenga presionado el botón durante 5 segundos para eliminar todas las restricciones.</string>
+    <string name="hold_to_cancel_instruction">Mantenga presionado el botón durante 5 minutos para eliminar todas las restricciones.</string>
     <string name="hold_to_cancel_penalty">Como penalización, se bajará de nivel y se aplicará una insignia roja.</string>
     <string name="protected_apps_title">Control de Límites</string>
     <string name="protected_apps_desc">Realice un seguimiento de las aplicaciones para las que ha establecido límites de tiempo.</string>
@@ -70,10 +70,10 @@
     <string name="protected_apps_save_success">Cambios guardados con éxito.</string>
     <string name="protected_apps_save_btn">GUARDAR CAMBIOS</string>
     <string name="protected_apps_settings">CONFIGURACIÓN DE PROTECCIÓN</string>
-    <string name="protected_apps_remove_btn">ELIMINAR RESTRICCIÓN (MANTENER 5s)</string>
+    <string name="protected_apps_remove_btn">ELIMINAR RESTRICCIÓN (MANTENER 5m)</string>
     <string name="protected_apps_removed">✓ ELIMINADO</string>
     <string name="protected_apps_dont_release">NO SUELTE · %1$ds</string>
-    <string name="protected_apps_remove_instruction">Mantenga presionado el botón durante 5 segundos para eliminar la restricción de esta aplicación.</string>
+    <string name="protected_apps_remove_instruction">Mantenga presionado el botón durante 5 minutos para eliminar la restricción de esta aplicación.</string>
     <string name="setup_target_test_10s">Prueba (10s)</string>
     <string name="setup_target_15m">15 Min</string>
     <string name="setup_target_30m">30 Min</string>
@@ -186,7 +186,7 @@
     <string name="log_desc_restriction_deleted">Se eliminó por completo la restricción de %1$s.</string>
     <string name="log_desc_test_started">Se inició la prueba de protección rápida para %1$s.</string>
     <string name="log_desc_counter_reset">Restablecimiento del contador diario para %1$s.</string>
-    <string name="log_desc_all_cleared">Todas las restricciones se eliminaron manteniendo presionado durante 5 segundos.</string>
+    <string name="log_desc_all_cleared">Todas las restricciones se eliminaron manteniendo presionado durante 5 minutos.</string>
     <string name="log_desc_violation">La pantalla de bloqueo se abrió porque se superó el límite de restricción de %1$s.</string>
     <string name="log_desc_day_success">El objetivo de hoy se completó con éxito. ¡Se conserva tu rango!</string>
     <string name="log_desc_limit_changed">Se actualizó el límite diario de %1$s.</string>

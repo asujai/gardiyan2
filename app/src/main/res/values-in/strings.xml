@@ -52,7 +52,7 @@
     <string name="duration_saved_mins">%1$dmenit dihemat</string>
     <string name="hold_to_cancel_shields_down">Perlindungan dinonaktifkan.</string>
     <string name="hold_to_cancel_title">PINTASAN KEAMANAN</string>
-    <string name="hold_to_cancel_instruction">Tahan tombol selama 5 detik untuk menghapus semua batasan.</string>
+    <string name="hold_to_cancel_instruction">Tahan tombol selama 5 menit untuk menghapus semua batasan.</string>
     <string name="hold_to_cancel_penalty">Sebagai hukuman, level akan diturunkan dan lencana merah akan diterapkan.</string>
     <string name="protected_apps_title">Pelacak Batas</string>
     <string name="protected_apps_desc">Lacak aplikasi yang telah Anda tetapkan batas waktunya.</string>
@@ -70,10 +70,10 @@
     <string name="protected_apps_save_success">Perubahan berhasil disimpan.</string>
     <string name="protected_apps_save_btn">SIMPAN PERUBAHAN</string>
     <string name="protected_apps_settings">PENGATURAN PERLINDUNGAN</string>
-    <string name="protected_apps_remove_btn">HAPUS BATASAN (TAHAN 5s)</string>
+    <string name="protected_apps_remove_btn">HAPUS BATASAN (TAHAN 5m)</string>
     <string name="protected_apps_removed">✓ DIHAPUS</string>
     <string name="protected_apps_dont_release">JANGAN LEPAS · %1$ds</string>
-    <string name="protected_apps_remove_instruction">Tahan tombol selama 5 detik untuk menghapus batasan aplikasi ini.</string>
+    <string name="protected_apps_remove_instruction">Tahan tombol selama 5 menit untuk menghapus batasan aplikasi ini.</string>
     <string name="setup_target_test_10s">Uji (10s)</string>
     <string name="setup_target_15m">15 Menit</string>
     <string name="setup_target_30m">30 Menit</string>
@@ -186,7 +186,7 @@
     <string name="log_desc_restriction_deleted">Batasan %1$s telah dihapus sepenuhnya.</string>
     <string name="log_desc_test_started">Uji perlindungan cepat dimulai untuk %1$s.</string>
     <string name="log_desc_counter_reset">Reset penghitung harian untuk %1$s.</string>
-    <string name="log_desc_all_cleared">Semua batasan dihapus dengan menahan selama 5 detik.</string>
+    <string name="log_desc_all_cleared">Semua batasan dihapus dengan menahan selama 5 menit.</string>
     <string name="log_desc_violation">Layar kunci dibuka karena batas batasan %1$s terlampaui.</string>
     <string name="log_desc_day_success">Target hari ini berhasil diselesaikan. Pangkat Anda dipertahankan!</string>
     <string name="log_desc_limit_changed">Batas harian %1$s diperbarui.</string>

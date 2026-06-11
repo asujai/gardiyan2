@@ -54,7 +54,7 @@
     <string name="duration_saved_mins">ประหยัดได้ %1$d นาที</string>
     <string name="hold_to_cancel_shields_down">ปิดการใช้งานการป้องกันแล้ว</string>
     <string name="hold_to_cancel_title">เลี่ยงระบบความปลอดภัย</string>
-    <string name="hold_to_cancel_instruction">กดปุ่มค้างไว้ 5 วินาทีเพื่อนำการจำกัดทั้งหมดออก</string>
+    <string name="hold_to_cancel_instruction">กดปุ่มค้างไว้ 5 นาทีเพื่อนำการจำกัดทั้งหมดออก</string>
     <string name="hold_to_cancel_penalty">บทลงโทษ: ระดับของคุณจะลดลงและถูกติดป้ายกำกับสีแดง</string>
     <string name="protected_apps_title">ติดตามขีดจำกัด</string>
     <string name="protected_apps_desc">ติดตามแอปที่คุณตั้งขีดจำกัดเวลาไว้</string>
@@ -72,10 +72,10 @@
     <string name="protected_apps_save_success">บันทึกการเปลี่ยนแปลงสำเร็จแล้ว</string>
     <string name="protected_apps_save_btn">บันทึกการเปลี่ยนแปลง</string>
     <string name="protected_apps_settings">การตั้งค่าการป้องกัน</string>
-    <string name="protected_apps_remove_btn">นำการจำกัดออก (กดค้าง 5 วินาที)</string>
+    <string name="protected_apps_remove_btn">นำการจำกัดออก (กดค้าง 5 นาที)</string>
     <string name="protected_apps_removed">✓ นำออกแล้ว</string>
     <string name="protected_apps_dont_release">อย่าปล่อยปุ่ม · %1$d วินาที</string>
-    <string name="protected_apps_remove_instruction">กดปุ่มค้างไว้ 5 วินาทีเพื่อนำการจำกัดของแอปนี้ออก</string>
+    <string name="protected_apps_remove_instruction">กดปุ่มค้างไว้ 5 นาทีเพื่อนำการจำกัดของแอปนี้ออก</string>
     <string name="setup_target_test_10s">ทดสอบ (10 วินาที)</string>
     <string name="setup_target_15m">15 นาที</string>
     <string name="setup_target_30m">30 นาที</string>

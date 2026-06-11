@@ -52,7 +52,7 @@
     <string name="duration_saved_mins">%1$d Min. gewonnen</string>
     <string name="hold_to_cancel_shields_down">Schutzmaßnahmen deaktiviert.</string>
     <string name="hold_to_cancel_title">SICHERHEITSUMGEHUNG</string>
-    <string name="hold_to_cancel_instruction">Halten Sie die Taste 5 Sekunden lang gedrückt, um alle Einschränkungen zu entfernen.</string>
+    <string name="hold_to_cancel_instruction">Halten Sie die Taste 5 Minuten lang gedrückt, um alle Einschränkungen zu entfernen.</string>
     <string name="hold_to_cancel_penalty">Als Strafe wird die Stufe herabgestuft und das rote Abzeichen angewendet.</string>
     <string name="protected_apps_title">Limit-Verfolgung</string>
     <string name="protected_apps_desc">Verfolgen Sie die Apps, für die Sie Zeitlimits festgelegt haben.</string>
@@ -70,10 +70,10 @@
     <string name="protected_apps_save_success">Änderungen erfolgreich gespeichert.</string>
     <string name="protected_apps_save_btn">ÄNDERUNGEN SPEICHERN</string>
     <string name="protected_apps_settings">SCHUTZEINSTELLUNGEN</string>
-    <string name="protected_apps_remove_btn">EINSCHRÄNKUNG ENTFERNEN (5s HALTEN)</string>
+    <string name="protected_apps_remove_btn">EINSCHRÄNKUNG ENTFERNEN (5 MINUTEN HALTEN)</string>
     <string name="protected_apps_removed">✓ ENTFERNT</string>
     <string name="protected_apps_dont_release">NICHT LOSLASSEN · %1$ds</string>
-    <string name="protected_apps_remove_instruction">Halten Sie die Taste 5 Sekunden lang gedrückt, um die Einschränkung dieser App zu entfernen.</string>
+    <string name="protected_apps_remove_instruction">Halten Sie die Taste 5 Minuten lang gedrückt, um die Einschränkung dieser App zu entfernen.</string>
     <string name="setup_target_test_10s">Test (10s)</string>
     <string name="setup_target_15m">15 Min.</string>
     <string name="setup_target_30m">30 Min.</string>
@@ -186,7 +186,7 @@
     <string name="log_desc_restriction_deleted">%1$s Einschränkung wurde vollständig gelöscht.</string>
     <string name="log_desc_test_started">Schneller Schutztest für %1$s gestartet.</string>
     <string name="log_desc_counter_reset">Täglicher Zähler für %1$s zurückgesetzt.</string>
-    <string name="log_desc_all_cleared">Alle Einschränkungen durch 5 Sekunden langes Halten entfernt.</string>
+    <string name="log_desc_all_cleared">Alle Einschränkungen durch 5 Minuten langes Halten entfernt.</string>
     <string name="log_desc_violation">Sperrbildschirm geöffnet, da das Limit für %1$s überschritten wurde.</string>
     <string name="log_desc_day_success">Das heutige Ziel wurde erfolgreich abgeschlossen. Dein Rang bleibt erhalten!</string>
     <string name="log_desc_limit_changed">Tägliches Limit für %1$s wurde aktualisiert.</string>

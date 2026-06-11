@@ -54,7 +54,7 @@
     <string name="duration_saved_mins">%1$dm gained</string>
     <string name="hold_to_cancel_shields_down">Protections disabled.</string>
     <string name="hold_to_cancel_title">SECURITY BYPASS</string>
-    <string name="hold_to_cancel_instruction">Hold button for 5 seconds to remove all restrictions.</string>
+    <string name="hold_to_cancel_instruction">Hold button for 5 minutes to remove all restrictions.</string>
     <string name="hold_to_cancel_penalty">As a penalty, level will be downgraded and red badge applied.</string>
     <string name="protected_apps_title">Limit Trackers</string>
     <string name="protected_apps_desc">Track the apps you have set time limits for.</string>
@@ -72,10 +72,10 @@
     <string name="protected_apps_save_success">Changes saved successfully.</string>
     <string name="protected_apps_save_btn">SAVE CHANGES</string>
     <string name="protected_apps_settings">PROTECTION SETTINGS</string>
-    <string name="protected_apps_remove_btn">REMOVE RESTRICTION (HOLD 5s)</string>
+    <string name="protected_apps_remove_btn">REMOVE RESTRICTION (HOLD 5m)</string>
     <string name="protected_apps_removed">✓ REMOVED</string>
     <string name="protected_apps_dont_release">DONT RELEASE · %1$ds</string>
-    <string name="protected_apps_remove_instruction">Hold button for 5 seconds to remove this app\'s restriction.</string>
+    <string name="protected_apps_remove_instruction">Hold button for 5 minutes to remove this app\'s restriction.</string>
     <string name="setup_target_test_10s">Test (10s)</string>
     <string name="setup_target_15m">15 Min</string>
     <string name="setup_target_30m">30 Min</string>
@@ -89,6 +89,7 @@
     <string name="setup_target_days">PROTECTION DAYS</string>
     <string name="setup_target_error_no_app">Select at least one app first</string>
     <string name="setup_target_error_no_day">Please select at least one day</string>
+    <string name="setup_target_error_zero_duration">Please select a limit greater than 0 minutes</string>
     <string name="setup_target_toast_test_start">Quick test started for %1$d apps!</string>
     <string name="setup_target_toast_added">%1$d apps added to restrictions</string>
     <string name="setup_target_btn_test">START QUICK TEST (10s)</string>
@@ -190,7 +191,7 @@
     <string name="log_desc_restriction_deleted">%1$s restriction was completely deleted.</string>
     <string name="log_desc_test_started">Quick protection test started for %1$s.</string>
     <string name="log_desc_counter_reset">Daily counter reset for %1$s.</string>
-    <string name="log_desc_all_cleared">All restrictions removed by holding for 5 seconds.</string>
+    <string name="log_desc_all_cleared">All restrictions removed by holding for 5 minutes.</string>
     <string name="log_desc_violation">Lock screen opened because %1$s restriction limit was exceeded.</string>
     <string name="log_desc_day_success">Today\'s goal completed successfully. Your rank is preserved!</string>
     <string name="log_desc_limit_changed">%1$s daily limit was updated.</string>

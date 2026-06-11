@@ -52,7 +52,7 @@
     <string name="duration_saved_mins">Сохранено %1$d мин.</string>
     <string name="hold_to_cancel_shields_down">Защита отключена.</string>
     <string name="hold_to_cancel_title">ОБХОД БЕЗОПАСНОСТИ</string>
-    <string name="hold_to_cancel_instruction">Удерживайте кнопку в течение 5 секунд, чтобы снять все ограничения.</string>
+    <string name="hold_to_cancel_instruction">Удерживайте кнопку в течение 5 минут, чтобы снять все ограничения.</string>
     <string name="hold_to_cancel_penalty">В качестве наказания уровень будет понижен и будет наложен красный значок.</string>
     <string name="protected_apps_title">Контроль Лимитов</string>
     <string name="protected_apps_desc">Отслеживайте приложения, для которых вы установили ограничения по времени.</string>
@@ -70,10 +70,10 @@
     <string name="protected_apps_save_success">Изменения успешно сохранены.</string>
     <string name="protected_apps_save_btn">СОХРАНИТЬ ИЗМЕНЕНИЯ</string>
     <string name="protected_apps_settings">НАСТРОЙКИ ЗАЩИТЫ</string>
-    <string name="protected_apps_remove_btn">СНЯТЬ ОГРАНИЧЕНИЕ (УДЕРЖ. 5с)</string>
+    <string name="protected_apps_remove_btn">СНЯТЬ ОГРАНИЧЕНИЕ (УДЕРЖ. 5 мин)</string>
     <string name="protected_apps_removed">✓ СНЯТО</string>
     <string name="protected_apps_dont_release">НЕ ОТПУСКАЙТЕ · %1$d с</string>
-    <string name="protected_apps_remove_instruction">Удерживайте кнопку в течение 5 секунд, чтобы снять ограничение с этого приложения.</string>
+    <string name="protected_apps_remove_instruction">Удерживайте кнопку в течение 5 минут, чтобы снять ограничение с этого приложения.</string>
     <string name="setup_target_test_10s">Тест (10с)</string>
     <string name="setup_target_15m">15 Мин</string>
     <string name="setup_target_30m">30 Мин</string>

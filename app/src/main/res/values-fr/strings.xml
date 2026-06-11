@@ -52,7 +52,7 @@
     <string name="duration_saved_mins">%1$dm gagnés</string>
     <string name="hold_to_cancel_shields_down">Protections désactivées.</string>
     <string name="hold_to_cancel_title">CONTOURNEMENT DE SÉCURITÉ</string>
-    <string name="hold_to_cancel_instruction">Maintenez le bouton enfoncé pendant 5 secondes pour supprimer toutes les restrictions.</string>
+    <string name="hold_to_cancel_instruction">Maintenez le bouton enfoncé pendant 5 minutes pour supprimer toutes les restrictions.</string>
     <string name="hold_to_cancel_penalty">En guise de pénalité, le niveau sera rétrogradé et le bouclier rouge sera appliqué.</string>
     <string name="protected_apps_title">Suivi des Limites</string>
     <string name="protected_apps_desc">Suivez les applications pour lesquelles vous avez défini des limites de temps.</string>
@@ -70,10 +70,10 @@
     <string name="protected_apps_save_success">Modifications enregistrées avec succès.</string>
     <string name="protected_apps_save_btn">ENREGISTRER LES MODIFICATIONS</string>
     <string name="protected_apps_settings">PARAMÈTRES DE PROTECTION</string>
-    <string name="protected_apps_remove_btn">SUPPRIMER LA RESTRICTION (MAINTENIR 5s)</string>
+    <string name="protected_apps_remove_btn">SUPPRIMER LA RESTRICTION (MAINTENIR 5m)</string>
     <string name="protected_apps_removed">✓ SUPPRIMÉE</string>
     <string name="protected_apps_dont_release">NE RELÂCHEZ PAS · %1$ds</string>
-    <string name="protected_apps_remove_instruction">Maintenez le bouton enfoncé pendant 5 secondes pour supprimer la restriction de cette application.</string>
+    <string name="protected_apps_remove_instruction">Maintenez le bouton enfoncé pendant 5 minutes pour supprimer la restriction de cette application.</string>
     <string name="setup_target_test_10s">Test (10s)</string>
     <string name="setup_target_15m">15 Min</string>
     <string name="setup_target_30m">30 Min</string>
@@ -186,7 +186,7 @@
     <string name="log_desc_restriction_deleted">La restriction pour %1$s a été complètement supprimée.</string>
     <string name="log_desc_test_started">Test rapide de protection démarré pour %1$s.</string>
     <string name="log_desc_counter_reset">Réinitialisation du compteur quotidien pour %1$s.</string>
-    <string name="log_desc_all_cleared">Toutes les restrictions ont été supprimées en maintenant enfoncé pendant 5 secondes.</string>
+    <string name="log_desc_all_cleared">Toutes les restrictions ont été supprimées en maintenant enfoncé pendant 5 minutes.</string>
     <string name="log_desc_violation">L\'écran de verrouillage a été ouvert car la limite de restriction pour %1$s a été dépassée.</string>
     <string name="log_desc_day_success">L\'objectif d\'aujourd\'hui a été atteint avec succès. Votre rang est préservé !</string>
     <string name="log_desc_limit_changed">La limite quotidienne pour %1$s a été mise à jour.</string>

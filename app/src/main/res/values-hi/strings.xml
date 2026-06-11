@@ -52,7 +52,7 @@
     <string name="duration_saved_mins">%1$d मिनट बचाए गए</string>
     <string name="hold_to_cancel_shields_down">सुरक्षा निष्क्रिय की गई।</string>
     <string name="hold_to_cancel_title">सुरक्षा बायपास</string>
-    <string name="hold_to_cancel_instruction">सभी प्रतिबंधों को हटाने के लिए बटन को 5 सेकंड तक दबाकर रखें।</string>
+    <string name="hold_to_cancel_instruction">सभी प्रतिबंधों को हटाने के लिए बटन को 5 मिनट तक दबाकर रखें।</string>
     <string name="hold_to_cancel_penalty">दंड के रूप में, स्तर को कम कर दिया जाएगा और लाल बैज लागू किया जाएगा।</string>
     <string name="protected_apps_title">सीमा ट्रैकर</string>
     <string name="protected_apps_desc">उन ऐप्स को ट्रैक करें जिनके लिए आपने समय सीमा निर्धारित की है।</string>
@@ -70,10 +70,10 @@
     <string name="protected_apps_save_success">परिवर्तन सफलतापूर्वक सहेजे गए।</string>
     <string name="protected_apps_save_btn">परिवर्तन सहेजें</string>
     <string name="protected_apps_settings">सुरक्षा सेटिंग्स</string>
-    <string name="protected_apps_remove_btn">प्रतिबंध हटाएं (5 सेकंड दबाए रखें)</string>
+    <string name="protected_apps_remove_btn">प्रतिबंध हटाएं (5 मिनट दबाए रखें)</string>
     <string name="protected_apps_removed">✓ हटाया गया</string>
     <string name="protected_apps_dont_release">छोड़ें नहीं · %1$ds</string>
-    <string name="protected_apps_remove_instruction">इस ऐप के प्रतिबंध को हटाने के लिए बटन को 5 सेकंड तक दबाकर रखें।</string>
+    <string name="protected_apps_remove_instruction">इस ऐप के प्रतिबंध को हटाने के लिए बटन को 5 मिनट तक दबाकर रखें।</string>
     <string name="setup_target_test_10s">परीक्षण (10s)</string>
     <string name="setup_target_15m">15 मिनट</string>
     <string name="setup_target_30m">30 मिनट</string>

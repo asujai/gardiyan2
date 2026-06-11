@@ -83,13 +83,7 @@ fun SetupTargetScreen(
     }
 
     val presetChoices = remember(context) {
-        if (com.gardiyan.app.BuildConfig.DEBUG) {
-            listOf(
-                Pair(context.getString(R.string.setup_target_test_10s), 0)
-            )
-        } else {
-            emptyList()
-        }
+        emptyList<Pair<String, Int>>()
     }
 
     val currentTotalMinutes = selectedHours * 60 + selectedMinutes
@@ -474,29 +468,21 @@ fun SetupTargetScreen(
                                 Toast.makeText(context, context.getString(R.string.setup_target_error_no_day), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
-                            val daysStr = selectedDays.joinToString(",")
-                            if (currentTotalMinutes == 0) {
-                                selectedApps.forEach { app ->
-                                    viewModel.startQuickTest(context, app.second, app.first, testSeconds = 10, activeDays = daysStr)
-                                }
-                                Toast.makeText(
-                                    context,
-                                    context.getString(R.string.setup_target_toast_test_start, selectedApps.size),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                onCompleted()
-                            } else {
-                                selectedApps.forEach { app ->
-                                    viewModel.addRestrictedApp(app.second, app.first, currentTotalMinutes, activeDays = daysStr)
-                                }
-                                Toast.makeText(
-                                    context,
-                                    context.getString(R.string.setup_target_toast_added, selectedApps.size),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                selectedApps = emptySet()
-                                onCompleted()
+                            if (currentTotalMinutes <= 0) {
+                                Toast.makeText(context, context.getString(R.string.setup_target_error_zero_duration), Toast.LENGTH_SHORT).show()
+                                return@Button
                             }
+                            val daysStr = selectedDays.joinToString(",")
+                            selectedApps.forEach { app ->
+                                viewModel.addRestrictedApp(app.second, app.first, currentTotalMinutes, activeDays = daysStr)
+                            }
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.setup_target_toast_added, selectedApps.size),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            selectedApps = emptySet()
+                            onCompleted()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack),
                         shape = RoundedCornerShape(16.dp),
@@ -507,7 +493,7 @@ fun SetupTargetScreen(
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (currentTotalMinutes == 0) stringResource(R.string.setup_target_btn_test) else stringResource(R.string.setup_target_btn_activate),
+                            text = stringResource(R.string.setup_target_btn_activate),
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
                             letterSpacing = 0.5.sp

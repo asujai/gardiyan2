@@ -28,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private const val CANCEL_HOLD_DURATION_MS = 5000L
+private const val CANCEL_HOLD_DURATION_MS = 300000L
 
 @Composable
 fun FiveSecondHoldCancelButton(
@@ -113,7 +113,7 @@ fun FiveSecondHoldCancelButton(
                             awaitFirstDown(requireUnconsumed = false)
                             isHolding = true
                             progress = 0f
-                            val steps = 50
+                            val steps = 3000
                             val stepDelay = CANCEL_HOLD_DURATION_MS / steps
                             val timerJob = coroutineScope.launch {
                                 for (i in 1..steps) {
@@ -155,7 +155,7 @@ fun FiveSecondHoldCancelButton(
                 Text(
                     text = when {
                         completed -> stringResource(R.string.protected_apps_removed)
-                        isHolding -> stringResource(R.string.protected_apps_dont_release, 5 - (progress * 5).toInt())
+                        isHolding -> stringResource(R.string.protected_apps_dont_release, 300 - (progress * 300).toInt())
                         else -> stringResource(R.string.protected_apps_remove_btn)
                     },
                     fontSize = 12.sp,
