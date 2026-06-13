@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.PowerManager
+import android.os.SystemClock
 import android.app.KeyguardManager
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
@@ -56,12 +57,21 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
         private const val NORMAL_POLL_INTERVAL_MS = 2500L
         private const val SUSPICIOUS_POLL_INTERVAL_MS = 250L
+        private const val HEALTH_GRACE_MS = 15_000L
 
         @Volatile
         var instance: AppBlockAccessibilityService? = null
 
         @Volatile
         var isRunning: Boolean = false
+
+        @Volatile
+        private var lastHeartbeatElapsedRealtime: Long = 0L
+
+        fun isHealthy(): Boolean {
+            val heartbeatAge = SystemClock.elapsedRealtime() - lastHeartbeatElapsedRealtime
+            return lastHeartbeatElapsedRealtime > 0L && heartbeatAge in 0L..HEALTH_GRACE_MS
+        }
 
         // Şu anda izlenen hedef uygulamaya GİRİŞ zamanı (epoch ms).
         // Kullanıcı kısıtlı uygulamayı açtığı an kaydedilir, çıktığı an sıfırlanır.
@@ -121,6 +131,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         instance = this
         isRunning = true
+        lastHeartbeatElapsedRealtime = SystemClock.elapsedRealtime()
         Log.i(TAG, "Accessibility service connected")
 
         val db = GuardianDatabase.getDatabase(applicationContext)
@@ -204,6 +215,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         isRunning = false
         instance = null
+        lastHeartbeatElapsedRealtime = 0L
         tickJob?.cancel()
         tickJob = null
         usageStatsPollingJob?.cancel()
@@ -233,39 +245,43 @@ class AppBlockAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event == null) return
-        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        try {
+            if (event == null) return
+            if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
-        val foregroundPackage = event.packageName?.toString() ?: return
+            val foregroundPackage = event.packageName?.toString() ?: return
 
-        if (com.gardiyan.app.BuildConfig.DEBUG) {
-            Log.d(TAG, "onAccessibilityEvent: foregroundPackage=$foregroundPackage, className=${event.className}")
+            if (com.gardiyan.app.BuildConfig.DEBUG) {
+                Log.d(TAG, "onAccessibilityEvent: foregroundPackage=$foregroundPackage, className=${event.className}")
+            }
+
+            if (
+                foregroundPackage == packageName &&
+                event.className?.toString() == MainActivity::class.java.name
+            ) {
+                handleLimitraForeground()
+                return
+            }
+
+            // Kilit ekranı aktifken kendi paketimizden gelen pencere odak olaylarını tamamen yoksay
+            if (foregroundPackage == packageName && BlockOverlayService.isLockOverlayVisible.get()) {
+                Log.d(TAG, "Ignoring own package event because overlay is visible")
+                return
+            }
+
+            val now = System.currentTimeMillis()
+            if (foregroundPackage == packageName && now < ignoreOwnPackageEventsUntil) {
+                Log.d(TAG, "Ignoring transient self foreground event from lock overlay")
+                return
+            }
+            lastAccessibilityForegroundAt = now
+            // A11y pencere değişim olayı geldiğinde geçici olarak hızlı polling'i tetikle
+            fastPollTicksLeft = 12 // 3 saniye boyunca hızlı polling yap (12 * 250ms = 3000ms)
+
+            handleForegroundChange(foregroundPackage)
+        } catch (e: Exception) {
+            Log.e(TAG, "Unhandled accessibility event error", e)
         }
-
-        if (
-            foregroundPackage == packageName &&
-            event.className?.toString() == MainActivity::class.java.name
-        ) {
-            handleLimitraForeground()
-            return
-        }
-
-        // Kilit ekranı aktifken kendi paketimizden gelen pencere odak olaylarını tamamen yoksay
-        if (foregroundPackage == packageName && BlockOverlayService.isLockOverlayVisible.get()) {
-            Log.d(TAG, "Ignoring own package event because overlay is visible")
-            return
-        }
-
-        val now = System.currentTimeMillis()
-        if (foregroundPackage == packageName && now < ignoreOwnPackageEventsUntil) {
-            Log.d(TAG, "Ignoring transient self foreground event from lock overlay")
-            return
-        }
-        lastAccessibilityForegroundAt = now
-        // A11y pencere değişim olayı geldiğinde geçici olarak hızlı polling'i tetikle
-        fastPollTicksLeft = 12 // 3 saniye boyunca hızlı polling yap (12 * 250ms = 3000ms)
-
-        handleForegroundChange(foregroundPackage)
     }
 
     // ========================================================================
@@ -293,6 +309,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
             while (isActive) {
                 try {
+                    lastHeartbeatElapsedRealtime = SystemClock.elapsedRealtime()
                     val today = todayKey()
                     val evalPrefs = getSharedPreferences("gardiyan_eval_prefs", Context.MODE_PRIVATE)
                     val hasLoggedActiveToday = evalPrefs.getBoolean("logged_active_$today", false)
@@ -771,10 +788,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Limitra",
+                getString(R.string.app_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Uygulama kullanım sınırları ile ilgili uyarı bildirimleri"
+                description = getString(R.string.notification_channel_service_desc)
             }
             notificationManager.createNotificationChannel(channel)
         }

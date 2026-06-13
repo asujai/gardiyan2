@@ -2,51 +2,37 @@ version: "2"
 type: backend
 tech_stack:
   - Kotlin
-  - Jetpack Compose
   - Android SDK
+  - Jetpack Compose
   - Room Database
-  - SharedPreferences
   - WorkManager
 features:
-  - name: Restriction Management
-    description: Add, update and remove application restrictions and daily limits.
+  - name: Guardian Repository Management
+    description: Core repository handling protected daily counters, session creation, and streaking logic.
     files:
-      - app/src/main/java/com/gardiyan/app/viewmodel/GuardianViewModel.kt
-      - app/src/main/java/com/gardiyan/app/ui/screens/ProtectedAppsScreen.kt
+      - app/src/main/java/com/gardiyan/app/data/repository/GuardianRepository.kt
     endpoints:
-      - method: POST
-        path: /restrictions/add
-        description: Add a new application restriction
-        auth_required: false
-        response_schema:
-          "200": Success
-      - method: DELETE
-        path: /restrictions/remove
-        description: Remove an application restriction
-        auth_required: false
-        response_schema:
-          "200": Success
       - method: GET
-        path: /restrictions/list
-        description: Get list of active restricted apps
+        path: /repository/session
+        description: Fetch active user session information
         auth_required: false
         response_schema:
-          "200": Restriction[]
-  - name: Quote Management
-    description: Save, edit and delete custom motivational quotes.
+          "200": UserSessionEntity
+      - method: POST
+        path: /repository/reset
+        description: Secure daily counter reset
+        auth_required: false
+        response_schema:
+          "200": success
+  - name: Block Overlay Enforcement
+    description: Draw a window overlay on top of protected applications once daily limit is exceeded.
     files:
-      - app/src/main/java/com/gardiyan/app/ui/screens/SavedQuotesScreen.kt
+      - app/src/main/java/com/gardiyan/app/service/BlockOverlayService.kt
     endpoints:
       - method: POST
-        path: /quotes/add
-        description: Add a new custom quote
+        path: /service/overlay/show
+        description: Trigger lock screen overlay
         auth_required: false
         response_schema:
-          "200": Quote
-      - method: DELETE
-        path: /quotes/delete
-        description: Delete a custom quote
-        auth_required: false
-        response_schema:
-          "200": Success
+          "200": success
 known_limitations: []

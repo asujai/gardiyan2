@@ -29,6 +29,7 @@ import com.gardiyan.app.service.BlockOverlayService
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import com.gardiyan.app.viewmodel.GuardianViewModelFactory
+import kotlinx.coroutines.delay
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -134,6 +135,15 @@ fun MainNavigationContent(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(lifecycleOwner) {
+        while (true) {
+            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                isAccessibilityEnabled = viewModel.isAccessibilityServiceEnabled(context)
+            }
+            delay(2_000L)
         }
     }
 

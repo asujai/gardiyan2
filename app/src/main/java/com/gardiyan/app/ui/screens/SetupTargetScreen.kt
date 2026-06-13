@@ -112,7 +112,7 @@ fun SetupTargetScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.btn_close),
+                            contentDescription = stringResource(R.string.btn_back_desc),
                             tint = PureBlack,
                             modifier = Modifier.size(20.dp)
                         )

@@ -93,6 +93,7 @@ fun ModernRestrictionCard(
     app: RestrictedAppEntity,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val totalSecs = app.remainingSecondsToday.coerceAtLeast(0)
     val isLocked = totalSecs <= 0
 
@@ -151,7 +152,7 @@ fun ModernRestrictionCard(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = stringResource(R.string.protected_apps_daily_limit) + ": " + stringResource(R.string.protected_apps_minutes, app.dailyLimitMinutes),
+                            text = stringResource(R.string.protected_apps_daily_limit) + ": " + context.localizedMinutes(app.dailyLimitMinutes),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                             color = MutedGray
@@ -176,7 +177,11 @@ fun ModernRestrictionCard(
                             modifier = Modifier.size(12.dp)
                         )
                         Text(
-                            text = if (isLocked) "Süre Doldu" else if (app.isFailed) "Kilitlendi" else "Korunuyor",
+                            text = when {
+                                isLocked -> stringResource(R.string.protected_apps_limit_reached)
+                                app.isFailed -> stringResource(R.string.log_type_app_locked)
+                                else -> stringResource(R.string.status_protected)
+                            },
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = if (isLocked || app.isFailed) DangerRed else Color(0xFF34A853)

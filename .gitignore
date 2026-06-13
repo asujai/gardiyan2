@@ -38,3 +38,19 @@ app/build/
 build/
 
 testsprite_tests\tmp\config.json
+
+# Gemini ve Hassas Proje Dosyalari
+.gemini/
+app/google-services.json
+MainActivity_robo_script.json
+debug.keystore.base64
+/screenshot_v0.7.png
+/play_store_512.png
+/verify_pkg_*.png
+
+# TestSprite Gecici Dosyalari
+testsprite_tests/TC*.py
+testsprite_tests/testsprite-mcp-test-report.*
+testsprite_tests/tmp/
+testsprite_tests/raw_report.md
+

@@ -62,8 +62,9 @@ class UsageRankingVisualCheckTest {
             }
         }
 
+        composeTestRule.waitForIdle()
         composeTestRule.onRoot().captureRoboImage(
-            filePath = "build/outputs/usage-ranking-visual-check.png"
+            filePath = "src/test/screenshots/usage-ranking-visual-check.png"
         )
     }
 }

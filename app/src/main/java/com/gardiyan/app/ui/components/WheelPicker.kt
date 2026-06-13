@@ -1,5 +1,6 @@
 package com.gardiyan.app.ui.components
 
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gardiyan.app.ui.theme.BorderGray
 import com.gardiyan.app.ui.theme.PureBlack
+import com.gardiyan.app.R
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -111,8 +113,10 @@ fun DurationWheelPicker(
     onDurationChanged: (hours: Int, minutes: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val hoursList = remember { (0..23).map { "$it saat" } }
-    val minutesList = remember { (0..59).map { "$it dakika" } }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val language = androidx.compose.ui.platform.LocalConfiguration.current.locales[0].language
+    val hoursList = remember(language) { (0..23).map(context::localizedHours) }
+    val minutesList = remember(language) { (0..59).map(context::localizedMinutes) }
 
     var selectedHours by remember { mutableStateOf(initialHours.coerceIn(0, 23)) }
     var selectedMinutes by remember { mutableStateOf(initialMinutes.coerceIn(0, 59)) }
@@ -159,4 +163,18 @@ fun DurationWheelPicker(
                 .padding(horizontal = 16.dp)
         )
     }
+}
+
+fun Context.localizedHours(value: Int): String {
+    return getString(
+        if (value == 1) R.string.protected_apps_hour else R.string.protected_apps_hours,
+        value
+    )
+}
+
+fun Context.localizedMinutes(value: Int): String {
+    return getString(
+        if (value == 1) R.string.protected_apps_minute else R.string.protected_apps_minutes,
+        value
+    )
 }

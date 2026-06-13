@@ -149,7 +149,7 @@
             android:gravity="center"
             android:text="@string/overlay_return_to_home"
             android:textColor="#475569"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:letterSpacing="0.02" />
 
     </LinearLayout>

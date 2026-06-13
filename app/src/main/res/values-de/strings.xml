@@ -64,6 +64,8 @@
     <string name="protected_apps_discipline_process">Balance-Prozess</string>
     <string name="protected_apps_hours">%1$d Stunden</string>
     <string name="protected_apps_minutes">%1$d Minuten</string>
+    <string name="protected_apps_hour">%1$d Stunde</string>
+    <string name="protected_apps_minute">%1$d Minute</string>
     <string name="protected_apps_daily_limit">Tägliches Limit</string>
     <string name="protected_apps_active_days">Aktive Tage</string>
     <string name="protected_apps_limit_error">Sie können das tägliche Limit nicht über die aktuelle Dauer hinaus erhöhen.</string>
@@ -87,6 +89,7 @@
     <string name="setup_target_days">SCHUTZTAGE</string>
     <string name="setup_target_error_no_app">Wählen Sie zuerst mindestens eine App aus</string>
     <string name="setup_target_error_no_day">Bitte wählen Sie mindestens einen Tag aus</string>
+    <string name="setup_target_error_zero_duration">Bitte wählen Sie ein Limit von mehr als 0 Minuten</string>
     <string name="setup_target_toast_test_start">Schnelltest für %1$d Apps gestartet!</string>
     <string name="setup_target_toast_added">%1$d Apps zu Einschränkungen hinzugefügt</string>
     <string name="setup_target_btn_test">SCHNELLTEST STARTEN (10s)</string>
@@ -422,6 +425,7 @@
     <string name="discipline_detail_series_label">Serie %1$d</string>
 
     <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_title">Gespeicherte Zitate</string>
     <string name="saved_quotes_add_title">Neues Zitat hinzufügen</string>
     <string name="saved_quotes_edit_title">Zitat bearbeiten</string>
     <string name="saved_quotes_btn_add">HINZUFÜGEN</string>

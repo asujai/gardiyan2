@@ -39,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.ui.components.formatUsageDuration
+import com.gardiyan.app.ui.components.localizedMinutes
 import androidx.compose.runtime.produceState
 
 @Composable
@@ -404,7 +405,9 @@ fun ProfileScreen(
             title = { Text(stringResource(R.string.profile_active_apps_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
                 val appListStr = if (activeApps.isNotEmpty()) {
-                    activeApps.joinToString("\n") { "• ${it.appName} (${it.dailyLimitMinutes} dk)" }
+                    activeApps.joinToString("\n") {
+                        "• ${it.appName} (${context.localizedMinutes(it.dailyLimitMinutes)})"
+                    }
                 } else {
                     stringResource(R.string.profile_active_apps_dialog_empty)
                 }

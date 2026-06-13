@@ -42,11 +42,16 @@ fun DisciplineDetailScreen(
 ) {
     val logs by viewModel.allLogs.collectAsState()
     val restrictedApps by viewModel.restrictedApps.collectAsState()
+    val session by viewModel.userSession.collectAsState()
 
     // 1. Başlangıç tarihini (Day 1) bul
-    val startCalendar = remember(logs) {
+    val startCalendar = remember(logs, restrictedApps, session?.lastCheckedMillis) {
         val cal = Calendar.getInstance()
-        val minTimestamp = logs.minOfOrNull { it.timestamp }
+        val minTimestamp = buildList {
+            logs.minOfOrNull { it.timestamp }?.let(::add)
+            restrictedApps.minOfOrNull { it.createdAtMillis }?.let(::add)
+            session?.lastCheckedMillis?.takeIf { it > 0L }?.let(::add)
+        }.minOrNull()
         if (minTimestamp != null && minTimestamp < cal.timeInMillis) {
             cal.timeInMillis = minTimestamp
         }

@@ -1,18 +1,18 @@
 {
-  "status": "init",
+  "status": "commited",
   "type": "backend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:8080/",
+  "localEndpoint": "http://localhost:5173",
   "backendAuthType": "public",
   "executionArgs": {
     "projectName": "gardiyan2",
     "projectPath": "c:\\Users\\abdul\\gardiyan2",
     "testIds": [],
-    "additionalInstruction": "This is an Android Jetpack Compose app. Please run logic-based unit tests or backend logic simulation tests.",
+    "additionalInstruction": "Bu bir mobil uygulamadır (Android). Kullanıcının fiziksel telefonu şu an bilgisayara bağlıdır ve Android Studio açıktır. Eğer testi doğrudan bağlı olan cihaz/telefon üzerinde yapabiliyorsanız lütfen doğrudan telefon üstünde gerçekleştirin, aksi takdirde normal simülasyon/mock testleri uygulayabilirsiniz.",
     "serverMode": "development",
     "envs": {
       "API_KEY": "sk-user-ID3zf8Dwm0LKFfJ0efppyfVe0cRD9ERwL5PtAouDfd8TuaGE_BilxFqNhAWkFckMfX1sYud4o39s_1OqKCaxU77lKF7fYL6G97z4rxs9CyIaVWz4R1SWXc3bW8uLdOF_JkI"
     }
   },
-  "serverPort": 63772
+  "serverPort": 62055
 }

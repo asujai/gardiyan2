@@ -28,9 +28,7 @@ class GuardianRepository(
         const val ALL_DAYS = "Pzt,Sal,Çar,Per,Cum,Cmt,Paz"
         const val MAX_DAILY_LIMIT_MINUTES = 23 * 60 + 59
 
-        private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-
-        fun todayKey(): String = dateFormat.format(Date())
+        fun todayKey(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
         fun todayDayLabel(): String {
             return when (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
@@ -362,6 +360,7 @@ class GuardianRepository(
                     putLong("lastResetElapsedRealtime", nowElapsed)
                     putLong("lastKnownWallClockMillis", nowWall)
                     putString("lastResetTimezoneId", timeProvider.timezoneId())
+                    remove("lastResetPreventedLocalDate")
                     apply()
                 }
                 
@@ -372,7 +371,14 @@ class GuardianRepository(
                 if (com.gardiyan.app.BuildConfig.DEBUG) {
                     android.util.Log.w("GuardianRepository", "Erken günlük sıfırlama engellendi! Zaman aşımı yetersiz.")
                 }
-                insertLog("RESET_PREVENTED", "", "Tarih değişimi algılandı ancak güvenlik süresi henüz dolmadı. Limitlerin erken sıfırlanması engellendi.")
+                val lastPreventedDate = prefs.getString("lastResetPreventedLocalDate", "") ?: ""
+                if (lastPreventedDate != today) {
+                    insertLog("RESET_PREVENTED", "", "Tarih değişimi algılandı ancak güvenlik süresi henüz dolmadı. Limitlerin erken sıfırlanması engellendi.")
+                }
+                prefs.edit()
+                    .putString("lastResetPreventedLocalDate", today)
+                    .putLong("lastKnownWallClockMillis", nowWall)
+                    .apply()
             } else {
                 // Sadece son bilinen duvar saatini güncelle
                 prefs.edit().putLong("lastKnownWallClockMillis", nowWall).apply()
@@ -460,12 +466,17 @@ class GuardianRepository(
             }
         }
 
-        if (session.level == 1 && nextStreak >= 3) {
-            nextLevel = 2
-            logDetails += " 3 günlük seriyle Disiplinli rütbesine ulaştınız."
-        } else if (session.level == 2 && nextStreak >= 7) {
-            nextLevel = 3
-            logDetails += " 7 günlük seriyle Usta rütbesine yükseldiniz."
+        val earnedLevel = when {
+            nextStreak >= 60 -> 6
+            nextStreak >= 30 -> 5
+            nextStreak >= 15 -> 4
+            nextStreak >= 7 -> 3
+            nextStreak >= 3 -> 2
+            else -> 1
+        }
+        if (earnedLevel > session.level) {
+            nextLevel = earnedLevel
+            logDetails += " $nextStreak günlük seriyle Seviye $earnedLevel seviyesine yükseldiniz."
         }
 
         guardianDao.insertUserSession(
@@ -620,7 +631,7 @@ class GuardianRepository(
 
     suspend fun startSession(app: RestrictedAppEntity) {
         closeActiveSession("Yeni oturum başlatılıyor")
-        val now = System.currentTimeMillis()
+        val now = timeProvider.currentTimeMillis()
         val session = ActiveUsageSessionEntity(
             appId = app.id,
             packageName = app.packageName,
@@ -638,45 +649,19 @@ class GuardianRepository(
     suspend fun updateSessionLastSeen(packageName: String) {
         val session = guardianDao.getActiveSessionSync() ?: return
         if (session.packageName == packageName) {
-            val now = System.currentTimeMillis()
+            val now = timeProvider.currentTimeMillis()
             val deltaMs = now - session.lastSeenAtMillis
-            
-            if (deltaMs > 30000L) {
-                // Anormal gecikme durumunda zamanlayıcıyı sıfırla, süre düşme ama izlemeyi güncelle
-                if (com.gardiyan.app.BuildConfig.DEBUG) {
-                    android.util.Log.d("GuardianRepository", "Anormal gecikme tespit edildi (delta: ${deltaMs}ms), süre düşülmeden lastSeen güncellendi.")
-                }
-                val updated = session.copy(
-                    lastSeenAtMillis = now,
-                    updatedAtMillis = now
-                )
-                guardianDao.updateActiveSession(updated)
+
+            // Saat geriye alınırsa lastSeen'i geriye taşımayarak ücretsiz kullanım oluşmasını engelle.
+            if (deltaMs <= 0L) {
                 return
             }
 
-            val deltaSec = (deltaMs / 1000L).toInt()
+            val deltaSec = elapsedWholeSeconds(deltaMs)
             if (deltaSec > 0) {
-                val app = guardianDao.getRestrictedAppByIdSync(session.appId)
-                if (app != null && app.isActive && !app.isFailed) {
-                    val newRemaining = (app.remainingSecondsToday - deltaSec).coerceAtLeast(0)
-                    if (com.gardiyan.app.BuildConfig.DEBUG) {
-                        android.util.Log.d("GuardianRepository", "Süre düşülüyor: Paket=$packageName, Geçen saniye=$deltaSec, Kalan saniye=$newRemaining, usedToday=${app.dailyLimitMinutes * 60 - newRemaining}")
-                    }
-                    guardianDao.updateRestrictedApp(
-                        app.copy(
-                            remainingSecondsToday = newRemaining,
-                            remainingMinutesToday = newRemaining / 60
-                        )
-                    )
-                    if (newRemaining <= 0) {
-                        if (com.gardiyan.app.BuildConfig.DEBUG) {
-                            android.util.Log.d("GuardianRepository", "Limit doldu! failRestrictedApp tetikleniyor. Paket=$packageName")
-                        }
-                        failRestrictedApp(app.id)
-                    }
-                }
+                deductElapsedSeconds(session.appId, deltaSec, "Aktif oturumdan düşülen süre")
 
-                // session'ı son görülme zamanıyla güncelle (artık milisaniyeleri koruyarak)
+                // Tam saniyeler düşülürken kalan milisaniyeyi sonraki kalp atışına taşı.
                 val updated = session.copy(
                     lastSeenAtMillis = now - (deltaMs % 1000L),
                     updatedAtMillis = now
@@ -698,25 +683,10 @@ class GuardianRepository(
 
     suspend fun closeActiveSession(reason: String) {
         val session = guardianDao.getActiveSessionSync() ?: return
-        val now = System.currentTimeMillis()
+        val now = timeProvider.currentTimeMillis()
         val elapsedMs = now - session.lastSeenAtMillis
-        val elapsedSec = (elapsedMs / 1000L).toInt().coerceIn(0, 5)
-
-        val app = guardianDao.getRestrictedAppByIdSync(session.appId)
-        if (app != null && app.isActive && !app.isFailed) {
-            val newRemaining = (app.remainingSecondsToday - elapsedSec).coerceAtLeast(0)
-            val newMinutes = newRemaining / 60
-            guardianDao.updateRestrictedApp(
-                app.copy(
-                    remainingSecondsToday = newRemaining,
-                    remainingMinutesToday = newMinutes
-                )
-            )
-            insertLog("USAGE_PROCESSED", app.appName, "Oturumdan düşülen süre: ${elapsedSec} saniye.")
-            if (newRemaining <= 0) {
-                failRestrictedApp(app.id)
-            }
-        }
+        val elapsedSec = elapsedWholeSeconds(elapsedMs)
+        deductElapsedSeconds(session.appId, elapsedSec, "Kapanan oturumdan düşülen süre")
 
         val closed = session.copy(
             isActive = false,
@@ -729,27 +699,12 @@ class GuardianRepository(
 
     suspend fun cleanupStaleSessions() {
         val sessions = guardianDao.getActiveSessionsSync()
-        val now = System.currentTimeMillis()
+        val now = timeProvider.currentTimeMillis()
         for (session in sessions) {
             if (now - session.lastSeenAtMillis > 30000L) {
                 val elapsedMs = now - session.lastSeenAtMillis
-                val elapsedSec = (elapsedMs / 1000L).toInt().coerceIn(0, 5)
-
-                val app = guardianDao.getRestrictedAppByIdSync(session.appId)
-                if (app != null && app.isActive && !app.isFailed) {
-                    val newRemaining = (app.remainingSecondsToday - elapsedSec).coerceAtLeast(0)
-                    val newMinutes = newRemaining / 60
-                    guardianDao.updateRestrictedApp(
-                        app.copy(
-                            remainingSecondsToday = newRemaining,
-                            remainingMinutesToday = newMinutes
-                        )
-                    )
-                    insertLog("USAGE_PROCESSED", app.appName, "Bayat oturumdan düşülen süre: ${elapsedSec} saniye.")
-                    if (newRemaining <= 0) {
-                        failRestrictedApp(app.id)
-                    }
-                }
+                val elapsedSec = elapsedWholeSeconds(elapsedMs)
+                deductElapsedSeconds(session.appId, elapsedSec, "Bayat oturumdan düşülen süre")
 
                 val closed = session.copy(
                     isActive = false,
@@ -758,6 +713,32 @@ class GuardianRepository(
                 guardianDao.updateActiveSession(closed)
                 insertLog("STALE_SESSION_CLEANED", session.appName, "Bayatlayan aktif oturum temizlendi.")
             }
+        }
+    }
+
+    private fun elapsedWholeSeconds(elapsedMs: Long): Int {
+        return (elapsedMs.coerceAtLeast(0L) / 1000L)
+            .coerceAtMost(Int.MAX_VALUE.toLong())
+            .toInt()
+    }
+
+    private suspend fun deductElapsedSeconds(appId: Long, elapsedSec: Int, logPrefix: String) {
+        if (elapsedSec <= 0) return
+
+        val app = guardianDao.getRestrictedAppByIdSync(appId) ?: return
+        if (!app.isActive || app.isFailed) return
+
+        val chargedSeconds = elapsedSec.coerceAtMost(app.remainingSecondsToday)
+        val newRemaining = app.remainingSecondsToday - chargedSeconds
+        guardianDao.updateRestrictedApp(
+            app.copy(
+                remainingSecondsToday = newRemaining,
+                remainingMinutesToday = newRemaining / 60
+            )
+        )
+        insertLog("USAGE_PROCESSED", app.appName, "$logPrefix: $chargedSeconds saniye.")
+        if (newRemaining <= 0) {
+            failRestrictedApp(app.id)
         }
     }
 

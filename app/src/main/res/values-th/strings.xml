@@ -66,6 +66,8 @@
     <string name="protected_apps_discipline_process">กระบวนการสร้างสมดุล</string>
     <string name="protected_apps_hours">%1$d ชั่วโมง</string>
     <string name="protected_apps_minutes">%1$d นาที</string>
+    <string name="protected_apps_hour">%1$d ชั่วโมง</string>
+    <string name="protected_apps_minute">%1$d นาที</string>
     <string name="protected_apps_daily_limit">ขีดจำกัดรายวัน</string>
     <string name="protected_apps_active_days">วันที่ทำงาน</string>
     <string name="protected_apps_limit_error">คุณไม่สามารถตั้งขีดจำกัดรายวันให้สูงกว่าระยะเวลาการใช้งานปัจจุบันได้</string>
@@ -89,6 +91,7 @@
     <string name="setup_target_days">วันที่ป้องกัน</string>
     <string name="setup_target_error_no_app">กรุณาเลือกอย่างน้อยหนึ่งแอปก่อน</string>
     <string name="setup_target_error_no_day">กรุณาเลือกอย่างน้อยหนึ่งวัน</string>
+    <string name="setup_target_error_zero_duration">โปรดเลือกขีดจำกัดที่มากกว่า 0 นาที</string>
     <string name="setup_target_toast_test_start">เริ่มการทดสอบด่วนสำหรับ %1$d แอปแล้ว!</string>
     <string name="setup_target_toast_added">เพิ่ม %1$d แอปเข้าในการจำกัดแล้ว</string>
     <string name="setup_target_btn_test">เริ่มการทดสอบด่วน (10 วินาที)</string>

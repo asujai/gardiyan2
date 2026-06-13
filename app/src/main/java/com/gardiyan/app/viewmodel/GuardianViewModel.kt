@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.PowerManager
 import android.os.Process
 import android.provider.Settings
-import android.text.TextUtils
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gardiyan.app.data.local.database.GuardianDatabase
@@ -385,20 +384,12 @@ class GuardianViewModel(context: Context) : ViewModel() {
 
     fun hasUsageStatsPermission(context: Context): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager ?: return false
-        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            appOps.unsafeCheckOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                Process.myUid(),
-                context.packageName
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            appOps.checkOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                Process.myUid(),
-                context.packageName
-            )
-        }
+        @Suppress("DEPRECATION")
+        val mode = appOps.checkOpNoThrow(
+            AppOpsManager.OPSTR_GET_USAGE_STATS,
+            Process.myUid(),
+            context.packageName
+        )
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
@@ -451,54 +442,14 @@ class GuardianViewModel(context: Context) : ViewModel() {
     }
 
     fun isAccessibilityServiceEnabled(context: Context): Boolean {
-        // 1. Yol: Servis zaten bellekte aktif ve çalışıyor durumda ise izin verilmiştir.
-        if (AppBlockAccessibilityService.isRunning && AppBlockAccessibilityService.instance != null) {
-            return true
-        }
-
-        // 2. Yol: AccessibilityManager üzerinden aktif servisler arasında bizim servisimiz var mı kontrolü.
-        val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? android.view.accessibility.AccessibilityManager
-        if (am != null) {
-            try {
-                val enabledServices = am.getEnabledAccessibilityServiceList(android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_GENERIC)
-                for (service in enabledServices) {
-                    val component = service.resolveInfo?.serviceInfo?.let {
-                        ComponentName(it.packageName, it.name)
-                    }
-                    if (component?.packageName == context.packageName && 
-                        component.className == AppBlockAccessibilityService::class.java.name) {
-                        return true
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
-        // 3. Yol: Secure Settings üzerinden kontrol (Splitter format uyuşmazlığı olasılığına karşı ComponentName ile parse ederek)
-        val enabled = Settings.Secure.getString(
+        val accessibilityGloballyEnabled = Settings.Secure.getInt(
             context.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        ) ?: return false
+            Settings.Secure.ACCESSIBILITY_ENABLED,
+            0
+        ) == 1
 
-        val splitter = TextUtils.SimpleStringSplitter(':')
-        splitter.setString(enabled)
-        val expectedLong = ComponentName(context, AppBlockAccessibilityService::class.java).flattenToString()
-        val expectedShort = ComponentName(context, AppBlockAccessibilityService::class.java).flattenToShortString()
-        while (splitter.hasNext()) {
-            val entry = splitter.next()
-            val component = ComponentName.unflattenFromString(entry)
-            if (component != null && 
-                component.packageName == context.packageName && 
-                component.className == AppBlockAccessibilityService::class.java.name) {
-                return true
-            }
-            if (entry.equals(expectedLong, ignoreCase = true) || entry.equals(expectedShort, ignoreCase = true)) {
-                return true
-            }
-        }
-
-        return false
+        return accessibilityGloballyEnabled &&
+            AppBlockAccessibilityService.isHealthy()
     }
 
     fun openAccessibilitySettings(context: Context) {
@@ -539,8 +490,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
 
     fun requestBatteryOptimizationIgnore(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
-        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-            data = android.net.Uri.parse("package:${context.packageName}")
+        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         try {

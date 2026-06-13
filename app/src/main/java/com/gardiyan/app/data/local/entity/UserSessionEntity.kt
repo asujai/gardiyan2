@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class UserSessionEntity(
     @PrimaryKey val id: Int = 1, // Single user row
     val username: String = "GuardUser",
-    val level: Int = 1, // Level 1 (Çaylak), Level 2 (Disiplinli), Level 3 (Usta)
+    val level: Int = 1, // Level 1-6 digital discipline progression
     val hasRedBadge: Boolean = false, // True if failed and has Kırmızı Utanç Rozeti
     
     // Active Target Configurations

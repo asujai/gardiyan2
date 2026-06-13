@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.gardiyan.app" />
+                  <option name="mobileSdkAppId" value="1:976534808235:android:9696950cc0617cab1879ee" />
+                  <option name="projectId" value="gardiyan2" />
+                  <option name="projectNumber" value="976534808235" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

@@ -66,6 +66,8 @@
     <string name="protected_apps_discipline_process">Balance Process</string>
     <string name="protected_apps_hours">%1$d hours</string>
     <string name="protected_apps_minutes">%1$d minutes</string>
+    <string name="protected_apps_hour">%1$d hour</string>
+    <string name="protected_apps_minute">%1$d minute</string>
     <string name="protected_apps_daily_limit">Daily Limit</string>
     <string name="protected_apps_active_days">Active Days</string>
     <string name="protected_apps_limit_error">You cannot increase the daily limit higher than the current duration.</string>

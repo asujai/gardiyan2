@@ -252,6 +252,19 @@ class GuardianRepositoryRegressionTest {
     }
 
     @Test
+    fun `successful streak advances through all six levels`() = runBlocking {
+        repository.insertDefaultSessionIfMissing()
+
+        repeat(60) {
+            repository.succeedActiveTarget()
+        }
+
+        val session = repository.getSessionSync()!!
+        assertEquals(6, session.level)
+        assertEquals(60, session.consecutiveSuccessDays)
+    }
+
+    @Test
     fun `evaluateDailySuccess does not award success to multiple past days without engine active log`() = runBlocking {
         repository.insertDefaultSessionIfMissing()
         repository.upsertRestrictedApp("test.package", "Test", 30)
@@ -311,7 +324,7 @@ class GuardianRepositoryRegressionTest {
     }
 
     @Test
-    fun `closeActiveSession caps maximum subtracted duration to 5 seconds even on long delays`() = runBlocking {
+    fun `closeActiveSession charges all remaining time on long delays`() = runBlocking {
         val id = repository.upsertRestrictedApp("test.package", "Test", 30)
         val app = repository.getRestrictedAppByIdSync(id)!!
         
@@ -329,11 +342,12 @@ class GuardianRepositoryRegressionTest {
         
         val result = repository.getRestrictedAppByIdSync(id)!!
         val remaining = result.remainingSecondsToday
-        assertEquals(1795, remaining)
+        assertEquals(0, remaining)
+        assertTrue(result.isFailed)
     }
 
     @Test
-    fun `cleanupStaleSessions caps maximum subtracted duration to 5 seconds even on long delays`() = runBlocking {
+    fun `cleanupStaleSessions charges all remaining time on long delays`() = runBlocking {
         val id = repository.upsertRestrictedApp("test.package", "Test", 30)
         val app = repository.getRestrictedAppByIdSync(id)!!
         
@@ -351,7 +365,26 @@ class GuardianRepositoryRegressionTest {
         
         val result = repository.getRestrictedAppByIdSync(id)!!
         val remaining = result.remainingSecondsToday
-        assertEquals(1795, remaining)
+        assertEquals(0, remaining)
+        assertTrue(result.isFailed)
+    }
+
+    @Test
+    fun `delayed heartbeat still charges elapsed usage`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 30)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+
+        repository.startSession(app)
+
+        val dbSession = database.guardianDao().getActiveSessionSync()!!
+        database.guardianDao().updateActiveSession(
+            dbSession.copy(lastSeenAtMillis = System.currentTimeMillis() - 45_000L)
+        )
+
+        repository.updateSessionLastSeen("test.package")
+
+        val result = repository.getRestrictedAppByIdSync(id)!!
+        assertTrue(result.remainingSecondsToday in 1753..1757)
     }
 
     // --- Yeni Zaman Açığı ve Günlük Reset Testleri ---
@@ -448,6 +481,33 @@ class GuardianRepositoryRegressionTest {
         val result = secureRepository.getRestrictedAppByIdSync(id)!!
         assertEquals(0, result.remainingSecondsToday)
         assertTrue(result.isFailed)
+    }
+
+    @Test
+    fun `resetDailyCountersIfNeeded logs an early reset prevention only once per date`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 1000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+
+        secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        secureRepository.resetDailyCountersIfNeeded()
+
+        testProvider.mockLocalDateString = "2026-06-11"
+        testProvider.mockTimeMillis += 5 * 3600 * 1000L
+        testProvider.mockElapsedRealtime += 5 * 3600 * 1000L
+
+        repeat(3) {
+            secureRepository.resetDailyCountersIfNeeded()
+        }
+
+        assertEquals(
+            1,
+            database.guardianDao().getAllLogsSync().count { it.eventType == "RESET_PREVENTED" }
+        )
     }
 
     @Test

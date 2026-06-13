@@ -64,6 +64,8 @@
     <string name="protected_apps_discipline_process">Denge Süreci</string>
     <string name="protected_apps_hours">%1$d saat</string>
     <string name="protected_apps_minutes">%1$d dakika</string>
+    <string name="protected_apps_hour">%1$d saat</string>
+    <string name="protected_apps_minute">%1$d dakika</string>
     <string name="protected_apps_daily_limit">Günlük Limit</string>
     <string name="protected_apps_active_days">Aktif Günler</string>
     <string name="protected_apps_limit_error">Günlük limiti mevcut süreden daha yükseğe çıkaramazsınız.</string>

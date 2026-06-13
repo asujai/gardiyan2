@@ -64,6 +64,8 @@
     <string name="protected_apps_discipline_process">عملية التوازن</string>
     <string name="protected_apps_hours">%1$d ساعات</string>
     <string name="protected_apps_minutes">%1$d دقائق</string>
+    <string name="protected_apps_hour">%1$d ساعة</string>
+    <string name="protected_apps_minute">%1$d دقيقة</string>
     <string name="protected_apps_daily_limit">الحد اليومي</string>
     <string name="protected_apps_active_days">الأيام النشطة</string>
     <string name="protected_apps_limit_error">لا يمكنك زيادة الحد اليومي ليكون أعلى من المدة الحالية.</string>
@@ -87,6 +89,7 @@
     <string name="setup_target_days">أيام الحماية</string>
     <string name="setup_target_error_no_app">الرجاء اختيار تطبيق واحد على الأقل أولاً</string>
     <string name="setup_target_error_no_day">الرجاء اختيار يوم واحد على الأقل</string>
+    <string name="setup_target_error_zero_duration">يرجى اختيار حد أكبر من 0 دقيقة</string>
     <string name="setup_target_toast_test_start">بدأ الاختبار السريع لـ %1$d من التطبيقات!</string>
     <string name="setup_target_toast_added">تم إضافة %1$d تطبيقات إلى القيود</string>
     <string name="setup_target_btn_test">بدء الاختبار السريع (10 ثوانٍ)</string>
@@ -422,6 +425,7 @@
     <string name="discipline_detail_series_label">السلسلة %1$d</string>
 
     <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_title">الاقتباسات المحفوظة</string>
     <string name="saved_quotes_add_title">إضافة اقتباس جديد</string>
     <string name="saved_quotes_edit_title">تعديل الاقتباس</string>
     <string name="saved_quotes_btn_add">إضافة</string>

@@ -64,6 +64,8 @@
     <string name="protected_apps_discipline_process">Processus d\'Équilibre</string>
     <string name="protected_apps_hours">%1$d heures</string>
     <string name="protected_apps_minutes">%1$d minutes</string>
+    <string name="protected_apps_hour">%1$d heure</string>
+    <string name="protected_apps_minute">%1$d minute</string>
     <string name="protected_apps_daily_limit">Limite Quotidienne</string>
     <string name="protected_apps_active_days">Jours Actifs</string>
     <string name="protected_apps_limit_error">Vous ne pouvez pas augmenter la limite quotidienne au-delà de la durée actuelle.</string>
@@ -87,6 +89,7 @@
     <string name="setup_target_days">JOURS DE PROTECTION</string>
     <string name="setup_target_error_no_app">Sélectionnez d\'abord au moins une application</string>
     <string name="setup_target_error_no_day">Veuillez sélectionner au moins un jour</string>
+    <string name="setup_target_error_zero_duration">Veuillez sélectionner une limite supérieure à 0 minute</string>
     <string name="setup_target_toast_test_start">Test rapide démarré pour %1$d applications !</string>
     <string name="setup_target_toast_added">%1$d applications ajoutées aux restrictions</string>
     <string name="setup_target_btn_test">LANCER LE TEST RAPIDE (10s)</string>
@@ -422,6 +425,7 @@
     <string name="discipline_detail_series_label">Série %1$d</string>
 
     <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_title">Citations enregistrées</string>
     <string name="saved_quotes_add_title">Ajouter une Citation</string>
     <string name="saved_quotes_edit_title">Modifier la Citation</string>
     <string name="saved_quotes_btn_add">AJOUTER</string>

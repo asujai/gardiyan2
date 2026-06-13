@@ -37,6 +37,8 @@ import com.gardiyan.app.data.repository.GuardianRepository
 import com.gardiyan.app.ui.components.AppIconView
 import com.gardiyan.app.ui.components.ModernRestrictionCard
 import com.gardiyan.app.ui.components.DurationWheelPicker
+import com.gardiyan.app.ui.components.localizedHours
+import com.gardiyan.app.ui.components.localizedMinutes
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import kotlinx.coroutines.delay
@@ -167,15 +169,22 @@ fun ProtectedAppsScreen(
                                     Text(text = "🛡️", fontSize = 32.sp)
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))
+                                val hasAppsOutsideFilter = activeApps.isNotEmpty()
                                 Text(
-                                    text = stringResource(R.string.protected_apps_empty),
+                                    text = stringResource(
+                                        if (hasAppsOutsideFilter) R.string.profile_timeline_filter_empty
+                                        else R.string.protected_apps_empty
+                                    ),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PureBlack
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = stringResource(R.string.protected_apps_empty_desc),
+                                    text = stringResource(
+                                        if (hasAppsOutsideFilter) R.string.protected_apps_desc
+                                        else R.string.protected_apps_empty_desc
+                                    ),
                                     fontSize = 11.sp,
                                     color = MutedGray,
                                     textAlign = TextAlign.Center,
@@ -396,10 +405,10 @@ fun ProtectedAppsScreen(
 
                             val durationText = buildString {
                                 if (limitHours > 0) {
-                                    append(stringResource(R.string.protected_apps_hours, limitHours))
+                                    append(context.localizedHours(limitHours))
                                     append(" ")
                                 }
-                                append(stringResource(R.string.protected_apps_minutes, limitMinsOnly))
+                                append(context.localizedMinutes(limitMinsOnly))
                             }
 
                             Card(
@@ -544,10 +553,15 @@ fun ProtectedAppsScreen(
                     Button(
                         onClick = {
                             val daysStr = selectedDays.joinToString(",")
-                            val newLimitRaw = limitHours * 60 + limitMinsOnly
-                            val newLimit = if (newLimitRaw <= 0) 5 else newLimitRaw
+                            val newLimit = limitHours * 60 + limitMinsOnly
                             
-                            if (newLimit > latestApp.dailyLimitMinutes) {
+                            if (newLimit <= 0) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        context.getString(R.string.setup_target_error_zero_duration)
+                                    )
+                                }
+                            } else if (newLimit > latestApp.dailyLimitMinutes) {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar(
                                         context.getString(R.string.protected_apps_limit_error)

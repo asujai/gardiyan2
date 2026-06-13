@@ -64,6 +64,8 @@
     <string name="protected_apps_discipline_process">Proses Keseimbangan</string>
     <string name="protected_apps_hours">%1$d jam</string>
     <string name="protected_apps_minutes">%1$d menit</string>
+    <string name="protected_apps_hour">%1$d jam</string>
+    <string name="protected_apps_minute">%1$d menit</string>
     <string name="protected_apps_daily_limit">Batas Harian</string>
     <string name="protected_apps_active_days">Hari Aktif</string>
     <string name="protected_apps_limit_error">Anda tidak dapat meningkatkan batas harian lebih tinggi dari durasi saat ini.</string>
@@ -87,6 +89,7 @@
     <string name="setup_target_days">HARI PERLINDUNGAN</string>
     <string name="setup_target_error_no_app">Pilih setidaknya satu aplikasi terlebih dahulu</string>
     <string name="setup_target_error_no_day">Silakan pilih setidaknya satu hari</string>
+    <string name="setup_target_error_zero_duration">Pilih batas lebih dari 0 menit</string>
     <string name="setup_target_toast_test_start">Uji cepat dimulai untuk %1$d aplikasi!</string>
     <string name="setup_target_toast_added">%1$d aplikasi ditambahkan ke batasan</string>
     <string name="setup_target_btn_test">MULAI UJI CEPAT (10s)</string>
@@ -422,6 +425,7 @@
     <string name="discipline_detail_series_label">Seri %1$d</string>
 
     <!-- Saved Quotes Screen -->
+    <string name="saved_quotes_title">Kutipan Tersimpan</string>
     <string name="saved_quotes_add_title">Tambah Kutipan Baru</string>
     <string name="saved_quotes_edit_title">Edit Kutipan</string>
     <string name="saved_quotes_btn_add">TAMBAH</string>
