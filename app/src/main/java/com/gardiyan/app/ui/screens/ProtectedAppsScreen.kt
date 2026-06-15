@@ -216,20 +216,10 @@ fun ProtectedAppsScreen(
 
             var limitHours by remember(app.id) { mutableStateOf(latestApp.dailyLimitMinutes / 60) }
             var limitMinsOnly by remember(app.id) { mutableStateOf(latestApp.dailyLimitMinutes % 60) }
-            val daysOfWeek = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
-            val daysMap = mapOf(
-                "Pzt" to R.string.day_mon,
-                "Sal" to R.string.day_tue,
-                "Çar" to R.string.day_wed,
-                "Per" to R.string.day_thu,
-                "Cum" to R.string.day_fri,
-                "Cmt" to R.string.day_sat,
-                "Paz" to R.string.day_sun
-            )
-            var selectedDays by remember(app.id) {
-                val shownDays = latestApp.nextDayActiveDays.ifEmpty { latestApp.activeDays }
-                mutableStateOf(shownDays.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet())
-            }
+            // Not: Aktif gün seçimi yalnızca yeni kısıtlama oluştururken yapılabilir.
+            // Mevcut bir kısıtlama düzenlenirken günler DEĞİŞTİRİLEMEZ; kullanıcı bugünü
+            // pasifleştirip korumadan kaçamasın diye burada gün düzenleme arayüzü yoktur.
+            // Kayıtlı aktif günler veritabanında korunur ve koruma onlara göre çalışır.
 
             Box(
                 modifier = Modifier
@@ -471,64 +461,6 @@ fun ProtectedAppsScreen(
                             }
                         }
 
-                        // Aktif Günler
-                        item {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .border(1.dp, BorderGray, RoundedCornerShape(16.dp)),
-                                colors = CardDefaults.cardColors(containerColor = MatteSurface)
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(
-                                        text = stringResource(R.string.protected_apps_active_days),
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = PureBlack
-                                    )
-
-                                    Spacer(modifier = Modifier.height(12.dp))
-
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        daysOfWeek.forEach { day ->
-                                            val isSelected = selectedDays.contains(day)
-                                            // Aktif gün = yeşil (tema-uyumlu): yeşil tint dolgu +
-                                            // yeşil çerçeve + yeşil yazı. Pasif gün normal kart görünümünde.
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(36.dp)
-                                                    .clip(CircleShape)
-                                                    .background(if (isSelected) SuccessGreen.copy(alpha = 0.15f) else DarkCharcoal)
-                                                    .border(
-                                                        if (isSelected) 1.5.dp else 1.dp,
-                                                        if (isSelected) SuccessGreen else BorderGray,
-                                                        CircleShape
-                                                    )
-                                                    .clickable {
-                                                        selectedDays = if (isSelected) {
-                                                            if (selectedDays.size > 1) selectedDays - day else selectedDays
-                                                        } else {
-                                                            selectedDays + day
-                                                        }
-                                                    },
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = stringResource(daysMap[day]!!),
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = if (isSelected) SuccessGreen else MutedGray
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
                         // Kısıtlamayı Tamamen Sil
                         item {
                             HoldToDeleteButton(
@@ -558,7 +490,10 @@ fun ProtectedAppsScreen(
                     // Kaydet / Kapat Butonları
                     Button(
                         onClick = {
-                            val daysStr = selectedDays.joinToString(",")
+                            // Aktif günler düzenleme ekranında değiştirilemez: mevcut kayıtlı
+                            // günleri olduğu gibi geçir (isActiveDaysChanged her zaman false olur,
+                            // gün bilgisi korunur). Sadece günlük limit düzenlenebilir.
+                            val daysStr = latestApp.nextDayActiveDays.ifEmpty { latestApp.activeDays }
                             val newLimit = limitHours * 60 + limitMinsOnly
                             
                             if (newLimit <= 0) {
