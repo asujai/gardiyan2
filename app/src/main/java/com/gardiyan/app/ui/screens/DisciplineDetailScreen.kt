@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gardiyan.app.R
 import com.gardiyan.app.data.model.DayStatus
+import com.gardiyan.app.ui.components.DisciplineDayBox
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import java.util.Calendar
 import com.gardiyan.app.ui.theme.DashboardBorder as BorderGray
@@ -137,6 +138,8 @@ fun DisciplineDetailScreen(
             }
         }
     }
+
+    val todayLabel = stringResource(R.string.timeline_today)
 
     Scaffold(
         topBar = {
@@ -325,14 +328,13 @@ fun DisciplineDetailScreen(
                                             DayStatus.NONE -> WarmGray
                                         }
 
-                                        Box(
+                                        DisciplineDayBox(
+                                            fillColor = cellColor,
+                                            isToday = dayNum == diffDays + 1,
+                                            todayContentDescription = todayLabel,
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .aspectRatio(1f)
-                                                .clip(RoundedCornerShape(6.dp))
-                                                .background(cellColor)
-                                                .border(0.5.dp, BorderGray.copy(alpha = 0.4f), RoundedCornerShape(6.dp)),
-                                            contentAlignment = Alignment.Center
                                         ) {
                                             Text(
                                                 text = dayNum.toString(),

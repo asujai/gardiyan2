@@ -47,6 +47,7 @@ import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.data.model.DayStatus
 import com.gardiyan.app.data.model.DisciplineWindow
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
+import com.gardiyan.app.ui.components.DisciplineDayBox
 import com.gardiyan.app.ui.components.UsageRankingSection
 import com.gardiyan.app.ui.components.formatUsageDuration
 import com.gardiyan.app.ui.theme.DashboardBorder as BorderGray
@@ -208,6 +209,7 @@ fun DashboardScreen(
         item {
             DisciplineSummary(
                 dayStatuses = dayStatuses,
+                todayCellIndex = DisciplineWindow.todayCellIndex(todayDayNumber),
                 onDetailClick = onNavigateToDisciplineDetail
             )
         }
@@ -265,8 +267,10 @@ private fun TodayOverviewCard(
 @Composable
 private fun DisciplineSummary(
     dayStatuses: List<DayStatus>,
+    todayCellIndex: Int,
     onDetailClick: () -> Unit
 ) {
+    val todayLabel = stringResource(R.string.timeline_today)
     Column {
         Text(
             text = stringResource(R.string.dashboard_discipline_summary),
@@ -295,9 +299,9 @@ private fun DisciplineSummary(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             repeat(7) { colIndex ->
-                                // Kronolojik sıra: sol-üst = en eski gün, sağ-alt = bugün.
-                                // Günler soldan sağa, satır bitince alt satırın solundan ilerler
-                                // (100 günlük detay ekranıyla aynı yön).
+                                // Kayan pencere sırası: sol-üst = pencerenin ilk günü.
+                                // Günler soldan sağa, satır bitince alt satırın solundan ilerler.
+                                // "Bugün" kutusu (todayCellIndex) hafif çerçeveyle vurgulanır.
                                 val cellIndex = rowIndex * 7 + colIndex
                                 val status = dayStatuses.getOrNull(cellIndex) ?: DayStatus.NONE
                                 val cellColor = when (status) {
@@ -306,13 +310,13 @@ private fun DisciplineSummary(
                                     DayStatus.PROGRESS -> CopperAccent
                                     DayStatus.NONE -> WarmGray
                                 }
-                                Box(
+                                DisciplineDayBox(
+                                    fillColor = cellColor,
+                                    isToday = cellIndex == todayCellIndex,
+                                    todayContentDescription = todayLabel,
                                     modifier = Modifier
                                         .weight(1f)
                                         .aspectRatio(1f)
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(cellColor)
-                                        .border(0.5.dp, BorderGray.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
                                 )
                             }
                         }
