@@ -442,7 +442,8 @@ class BlockOverlayService : Service() {
             quoteAuthorText?.text = if (finalQuoteAuthor.isNotEmpty()) "- $finalQuoteAuthor" else ""
 
             // --- Programatik Tema Renklendirme ---
-            val isDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            // Kilit ekranı, sistem gece moduna değil uygulamanın kendi tema ayarına uymalıdır.
+            val isDark = resolveAppIsDarkTheme()
 
             val rootLayout = overlayView.findViewById<View>(R.id.rootLayout)
             rootLayout?.setBackgroundColor(android.graphics.Color.parseColor(if (isDark) "#0B0F19" else "#F1F5F9"))
@@ -590,6 +591,26 @@ class BlockOverlayService : Service() {
     }
 
 
+
+    /**
+     * Kilit ekranının açık/koyu renklenmesini, uygulamanın kendi tema ayarına göre belirler.
+     * Theme.kt içindeki MyApplicationTheme ile aynı kuralları izler:
+     * - PREMIUM_DARK paleti her iki modda da koyu kalır.
+     * - LIGHT/DARK seçimi doğrudan uygulanır, SYSTEM ise cihaz gece moduna bakar.
+     */
+    private fun resolveAppIsDarkTheme(): Boolean {
+        val prefs = getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
+        val mode = prefs.getString("theme_mode", "DARK") ?: "DARK"
+        val palette = prefs.getString("theme_palette", "PREMIUM_DARK") ?: "PREMIUM_DARK"
+        if (palette == "PREMIUM_DARK") return true
+        return when (mode) {
+            "LIGHT" -> false
+            "DARK" -> true
+            else -> (resources.configuration.uiMode and
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                android.content.res.Configuration.UI_MODE_NIGHT_YES
+        }
+    }
 
     @Suppress("DEPRECATION")
     private fun overlayWindowType(): Int {
