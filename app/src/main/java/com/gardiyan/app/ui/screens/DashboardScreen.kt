@@ -134,22 +134,15 @@ fun DashboardScreen(
             val end = dayBounds[index].second
             val isToday = (index == 20)
             val dayLogs = logs.filter { it.timestamp in start..end }
-            
-            val hasSuccess = dayLogs.any { it.eventType in setOf("SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY") }
-            val hasFailure = dayLogs.any { it.eventType in setOf("FAILURE", "VIOLATION", "DAILY_FAILURE", "RESET_HOLD_5S", "CRITICAL_ACTION_COMPLETED") }
-            
-            when {
-                hasFailure -> DayStatus.FAILURE
-                hasSuccess -> DayStatus.SUCCESS
-                isToday -> {
-                    if (activeApps.isNotEmpty()) {
-                        if (todayHasViolation) DayStatus.FAILURE else DayStatus.PROGRESS
-                    } else {
-                        DayStatus.NONE
-                    }
-                }
-                else -> DayStatus.NONE
-            }
+
+            DayStatus.evaluate(
+                isFuture = false,
+                isToday = isToday,
+                hasActiveTargets = activeApps.isNotEmpty(),
+                todayHasViolation = todayHasViolation,
+                dayHasSuccessLog = dayLogs.any { it.eventType in DayStatus.SUCCESS_EVENT_TYPES },
+                dayHasFailureLog = dayLogs.any { it.eventType in DayStatus.FAILURE_EVENT_TYPES }
+            )
         }
     }
 
@@ -268,9 +261,11 @@ private fun DisciplineSummary(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             repeat(7) { colIndex ->
+                                // Kronolojik sıra: sol-üst = en eski gün, sağ-alt = bugün.
+                                // Günler soldan sağa, satır bitince alt satırın solundan ilerler
+                                // (100 günlük detay ekranıyla aynı yön).
                                 val cellIndex = rowIndex * 7 + colIndex
-                                val reversedIndex = 20 - cellIndex
-                                val status = dayStatuses.getOrNull(reversedIndex) ?: DayStatus.NONE
+                                val status = dayStatuses.getOrNull(cellIndex) ?: DayStatus.NONE
                                 val cellColor = when (status) {
                                     DayStatus.SUCCESS -> SuccessGreen
                                     DayStatus.FAILURE -> DangerRed

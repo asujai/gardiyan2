@@ -28,6 +28,11 @@ class GuardianRepository(
         const val ALL_DAYS = "Pzt,Sal,Çar,Per,Cum,Cmt,Paz"
         const val MAX_DAILY_LIMIT_MINUTES = 23 * 60 + 59
 
+        // Duvar saatinin monotonik saate göre öne fırlamasına izin verilen tolerans.
+        // DST/NTP düzeltmeleri (<=1 saat) yasal sayılır; bunun üzeri saat ileri alma
+        // (anti-cheat) olarak değerlendirilir.
+        const val CLOCK_FORWARD_JUMP_TOLERANCE_MS = 60 * 60 * 1000L
+
         fun todayKey(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
         fun todayDayLabel(): String {
@@ -286,11 +291,19 @@ class GuardianRepository(
                 
                 if (!isRebooted) {
                     val elapsedDiff = nowElapsed - lastResetElapsedRealtime
-                    if (elapsedDiff >= minIntervalMillis) {
+                    val wallDiff = nowWall - lastResetWallClockMillis
+                    // Saati ileri almak wallDiff'i büyütür ama monotonik elapsedDiff'i
+                    // büyütmez. Gerçek zaman geçişinde ikisi birlikte ilerler. Tutarlıysa
+                    // (öne fırlama toleransın altındaysa) yasal gün geçişidir ve 22 saat
+                    // beklenmeden sıfırlanmalıdır. Aksi halde 22 saatlik monotonik süre
+                    // dolana kadar yedek olarak engellenir (sabit ama yanlış saat senaryosu).
+                    val forwardJumpMillis = wallDiff - elapsedDiff
+                    val clockConsistent = forwardJumpMillis <= CLOCK_FORWARD_JUMP_TOLERANCE_MS
+                    if (clockConsistent || elapsedDiff >= minIntervalMillis) {
                         isTimePassed = true
                     }
                     if (com.gardiyan.app.BuildConfig.DEBUG) {
-                        android.util.Log.d("GuardianRepository", "Zaman geçiş kontrolü (Monotonic): elapsedDiff=${elapsedDiff}ms, min=${minIntervalMillis}ms, isTimePassed=$isTimePassed")
+                        android.util.Log.d("GuardianRepository", "Zaman geçiş kontrolü (Monotonic): elapsedDiff=${elapsedDiff}ms, wallDiff=${wallDiff}ms, forwardJump=${forwardJumpMillis}ms, clockConsistent=$clockConsistent, isTimePassed=$isTimePassed")
                     }
                 } else {
                     // 2. Reboot sonrası zaman manipülasyonu kontrolü (Boot Time analizi)

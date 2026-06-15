@@ -125,21 +125,15 @@ fun DisciplineDetailScreen(
                 val end = calEnd.timeInMillis
 
                 val dayLogs = logs.filter { it.timestamp in start..end }
-                val hasSuccess = dayLogs.any { it.eventType in setOf("SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY") }
-                val hasFailure = dayLogs.any { it.eventType in setOf("FAILURE", "VIOLATION", "DAILY_FAILURE", "RESET_HOLD_5S", "CRITICAL_ACTION_COMPLETED") }
 
-                when {
-                    hasFailure -> DayStatus.FAILURE
-                    hasSuccess -> DayStatus.SUCCESS
-                    isToday -> {
-                        if (hasActiveApps) {
-                            if (todayHasViolation) DayStatus.FAILURE else DayStatus.PROGRESS
-                        } else {
-                            DayStatus.NONE
-                        }
-                    }
-                    else -> DayStatus.NONE
-                }
+                DayStatus.evaluate(
+                    isFuture = false,
+                    isToday = isToday,
+                    hasActiveTargets = hasActiveApps,
+                    todayHasViolation = todayHasViolation,
+                    dayHasSuccessLog = dayLogs.any { it.eventType in DayStatus.SUCCESS_EVENT_TYPES },
+                    dayHasFailureLog = dayLogs.any { it.eventType in DayStatus.FAILURE_EVENT_TYPES }
+                )
             }
         }
     }
@@ -367,7 +361,6 @@ fun DisciplineDetailScreen(
                             ) {
                                 LegendItem(SuccessGreen, stringResource(R.string.discipline_summary_success))
                                 LegendItem(DangerRed, stringResource(R.string.discipline_summary_failure))
-                                LegendItem(CopperAccent, stringResource(R.string.today_status_active))
                                 LegendItem(WarmGray, stringResource(R.string.no_records))
                             }
                         }

@@ -26,6 +26,30 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
+/**
+ * enabled_accessibility_services secure ayar dizesinde bizim erişilebilirlik
+ * servisimizin kayıtlı olup olmadığını kontrol eder. Saf (Android bağımsız) olduğu
+ * için birim testi yazılabilir. Sistem tam biçimi (pkg/pkg.Class) saklar; kısa biçim
+ * (pkg/.Class) ve büyük/küçük harf farkları da tolere edilir.
+ */
+internal fun isAccessibilityComponentEnabled(
+    enabledServicesSetting: String?,
+    packageName: String,
+    className: String
+): Boolean {
+    if (enabledServicesSetting.isNullOrBlank()) return false
+    val expectedFull = "$packageName/$className"
+    val shortClass = if (className.startsWith("$packageName.")) {
+        className.substring(packageName.length) // ".Service" -> ön nokta korunur
+    } else {
+        ".$className"
+    }
+    val expectedShort = "$packageName/$shortClass"
+    return enabledServicesSetting.split(':')
+        .map { it.trim() }
+        .any { it.equals(expectedFull, ignoreCase = true) || it.equals(expectedShort, ignoreCase = true) }
+}
+
 class GuardianViewModel(context: Context) : ViewModel() {
 
     private val appContext = context.applicationContext
@@ -442,14 +466,19 @@ class GuardianViewModel(context: Context) : ViewModel() {
     }
 
     fun isAccessibilityServiceEnabled(context: Context): Boolean {
-        val accessibilityGloballyEnabled = Settings.Secure.getInt(
+        // Canonical kaynak: sistemin enabled_accessibility_services listesi.
+        // Eskiden runtime heartbeat'e (isHealthy) bakılıyordu; process yeni başladığında
+        // heartbeat henüz set edilmediği için izin AÇIK olsa bile KAPALI görünüyordu
+        // (yanlış-negatif). Artık doğrudan sistem ayarındaki component eşleşmesine bakılır.
+        val enabledServices = Settings.Secure.getString(
             context.contentResolver,
-            Settings.Secure.ACCESSIBILITY_ENABLED,
-            0
-        ) == 1
-
-        return accessibilityGloballyEnabled &&
-            AppBlockAccessibilityService.isHealthy()
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        )
+        return isAccessibilityComponentEnabled(
+            enabledServices,
+            context.packageName,
+            AppBlockAccessibilityService::class.java.name
+        )
     }
 
     fun openAccessibilitySettings(context: Context) {

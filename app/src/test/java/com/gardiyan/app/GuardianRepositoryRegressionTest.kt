@@ -451,7 +451,7 @@ class GuardianRepositoryRegressionTest {
     }
 
     @Test
-    fun `resetDailyCountersIfNeeded does not reset if date changed but less than 22 hours passed`() = runBlocking {
+    fun `resetDailyCountersIfNeeded resets on a legit short day change with consistent clocks`() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val testProvider = TestTimeProvider(
             mockTimeMillis = 1000000000L,
@@ -459,7 +459,7 @@ class GuardianRepositoryRegressionTest {
             mockLocalDateString = "2026-06-10"
         )
         val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
-        
+
         val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
         database.guardianDao().updateRestrictedApp(
             database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
@@ -467,17 +467,54 @@ class GuardianRepositoryRegressionTest {
                 isFailed = true
             )
         )
-        
+
         secureRepository.resetDailyCountersIfNeeded()
-        
-        // Tarih ertesi güne alınmış ama sadece 5 saat geçmiş
+
+        // Tarih ertesi güne geçti ve sadece 5 saat geçti AMA duvar saati ile monotonik
+        // saat birlikte ilerledi (saat manipülasyonu yok). Bu yasal bir gün geçişidir;
+        // kullanıcı gece yarısını geçti (ör. son sıfırlama 21:00, şimdi 02:00). 22 saat
+        // beklenmeden günlük hak yenilenmelidir.
         testProvider.mockLocalDateString = "2026-06-11"
         testProvider.mockTimeMillis += 5 * 3600 * 1000L
         testProvider.mockElapsedRealtime += 5 * 3600 * 1000L
-        
+
         secureRepository.resetDailyCountersIfNeeded()
-        
-        // Sıfırlama yapılmamalıdır
+
+        // Sıfırlanmış olmalıdır
+        val result = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(1800, result.remainingSecondsToday)
+        assertFalse(result.isFailed)
+    }
+
+    @Test
+    fun `resetDailyCountersIfNeeded blocks reset when clock is jumped forward to fake a new day`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 1000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        database.guardianDao().updateRestrictedApp(
+            database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+
+        secureRepository.resetDailyCountersIfNeeded()
+
+        // Kullanıcı saati ANINDA bir gün ileri aldı: duvar saati +25 saat fırladı ama
+        // monotonik saat sadece birkaç saniye ilerledi -> saat ileri alma (hile).
+        testProvider.mockLocalDateString = "2026-06-11"
+        testProvider.mockTimeMillis += 25 * 3600 * 1000L
+        testProvider.mockElapsedRealtime += 5_000L
+
+        secureRepository.resetDailyCountersIfNeeded()
+
+        // Sıfırlama OLMAMALIDIR (anti-cheat)
         val result = secureRepository.getRestrictedAppByIdSync(id)!!
         assertEquals(0, result.remainingSecondsToday)
         assertTrue(result.isFailed)
@@ -496,9 +533,12 @@ class GuardianRepositoryRegressionTest {
         secureRepository.upsertRestrictedApp("test.package", "Test", 30)
         secureRepository.resetDailyCountersIfNeeded()
 
+        // Saat ileri alma (hile): duvar saati +25 saat fırladı ama monotonik saat
+        // neredeyse hiç ilerlemedi. Erken sıfırlama engellenir ve aynı tarih için
+        // RESET_PREVENTED yalnızca BİR kez loglanır.
         testProvider.mockLocalDateString = "2026-06-11"
-        testProvider.mockTimeMillis += 5 * 3600 * 1000L
-        testProvider.mockElapsedRealtime += 5 * 3600 * 1000L
+        testProvider.mockTimeMillis += 25 * 3600 * 1000L
+        testProvider.mockElapsedRealtime += 5_000L
 
         repeat(3) {
             secureRepository.resetDailyCountersIfNeeded()
