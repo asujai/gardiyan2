@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.gardiyan.app.data.model.AppUsageSummary
 import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.data.model.DayStatus
+import com.gardiyan.app.data.model.DisciplineWindow
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.ui.components.UsageRankingSection
 import com.gardiyan.app.ui.components.formatUsageDuration
@@ -103,46 +104,79 @@ fun DashboardScreen(
     }
     val exceededCount = exceededPackages.size
 
-    val dayBounds = remember {
-        List(21) { index ->
-            val daysAgo = 20 - index
-            val calStart = Calendar.getInstance().apply {
-                add(Calendar.DAY_OF_YEAR, -daysAgo)
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            val calEnd = Calendar.getInstance().apply {
-                add(Calendar.DAY_OF_YEAR, -daysAgo)
-                set(Calendar.HOUR_OF_DAY, 23)
-                set(Calendar.MINUTE, 59)
-                set(Calendar.SECOND, 59)
-                set(Calendar.MILLISECOND, 999)
-            }
-            calStart.timeInMillis to calEnd.timeInMillis
-        }
-    }
-
     val todayHasViolation = remember(restrictedApps) {
         restrictedApps.any { it.isActive && it.isFailed }
     }
 
-    val dayStatuses = remember(logs, restrictedApps, todayHasViolation) {
-        List(21) { index ->
-            val start = dayBounds[index].first
-            val end = dayBounds[index].second
-            val isToday = (index == 20)
-            val dayLogs = logs.filter { it.timestamp in start..end }
+    // Aktif serinin başlangıç günü (Day 1): en eski log / kısıtlama oluşturma / oturum başlangıcı.
+    // 100 günlük detay ekranıyla AYNI çapa; ana özet bunun kayan 21 günlük penceresidir.
+    val startMillis = remember(logs, restrictedApps, session?.lastCheckedMillis) {
+        val cal = Calendar.getInstance()
+        val minTimestamp = buildList {
+            logs.minOfOrNull { it.timestamp }?.let(::add)
+            restrictedApps.minOfOrNull { it.createdAtMillis }?.let(::add)
+            session?.lastCheckedMillis?.takeIf { it > 0L }?.let(::add)
+        }.minOrNull()
+        if (minTimestamp != null && minTimestamp < cal.timeInMillis) {
+            cal.timeInMillis = minTimestamp
+        }
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        cal.timeInMillis
+    }
 
-            DayStatus.evaluate(
-                isFuture = false,
-                isToday = isToday,
-                hasActiveTargets = activeApps.isNotEmpty(),
-                todayHasViolation = todayHasViolation,
-                dayHasSuccessLog = dayLogs.any { it.eventType in DayStatus.SUCCESS_EVENT_TYPES },
-                dayHasFailureLog = dayLogs.any { it.eventType in DayStatus.FAILURE_EVENT_TYPES }
-            )
+    // Bugünün seri içindeki gün numarası (1 = serinin ilk günü).
+    val todayDayNumber = remember(startMillis) {
+        val todayStart = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        val diff = todayStart - startMillis
+        val diffDays = if (diff < 0) 0 else ((diff + 2 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)).toInt()
+        diffDays + 1
+    }
+
+    // 21 kutucuk: serinin kayan penceresi. Kutu 0 = pencerenin ilk günü (sol üst),
+    // bugün ilk 21 günde 1..21. kutuda ilerler, sonra sağ alt (index 20) kutuda kalır.
+    val dayStatuses = remember(logs, restrictedApps, todayHasViolation, startMillis, todayDayNumber) {
+        val firstDay = DisciplineWindow.firstVisibleDayNumber(todayDayNumber)
+        List(DisciplineWindow.SUMMARY_DAYS) { cellIndex ->
+            val dayNum = firstDay + cellIndex
+            val isToday = dayNum == todayDayNumber
+            val isFuture = dayNum > todayDayNumber
+            if (isFuture) {
+                DayStatus.NONE
+            } else {
+                val calStart = Calendar.getInstance().apply {
+                    timeInMillis = startMillis
+                    add(Calendar.DAY_OF_YEAR, dayNum - 1)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                val calEnd = Calendar.getInstance().apply {
+                    timeInMillis = startMillis
+                    add(Calendar.DAY_OF_YEAR, dayNum - 1)
+                    set(Calendar.HOUR_OF_DAY, 23)
+                    set(Calendar.MINUTE, 59)
+                    set(Calendar.SECOND, 59)
+                    set(Calendar.MILLISECOND, 999)
+                }
+                val dayLogs = logs.filter { it.timestamp in calStart.timeInMillis..calEnd.timeInMillis }
+                DayStatus.evaluate(
+                    isFuture = false,
+                    isToday = isToday,
+                    hasActiveTargets = activeApps.isNotEmpty(),
+                    todayHasViolation = todayHasViolation,
+                    dayHasSuccessLog = dayLogs.any { it.eventType in DayStatus.SUCCESS_EVENT_TYPES },
+                    dayHasFailureLog = dayLogs.any { it.eventType in DayStatus.FAILURE_EVENT_TYPES }
+                )
+            }
         }
     }
 
