@@ -495,12 +495,18 @@ fun ProtectedAppsScreen(
                                     ) {
                                         daysOfWeek.forEach { day ->
                                             val isSelected = selectedDays.contains(day)
+                                            // Aktif gün = yeşil (tema-uyumlu): yeşil tint dolgu +
+                                            // yeşil çerçeve + yeşil yazı. Pasif gün normal kart görünümünde.
                                             Box(
                                                 modifier = Modifier
                                                     .size(36.dp)
                                                     .clip(CircleShape)
-                                                    .background(if (isSelected) PureBlack else DarkCharcoal)
-                                                    .border(1.dp, if (isSelected) PureBlack else BorderGray, CircleShape)
+                                                    .background(if (isSelected) SuccessGreen.copy(alpha = 0.15f) else DarkCharcoal)
+                                                    .border(
+                                                        if (isSelected) 1.5.dp else 1.dp,
+                                                        if (isSelected) SuccessGreen else BorderGray,
+                                                        CircleShape
+                                                    )
                                                     .clickable {
                                                         selectedDays = if (isSelected) {
                                                             if (selectedDays.size > 1) selectedDays - day else selectedDays
@@ -514,7 +520,7 @@ fun ProtectedAppsScreen(
                                                     text = stringResource(daysMap[day]!!),
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = if (isSelected) OnPureBlack else PureBlack
+                                                    color = if (isSelected) SuccessGreen else MutedGray
                                                 )
                                             }
                                         }

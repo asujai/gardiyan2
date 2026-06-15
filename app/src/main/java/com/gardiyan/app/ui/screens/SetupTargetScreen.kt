@@ -424,14 +424,20 @@ fun SetupTargetScreen(
                             ) {
                                 daysOfWeek.forEach { day ->
                                     val isSelected = selectedDays.contains(day)
+                                    // Aktif gün = yeşil (tema-uyumlu): yeşil tint dolgu + yeşil
+                                    // çerçeve + yeşil yazı. Pasif gün normal tema kartı görünümünde.
                                     Box(
                                         modifier = Modifier
                                             .weight(1f)
                                             .aspectRatio(1f)
                                             .padding(horizontal = 2.dp)
                                             .clip(CircleShape)
-                                            .background(if (isSelected) PureBlack else MatteSurface)
-                                            .border(1.dp, if (isSelected) PureBlack else BorderGray, CircleShape)
+                                            .background(if (isSelected) SuccessGreen.copy(alpha = 0.15f) else MatteSurface)
+                                            .border(
+                                                if (isSelected) 1.5.dp else 1.dp,
+                                                if (isSelected) SuccessGreen else BorderGray,
+                                                CircleShape
+                                            )
                                             .clickable {
                                                 selectedDays = if (isSelected) {
                                                     selectedDays - day
@@ -445,7 +451,7 @@ fun SetupTargetScreen(
                                             text = stringResource(daysMap[day]!!),
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isSelected) OnPureBlack else PureBlack
+                                            color = if (isSelected) SuccessGreen else MutedGray
                                         )
                                     }
                                 }
