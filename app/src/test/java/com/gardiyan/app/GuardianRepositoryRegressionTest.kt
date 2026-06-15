@@ -521,6 +521,75 @@ class GuardianRepositoryRegressionTest {
     }
 
     @Test
+    fun `resetDailyCountersIfNeeded allows a small 30 minute forward jump within tolerance`() = runBlocking {
+        // Tolerans 1 saattir (CLOCK_FORWARD_JUMP_TOLERANCE_MS). 30 dk'lık öne fırlama
+        // (örn. DST/NTP düzeltmesi veya gece yarısına yakın küçük kayma) yasal sayılır.
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 1000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        database.guardianDao().updateRestrictedApp(
+            database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+
+        secureRepository.resetDailyCountersIfNeeded()
+
+        // Duvar saati 30 dk öne fırladı, monotonik saat ~1 sn ilerledi -> forwardJump ~30dk <= 1sa
+        testProvider.mockLocalDateString = "2026-06-11"
+        testProvider.mockTimeMillis += 30 * 60 * 1000L
+        testProvider.mockElapsedRealtime += 1_000L
+
+        secureRepository.resetDailyCountersIfNeeded()
+
+        // Tolerans dahilinde olduğu için sıfırlanmalıdır
+        val result = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(1800, result.remainingSecondsToday)
+        assertFalse(result.isFailed)
+    }
+
+    @Test
+    fun `resetDailyCountersIfNeeded blocks a 2 hour forward jump beyond tolerance`() = runBlocking {
+        // 2 saatlik öne fırlama, 1 saatlik toleransı aşar -> saat ileri alma (hile) sayılır.
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = 1000000000L,
+            mockElapsedRealtime = 1000000L,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        database.guardianDao().updateRestrictedApp(
+            database.guardianDao().getRestrictedAppByIdSync(id)!!.copy(
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+
+        secureRepository.resetDailyCountersIfNeeded()
+
+        // Duvar saati 2 saat öne fırladı, monotonik saat ~1 sn ilerledi -> forwardJump ~2sa > 1sa
+        testProvider.mockLocalDateString = "2026-06-11"
+        testProvider.mockTimeMillis += 2 * 3600 * 1000L
+        testProvider.mockElapsedRealtime += 1_000L
+
+        secureRepository.resetDailyCountersIfNeeded()
+
+        // Toleransı aştığı ve 22 saat dolmadığı için sıfırlama OLMAMALIDIR
+        val result = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(0, result.remainingSecondsToday)
+        assertTrue(result.isFailed)
+    }
+
+    @Test
     fun `resetDailyCountersIfNeeded logs an early reset prevention only once per date`() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val testProvider = TestTimeProvider(
