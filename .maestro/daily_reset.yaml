@@ -1,0 +1,29 @@
+# Senaryo (c): Günlük limitin gece yarısı sıfırlanması + Dashboard sayacı.
+#
+# MANUEL ÖN KOŞUL (otomatize edilemez):
+#   - Tüm izinler verilmiş olmalı (Dashboard/Ana Ekran görünmesi için).
+#
+# ÖNEMLİ KISIT: "Gece yarısı reset" tek bir Maestro koşusunda doğrulanamaz:
+#   - Maestro gece yarısına kadar bekleyemez.
+#   - `adb shell date` ile saat ileri alınabilir AMA GuardianRepository monotonik
+#     saat / boot-time çapraz kontrolü + 22 saatlik reset kilidi içerir; bu yapay
+#     saat değişikliğini "manipülasyon" olarak işaretler ve reseti engelleyebilir.
+#     (CLAUDE.md → "Time Manipulation Detection").
+#
+# Bu test, OTOMATİZE edilebilen kısmı yapar: Dashboard'ın bugünkü özet/sayaç
+# bölümünü görüntüler ve ekran görüntüsünü alır (reset öncesi/sonrası karşılaştırma
+# için referans). Gerçek reset doğrulaması: ya gerçek gece yarısı beklenir
+# (MANUEL) ya da cihaz saati gün değişimine ayarlanıp uygulama yeniden açılır.
+appId: com.gardiyan.app
+---
+- launchApp
+- runFlow:
+    when:
+      visible:
+        text: ".*(LİMİTRA|Bugün kontrol sende).*"
+    commands:
+      # Dashboard'daki bugünkü özet / aktif koruma sayacı görünür olmalı
+      - assertVisible:
+          text: ".*(BUGÜNKÜ ÖZET|Aktif koruma|uygulama|Limit durumu).*"
+      # Reset karşılaştırması için sayacın anlık durumunu kaydet
+      - takeScreenshot: daily_reset_counter

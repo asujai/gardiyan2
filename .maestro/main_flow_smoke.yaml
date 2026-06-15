@@ -1,0 +1,18 @@
+# Ana akış smoke testi: alt sekmeler arasında gezinme.
+# Manuel ön koşul: Alt navigasyon yalnızca TÜM izinler verildiğinde görünür.
+# İzinler verilmemişse akış güvenli şekilde atlanır.
+appId: com.gardiyan.app
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Ana Ekran"
+    commands:
+      - tapOn: "Korunanlar"
+      - assertVisible: "Ana Ekran"
+      - tapOn: "Profil & Ayarlar"
+      - assertVisible: "Ana Ekran"
+      - tapOn: "Ana Ekran"
+      - assertVisible:
+          text: ".*(LİMİTRA|Bugün kontrol sende).*"
+      - takeScreenshot: main_flow

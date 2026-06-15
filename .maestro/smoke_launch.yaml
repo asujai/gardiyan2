@@ -1,0 +1,11 @@
+# Smoke testi: Uygulama çökmeden açılıyor mu?
+# Manuel ön koşul: Yok. Uygulama izinli ya da izinsiz herhangi bir durumda açılabilmeli.
+# (İzinler verilmemişse İzin ekranı, verilmişse Pano/Dashboard görünür.)
+appId: com.gardiyan.app
+---
+- launchApp
+# Her iki başlangıç durumunu da kapsayan dayanıklı doğrulama:
+# İzin ekranı (İzin/Erişim metinleri) VEYA Pano (LİMİTRA / Ana Ekran) görünmeli.
+- assertVisible:
+    text: ".*(LİMİTRA|Limitra|Erişilebilirlik|Kullanım Erişimi|Ana Ekran|İzin).*"
+- takeScreenshot: smoke_launch

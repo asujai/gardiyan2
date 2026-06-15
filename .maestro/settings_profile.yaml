@@ -1,0 +1,16 @@
+# Profil & Ayarlar ekranı testi.
+# Manuel ön koşul: Alt navigasyon yalnızca TÜM izinler (overlay, kullanım,
+# erişilebilirlik, pil) verildiğinde görünür. İzinler verilmemişse bu akış
+# güvenli şekilde atlanır (uygulama İzin ekranında kalır, test çökmeden geçer).
+appId: com.gardiyan.app
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Profil & Ayarlar"
+    commands:
+      - tapOn: "Profil & Ayarlar"
+      # Profil ekranındaki kararlı öğeler:
+      - assertVisible:
+          text: ".*(Gizlilik Politikası|Verilerimi Temizle|Destek).*"
+      - takeScreenshot: settings_profile

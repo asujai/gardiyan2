@@ -1,0 +1,27 @@
+# Senaryo (d): Uygulama açıkken dış ağ isteği yapılmıyor (gizlilik).
+#
+# EN GÜÇLÜ KANIT (statik): AndroidManifest.xml'de android.permission.INTERNET YOK.
+# İzin olmadan uygulama TCP/UDP soketi açamaz → hiçbir dış ağ isteği mümkün değil.
+# (Manifest izinleri: SYSTEM_ALERT_WINDOW, PACKAGE_USAGE_STATS, FOREGROUND_SERVICE,
+#  FOREGROUND_SERVICE_SPECIAL_USE, POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, WAKE_LOCK.)
+#
+# Maestro ağ trafiğini doğrudan ölçemez. Çalışma zamanı doğrulaması için yanına
+# adb komutu çalıştırılmalıdır (companion script):
+#   adb shell ss -tunp | findstr <uid>            # aktif soket yok beklenir
+#   adb shell cat /proc/net/xt_qtaguid/stats      # (eski Android'lerde) uid trafiği
+# uid: adb shell dumpsys package com.gardiyan.app | findstr userId
+#
+# Bu Maestro koşusu: uygulamayı açar, kısa süre etkileşimsiz bekler (ağ isteği
+# yapılacaksa bu pencerede yapılırdı) ve ekran görüntüsü alır. Soket doğrulaması
+# raporun adb adımında yapılır.
+appId: com.gardiyan.app
+---
+- launchApp
+- assertVisible:
+    text: ".*(LİMİTRA|Limitra|Erişilebilirlik|Kullanım Erişimi|Ana Ekran|İzin).*"
+# Açılıştan sonra ağ etkinliği penceresi: 8 sn etkileşimsiz bekle
+- extendedWaitUntil:
+    visible:
+      text: ".*(LİMİTRA|Limitra|Erişilebilirlik|Kullanım Erişimi|Ana Ekran|İzin).*"
+    timeout: 8000
+- takeScreenshot: privacy_check

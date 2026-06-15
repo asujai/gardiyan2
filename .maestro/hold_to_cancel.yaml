@@ -1,0 +1,34 @@
+# Senaryo (b): Kilidi kaldırmak için "5 dakika basılı tut" gesture'ı.
+#
+# MANUEL ÖN KOŞUL (otomatize edilemez):
+#   1. Tüm izinler verilmiş olmalı — alt navigasyon (Korunanlar/Ana Ekran) yalnızca
+#      o zaman görünür.
+#   2. En az bir kısıtlı uygulama eklenmiş olmalı (KISITLAMAYI KALDIR butonu için).
+#
+# ÖNEMLİ KISIT: Kaldırma butonu 300000 ms = 5 DAKİKA kesintisiz basılı tutmayı
+# gerektirir (HoldToCancelButton.kt / ProtectedAppsScreen.kt: CANCEL_HOLD_DURATION_MS).
+# Maestro `longPressOn` yalnızca kısa süreli (~1 sn) bir basıştır; 5 dakikalık
+# kesintisiz basışı güvenilir biçimde simüle EDEMEZ. Bu nedenle:
+#   - Bu test gesture'ın BAŞLADIĞINI doğrular ("BIRAKMAYIN · Ns" geri sayımı).
+#   - Kilidin tam olarak kalkması ("KALDIRILDI" + uygulamanın açılması) MANUEL
+#     test gerektirir.
+appId: com.gardiyan.app
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Ana Ekran"
+    commands:
+      - tapOn: "Korunanlar"
+      # Kaldırma butonu varsa (en az bir kısıtlı uygulama ekli) gesture'ı dene.
+      - runFlow:
+          when:
+            visible:
+              text: ".*KISITLAMAYI KALDIR.*"
+          commands:
+            - longPressOn:
+                text: ".*KISITLAMAYI KALDIR.*"
+            # Basış kaydedildiğinde geri sayım veya tamamlanma metni belirir.
+            - assertVisible:
+                text: ".*(BIRAKMAYIN|KALDIRILDI).*"
+            - takeScreenshot: hold_to_cancel

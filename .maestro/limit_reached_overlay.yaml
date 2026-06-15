@@ -1,0 +1,38 @@
+# Senaryo (a): Limit dolunca kilit overlay'i görünüyor mu + çıkış engellendi mi?
+#
+# MANUEL ÖN KOŞUL (otomatize edilemez):
+#   1. Tüm izinler verilmiş olmalı (Overlay, Kullanım Erişimi, Erişilebilirlik, Pil).
+#   2. ${TARGET_APP} Gardiyan'da kısıtlı uygulama olarak eklenmiş VE günlük limiti
+#      tükenmiş (kalan = 0) olmalı. Limit testte programatik olarak sıfırlanamaz;
+#      ya gerçek kullanımla tüketilir ya da düşük bir limit (ör. 1 dk) ayarlanıp
+#      beklenir.
+#
+# Ön koşul sağlanmışsa: hedef uygulama açılınca overlay belirir ve test gerçek
+# doğrulama yapar. Sağlanmamışsa overlay çıkmaz; `when: visible` guard'ı sayesinde
+# test güvenle atlanır (false-negative üretmez) — bu durum "manuel test gerekli".
+#
+# Overlay, hedef uygulamanın ÜZERİNE WindowManager ile çizilen native bir View'dir;
+# Maestro metinlerini accessibility hiyerarşisinden okuyabilir.
+appId: com.gardiyan.app
+env:
+  TARGET_APP: com.instagram.android
+---
+# Kısıtlı hedef uygulamayı aç (limit doluysa Gardiyan overlay'i tetikler)
+- launchApp:
+    appId: ${TARGET_APP}
+
+# Overlay göründüyse gerçek doğrulamayı yap; görünmediyse güvenle atla.
+- runFlow:
+    when:
+      visible:
+        text: ".*(Limitra aktif|Bugünlük limitin doldu|Kısıtlı Uygulama).*"
+    commands:
+      # 1) Kilit overlay'i ekranda
+      - assertVisible:
+          text: ".*(Bugünlük limitin doldu|Kısıtlı Uygulama|Devam etmek için ana ekrana).*"
+      - takeScreenshot: limit_reached_overlay
+
+      # 2) Normal çıkış engellenmeli: Geri tuşu overlay'i kapatmamalı
+      - pressKey: Back
+      - assertVisible:
+          text: ".*(Bugünlük limitin doldu|Kısıtlı Uygulama|Devam etmek için ana ekrana).*"
