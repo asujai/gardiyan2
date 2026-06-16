@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
@@ -172,7 +174,7 @@ fun MainNavigationContent(
                 ) {
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, contentDescription = stringResource(R.string.nav_home)) },
-                        label = { Text(stringResource(R.string.nav_home), fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) },
+                        label = { NavBarLabel(stringResource(R.string.nav_home)) },
                         selected = currentRoute == ROUTE_DASHBOARD,
                         onClick = {
                             if (currentRoute != ROUTE_DASHBOARD) {
@@ -194,7 +196,7 @@ fun MainNavigationContent(
 
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Lock, contentDescription = stringResource(R.string.nav_protected)) },
-                        label = { Text(stringResource(R.string.nav_protected), fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) },
+                        label = { NavBarLabel(stringResource(R.string.nav_protected)) },
                         selected = currentRoute == ROUTE_PROTECTED,
                         onClick = {
                             if (currentRoute != ROUTE_PROTECTED) {
@@ -216,7 +218,7 @@ fun MainNavigationContent(
 
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Person, contentDescription = stringResource(R.string.nav_profile)) },
-                        label = { Text(stringResource(R.string.nav_profile), fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) },
+                        label = { NavBarLabel(stringResource(R.string.nav_profile)) },
                         selected = currentRoute == ROUTE_SETTINGS,
                         onClick = {
                             if (currentRoute != ROUTE_SETTINGS) {
@@ -252,4 +254,24 @@ fun MainNavigationContent(
             )
         }
     }
+}
+
+/**
+ * Bottom navigation sekme etiketi. Tüm sekmeler aynı bileşeni kullanır; böylece
+ * "Profile & Settings" / "Profil & Einstellungen" gibi uzun çeviriler ikonun
+ * altında ortalı ve dengeli durur, gerektiğinde kontrollü biçimde iki satıra
+ * bölünür (locale bazlı özel kod yok).
+ */
+@Composable
+private fun NavBarLabel(text: String) {
+    Text(
+        text = text,
+        fontSize = 11.sp,
+        lineHeight = 13.sp,
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
+    )
 }
