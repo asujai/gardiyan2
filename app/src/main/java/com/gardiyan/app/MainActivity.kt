@@ -83,9 +83,10 @@ fun MainNavigationContent(
     val context = LocalContext.current
     var isOverlayEnabled by remember { mutableStateOf(viewModel.hasOverlayPermission(context)) }
     var isUsageEnabled by remember { mutableStateOf(viewModel.hasUsageStatsPermission(context)) }
-    var isAccessibilityEnabled by remember { mutableStateOf(viewModel.isAccessibilityServiceEnabled(context)) }
+    var accessibilityStatus by remember { mutableStateOf(viewModel.getAccessibilityServiceStatus(context)) }
     var isBatteryExempted by remember { mutableStateOf(viewModel.isBatteryOptimizationIgnored(context)) }
     var isNotificationsEnabled by remember { mutableStateOf(viewModel.areNotificationsEnabled(context)) }
+    val isAccessibilityEnabled = accessibilityStatus.isOperational
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -93,7 +94,10 @@ fun MainNavigationContent(
             if (event == Lifecycle.Event.ON_RESUME) {
                 val o = viewModel.hasOverlayPermission(context)
                 val u = viewModel.hasUsageStatsPermission(context)
-                val a = viewModel.isAccessibilityServiceEnabled(context)
+                val newAccessibilityStatus = viewModel.getAccessibilityServiceStatus(context)
+                val oldAccessibilityOperational = accessibilityStatus.isOperational
+                val oldAccessibilityNeedsReenable = accessibilityStatus.requiresReenable
+                val a = newAccessibilityStatus.isOperational
                 val b = viewModel.isBatteryOptimizationIgnored(context)
                 val n = viewModel.areNotificationsEnabled(context)
 
@@ -111,12 +115,19 @@ fun MainNavigationContent(
                     viewModel.logCriticalAction("PERMISSION_CHANGED", "Sistem İzinleri", "Kullanım erişimi izni: " + if (u) "VERİLDİ" else "ALINDI")
                     isUsageEnabled = u
                 }
-                if (a != isAccessibilityEnabled) {
-                    if (a && !isAccessibilityEnabled) {
+                if (a != oldAccessibilityOperational || newAccessibilityStatus.requiresReenable != oldAccessibilityNeedsReenable) {
+                    if (a && !oldAccessibilityOperational) {
                         android.widget.Toast.makeText(context, "✓ " + context.getString(R.string.perm_accessibility_title), android.widget.Toast.LENGTH_SHORT).show()
                     }
                     viewModel.logCriticalAction("PERMISSION_CHANGED", "Sistem İzinleri", "Erişilebilirlik izni: " + if (a) "VERİLDİ" else "ALINDI")
-                    isAccessibilityEnabled = a
+                    if (newAccessibilityStatus.requiresReenable) {
+                        viewModel.logCriticalAction(
+                            "ACCESSIBILITY_HEALTH_WARNING",
+                            "Sistem Izinleri",
+                            context.getString(R.string.accessibility_health_log_reenable)
+                        )
+                    }
+                    accessibilityStatus = newAccessibilityStatus
                 }
                 if (b != isBatteryExempted) {
                     if (b && !isBatteryExempted) {
@@ -140,11 +151,9 @@ fun MainNavigationContent(
         }
     }
 
-    LaunchedEffect(lifecycleOwner) {
+    LaunchedEffect(Unit) {
         while (true) {
-            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                isAccessibilityEnabled = viewModel.isAccessibilityServiceEnabled(context)
-            }
+            accessibilityStatus = viewModel.getAccessibilityServiceStatus(context)
             delay(2_000L)
         }
     }
@@ -249,6 +258,7 @@ fun MainNavigationContent(
                 isOverlayEnabled = isOverlayEnabled,
                 isUsageEnabled = isUsageEnabled,
                 isAccessibilityEnabled = isAccessibilityEnabled,
+                accessibilityNeedsReenable = accessibilityStatus.requiresReenable,
                 isBatteryExempted = isBatteryExempted,
                 isNotificationsEnabled = isNotificationsEnabled
             )

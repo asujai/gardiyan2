@@ -159,6 +159,9 @@
     <string name="keep_alive_notification_title">Uninterrupted Protection Warning</string>
     <string name="keep_alive_notification_desc">Remove battery optimization restrictions to keep protection active.</string>
     <string name="keep_alive_notification_long">The protection engine might have been stopped in the background because battery optimization exemption was not granted.</string>
+    <string name="accessibility_health_notification_title">Limitra protection is not active</string>
+    <string name="accessibility_health_notification_desc">Accessibility permission appears enabled, but the tracking service is not running. Turn Limitra Accessibility off and back on in Android settings.</string>
+    <string name="accessibility_health_log_reenable">Accessibility permission appears enabled, but the tracking service heartbeat is missing or stale. Turn the Limitra Accessibility permission off and back on.</string>
     <string name="overlay_restricted_app">Restricted App</string>
     <string name="overlay_active">Limitra active</string>
     <string name="overlay_desc">The limits of your selected app are protected.</string>
@@ -221,6 +224,10 @@
     <string name="btn_cancel">Cancel</string>
     <string name="perm_state_active">ACTIVE</string>
     <string name="perm_state_grant">GRANT PERMISSION</string>
+    <string name="perm_state_reenable">RE-ENABLE</string>
+    <string name="perm_accessibility_reenable_desc">Permission is listed as enabled, but the tracking service is inactive. Turn Accessibility off and back on.</string>
+    <string name="accessibility_reenable_warning">Accessibility permission appears enabled, but Limitra cannot confirm that the tracking service is running. Turn the Limitra Accessibility permission off and back on.</string>
+    <string name="accessibility_reenable_dialog_desc">Limitra Accessibility permission appears enabled, but the service heartbeat is missing or stale. In Android settings, turn the Limitra Accessibility permission off, then turn it back on so time tracking can restart.</string>
     <string name="timeline_today">Today</string>
     <string name="timeline_yesterday">Yesterday</string>
     <string name="timeline_this_week">This Week</string>

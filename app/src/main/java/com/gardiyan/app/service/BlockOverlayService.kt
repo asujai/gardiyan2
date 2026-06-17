@@ -31,6 +31,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.InputStream
@@ -168,6 +170,7 @@ class BlockOverlayService : Service() {
     private var windowManager: WindowManager? = null
     private var lockOverlayView: View? = null
     private var cycleJob: Job? = null
+    private var trackingHealthJob: Job? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -179,6 +182,7 @@ class BlockOverlayService : Service() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         createNotificationChannel()
         startForegroundCompat()
+        startTrackingHealthWatchdog()
         Log.i(TAG, "Service created (10s infinite loop lock)")
 
         pendingOverlayTarget?.let { (name, pkg) ->
@@ -207,6 +211,8 @@ class BlockOverlayService : Service() {
         visibleOverlayPackage = null
         cycleJob?.cancel()
         cycleJob = null
+        trackingHealthJob?.cancel()
+        trackingHealthJob = null
         removeLockOverlayView()
         serviceJob.cancel()
         super.onDestroy()
@@ -291,6 +297,53 @@ class BlockOverlayService : Service() {
                 enableVibration(false)
             }
             getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
+        }
+    }
+
+    private fun startTrackingHealthWatchdog() {
+        trackingHealthJob?.cancel()
+        trackingHealthJob = serviceScope.launch {
+            val db = GuardianDatabase.getDatabase(applicationContext)
+            val repository = GuardianRepository(applicationContext, db.guardianDao())
+            var hasWarnedUntilHealthy = false
+
+            while (isActive) {
+                try {
+                    val hasActiveRestrictions = withContext(Dispatchers.IO) {
+                        repository.getActiveRestrictedAppsSync().isNotEmpty()
+                    }
+
+                    if (hasActiveRestrictions) {
+                        withContext(Dispatchers.IO) {
+                            repository.cleanupStaleSessions()
+                        }
+
+                        val status = AccessibilityHealthMonitor.getStatus(applicationContext)
+                        if (status.requiresReenable) {
+                            if (!hasWarnedUntilHealthy) {
+                                Log.w(TAG, "Accessibility tracking heartbeat is stale; re-enable required")
+                                withContext(Dispatchers.IO) {
+                                    repository.insertLog(
+                                        eventType = "ACCESSIBILITY_HEALTH_WARNING",
+                                        appName = "",
+                                        details = getString(R.string.accessibility_health_log_reenable)
+                                    )
+                                }
+                                AccessibilityHealthMonitor.maybeNotifyReenableRequired(applicationContext)
+                                hasWarnedUntilHealthy = true
+                            }
+                        } else if (status.isOperational) {
+                            hasWarnedUntilHealthy = false
+                        }
+                    } else {
+                        hasWarnedUntilHealthy = false
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Tracking health watchdog failed: ${e.message}", e)
+                }
+
+                delay(AccessibilityHealthMonitor.HEARTBEAT_STALE_MS)
+            }
         }
     }
 

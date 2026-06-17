@@ -113,6 +113,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
     // UsageStats polling coroutine
     private var usageStatsPollingJob: Job? = null
+    private var heartbeatJob: Job? = null
 
     // RAM cache helper metotları
     private fun getCachedActiveRestrictedApps(): List<RestrictedAppEntity> {
@@ -132,6 +133,8 @@ class AppBlockAccessibilityService : AccessibilityService() {
         instance = this
         isRunning = true
         lastHeartbeatElapsedRealtime = SystemClock.elapsedRealtime()
+        AccessibilityHealthMonitor.recordServiceStarted(applicationContext)
+        startHeartbeat()
         Log.i(TAG, "Accessibility service connected")
 
         val db = GuardianDatabase.getDatabase(applicationContext)
@@ -190,8 +193,11 @@ class AppBlockAccessibilityService : AccessibilityService() {
         instance = null
         tickJob?.cancel()
         tickJob = null
+        heartbeatJob?.cancel()
+        heartbeatJob = null
         usageStatsPollingJob?.cancel()
         usageStatsPollingJob = null
+        AccessibilityHealthMonitor.recordServiceStopped(applicationContext)
         Log.w(TAG, "Accessibility service unbound")
 
         val db = GuardianDatabase.getDatabase(applicationContext)
@@ -218,8 +224,11 @@ class AppBlockAccessibilityService : AccessibilityService() {
         lastHeartbeatElapsedRealtime = 0L
         tickJob?.cancel()
         tickJob = null
+        heartbeatJob?.cancel()
+        heartbeatJob = null
         usageStatsPollingJob?.cancel()
         usageStatsPollingJob = null
+        AccessibilityHealthMonitor.recordServiceStopped(applicationContext)
 
         val db = GuardianDatabase.getDatabase(applicationContext)
         val repository = GuardianRepository(applicationContext, db.guardianDao())
@@ -246,6 +255,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         try {
+            recordHealthyTrackingTick()
             if (event == null) return
             if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
@@ -309,7 +319,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
             while (isActive) {
                 try {
-                    lastHeartbeatElapsedRealtime = SystemClock.elapsedRealtime()
+                    recordHealthyTrackingTick()
                     val today = todayKey()
                     val evalPrefs = getSharedPreferences("gardiyan_eval_prefs", Context.MODE_PRIVATE)
                     val hasLoggedActiveToday = evalPrefs.getBoolean("logged_active_$today", false)
@@ -463,6 +473,23 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 }
             }
         }
+    }
+
+    private fun startHeartbeat() {
+        heartbeatJob?.cancel()
+        heartbeatJob = a11yScope.launch {
+            while (isActive) {
+                lastHeartbeatElapsedRealtime = SystemClock.elapsedRealtime()
+                AccessibilityHealthMonitor.recordServiceHeartbeat(applicationContext)
+                delay(AccessibilityHealthMonitor.HEARTBEAT_INTERVAL_MS)
+            }
+        }
+    }
+
+    private fun recordHealthyTrackingTick() {
+        lastHeartbeatElapsedRealtime = SystemClock.elapsedRealtime()
+        AccessibilityHealthMonitor.recordServiceHeartbeat(applicationContext)
+        AccessibilityHealthMonitor.recordTrackingHeartbeat(applicationContext)
     }
 
     /**

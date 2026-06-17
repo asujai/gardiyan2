@@ -33,6 +33,7 @@ fun PermissionsScreen(
     isOverlayEnabled: Boolean,
     isUsageEnabled: Boolean,
     isAccessibilityEnabled: Boolean,
+    accessibilityNeedsReenable: Boolean,
     isBatteryExempted: Boolean,
     isNotificationsEnabled: Boolean,
     onNavigateToDashboard: () -> Unit
@@ -58,7 +59,11 @@ fun PermissionsScreen(
             },
             text = {
                 Text(
-                    text = stringResource(R.string.disclosure_accessibility_desc),
+                    text = if (accessibilityNeedsReenable) {
+                        stringResource(R.string.accessibility_reenable_dialog_desc)
+                    } else {
+                        stringResource(R.string.disclosure_accessibility_desc)
+                    },
                     color = MutedGray,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
@@ -289,6 +294,36 @@ fun PermissionsScreen(
             )
         }
 
+        if (accessibilityNeedsReenable) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, DangerRed.copy(alpha = 0.25f), RoundedCornerShape(16.dp)),
+                colors = CardDefaults.cardColors(containerColor = DangerRed.copy(alpha = 0.06f)),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = DangerRed,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.accessibility_reenable_warning),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = DangerRed,
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+        }
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -331,8 +366,17 @@ fun PermissionsScreen(
 
             ModernPermissionCard(
                 title = stringResource(R.string.perm_accessibility_title),
-                description = stringResource(R.string.perm_accessibility_desc),
+                description = if (accessibilityNeedsReenable) {
+                    stringResource(R.string.perm_accessibility_reenable_desc)
+                } else {
+                    stringResource(R.string.perm_accessibility_desc)
+                },
                 isGranted = isAccessibilityEnabled,
+                stateText = if (accessibilityNeedsReenable) {
+                    stringResource(R.string.perm_state_reenable)
+                } else {
+                    null
+                },
                 onClick = { showAccessibilityDialog = true }
             )
 
@@ -379,6 +423,7 @@ private fun ModernPermissionCard(
     title: String,
     description: String,
     isGranted: Boolean,
+    stateText: String? = null,
     onClick: () -> Unit
 ) {
     Card(
@@ -407,7 +452,7 @@ private fun ModernPermissionCard(
             }
 
             Text(
-                text = if (isGranted) stringResource(R.string.perm_state_active) else stringResource(R.string.perm_state_grant),
+                text = stateText ?: if (isGranted) stringResource(R.string.perm_state_active) else stringResource(R.string.perm_state_grant),
                 fontSize = 9.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = if (isGranted) SuccessGreen else DangerRed

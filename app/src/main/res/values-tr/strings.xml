@@ -157,6 +157,9 @@
     <string name="keep_alive_notification_title">Kesintisiz Koruma Uyarısı</string>
     <string name="keep_alive_notification_desc">Korumayı aktif tutmak için pil optimizasyonu kısıtlamasını kaldırın.</string>
     <string name="keep_alive_notification_long">Pil optimizasyonu muafiyeti verilmediği için koruma motoru arka planda durdurulmuş olabilir.</string>
+    <string name="accessibility_health_notification_title">Limitra koruması aktif değil</string>
+    <string name="accessibility_health_notification_desc">Erişilebilirlik izni açık görünüyor, ancak takip servisi çalışmıyor. Android ayarlarında Limitra Erişilebilirlik iznini kapatıp tekrar açın.</string>
+    <string name="accessibility_health_log_reenable">Erişilebilirlik izni açık görünüyor, ancak takip servisi heartbeat\'i yok veya bayat. Limitra Erişilebilirlik iznini kapatıp tekrar açın.</string>
     <string name="overlay_restricted_app">Kısıtlı Uygulama</string>
     <string name="overlay_active">Limitra aktif</string>
     <string name="overlay_desc">Seçtiğin uygulama sınırları korunuyor.</string>
@@ -219,6 +222,10 @@
     <string name="btn_cancel">Vazgeç</string>
     <string name="perm_state_active">AKTİF</string>
     <string name="perm_state_grant">YETKİ VER</string>
+    <string name="perm_state_reenable">TEKRAR AÇ</string>
+    <string name="perm_accessibility_reenable_desc">İzin açık listeleniyor, ancak takip servisi aktif değil. Erişilebilirlik iznini kapatıp tekrar açın.</string>
+    <string name="accessibility_reenable_warning">Erişilebilirlik izni açık görünüyor, ancak Limitra takip servisinin çalıştığını doğrulayamıyor. Limitra Erişilebilirlik iznini kapatıp tekrar açın.</string>
+    <string name="accessibility_reenable_dialog_desc">Limitra Erişilebilirlik izni açık görünüyor, ancak servis heartbeat\'i yok veya bayat. Süre takibinin yeniden başlaması için Android ayarlarında Limitra Erişilebilirlik iznini kapatın, sonra tekrar açın.</string>
     <string name="timeline_today">Bugün</string>
     <string name="timeline_yesterday">Dün</string>
     <string name="timeline_this_week">Bu Hafta</string>

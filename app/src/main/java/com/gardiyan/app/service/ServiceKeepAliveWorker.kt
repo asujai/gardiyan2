@@ -54,6 +54,19 @@ class ServiceKeepAliveWorker(
             if (!BlockOverlayService.isServiceRunning.get()) {
                 BlockOverlayService.start(applicationContext)
             }
+
+            val accessibilityStatus = AccessibilityHealthMonitor.getStatus(applicationContext)
+            if (accessibilityStatus.requiresReenable) {
+                withContext(Dispatchers.IO) {
+                    repository.cleanupStaleSessions()
+                    repository.insertLog(
+                        eventType = "ACCESSIBILITY_HEALTH_WARNING",
+                        appName = "",
+                        details = applicationContext.getString(R.string.accessibility_health_log_reenable)
+                    )
+                }
+                AccessibilityHealthMonitor.maybeNotifyReenableRequired(applicationContext)
+            }
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()

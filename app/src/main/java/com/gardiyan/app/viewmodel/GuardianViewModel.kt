@@ -18,6 +18,7 @@ import com.gardiyan.app.data.local.entity.UserSessionEntity
 import com.gardiyan.app.data.model.AppUsageSummary
 import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.data.repository.GuardianRepository
+import com.gardiyan.app.service.AccessibilityHealthMonitor
 import com.gardiyan.app.service.AppBlockAccessibilityService
 import com.gardiyan.app.service.BlockOverlayService
 import com.gardiyan.app.service.KeepAliveScheduler
@@ -37,17 +38,7 @@ internal fun isAccessibilityComponentEnabled(
     packageName: String,
     className: String
 ): Boolean {
-    if (enabledServicesSetting.isNullOrBlank()) return false
-    val expectedFull = "$packageName/$className"
-    val shortClass = if (className.startsWith("$packageName.")) {
-        className.substring(packageName.length) // ".Service" -> ön nokta korunur
-    } else {
-        ".$className"
-    }
-    val expectedShort = "$packageName/$shortClass"
-    return enabledServicesSetting.split(':')
-        .map { it.trim() }
-        .any { it.equals(expectedFull, ignoreCase = true) || it.equals(expectedShort, ignoreCase = true) }
+    return AccessibilityHealthMonitor.isComponentEnabled(enabledServicesSetting, packageName, className)
 }
 
 class GuardianViewModel(context: Context) : ViewModel() {
@@ -466,19 +457,11 @@ class GuardianViewModel(context: Context) : ViewModel() {
     }
 
     fun isAccessibilityServiceEnabled(context: Context): Boolean {
-        // Canonical kaynak: sistemin enabled_accessibility_services listesi.
-        // Eskiden runtime heartbeat'e (isHealthy) bakılıyordu; process yeni başladığında
-        // heartbeat henüz set edilmediği için izin AÇIK olsa bile KAPALI görünüyordu
-        // (yanlış-negatif). Artık doğrudan sistem ayarındaki component eşleşmesine bakılır.
-        val enabledServices = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        )
-        return isAccessibilityComponentEnabled(
-            enabledServices,
-            context.packageName,
-            AppBlockAccessibilityService::class.java.name
-        )
+        return getAccessibilityServiceStatus(context).isOperational
+    }
+
+    fun getAccessibilityServiceStatus(context: Context): AccessibilityHealthMonitor.Status {
+        return AccessibilityHealthMonitor.getStatus(context)
     }
 
     fun openAccessibilitySettings(context: Context) {

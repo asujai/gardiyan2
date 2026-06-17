@@ -30,6 +30,7 @@ fun AppNavGraph(
     isOverlayEnabled: Boolean,
     isUsageEnabled: Boolean,
     isAccessibilityEnabled: Boolean,
+    accessibilityNeedsReenable: Boolean,
     isBatteryExempted: Boolean,
     isNotificationsEnabled: Boolean
 ) {
@@ -45,6 +46,7 @@ fun AppNavGraph(
                 isOverlayEnabled = isOverlayEnabled,
                 isUsageEnabled = isUsageEnabled,
                 isAccessibilityEnabled = isAccessibilityEnabled,
+                accessibilityNeedsReenable = accessibilityNeedsReenable,
                 isBatteryExempted = isBatteryExempted,
                 isNotificationsEnabled = isNotificationsEnabled,
                 onNavigateToDashboard = {
