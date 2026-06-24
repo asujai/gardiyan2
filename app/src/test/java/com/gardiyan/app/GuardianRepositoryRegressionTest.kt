@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.gardiyan.app.data.local.database.GuardianDatabase
 import com.gardiyan.app.data.repository.GuardianRepository
+import com.gardiyan.app.data.time.TimeProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -22,6 +23,17 @@ class GuardianRepositoryRegressionTest {
 
     private lateinit var database: GuardianDatabase
     private lateinit var repository: GuardianRepository
+
+    private class FakeTimeProvider(
+        var wallMillis: Long = 1_800_000_000_000L,
+        var elapsedMillis: Long = 1_000_000L
+    ) : TimeProvider {
+        override fun currentTimeMillis(): Long = wallMillis
+        override fun elapsedRealtime(): Long = elapsedMillis
+        override fun localDateString(): String = "2026-06-10"
+        override fun todayDayLabel(): String = "Pzt"
+        override fun timezoneId(): String = "Europe/Istanbul"
+    }
 
     @Before
     fun setUp() {
@@ -290,7 +302,8 @@ class GuardianRepositoryRegressionTest {
         val dbSession = database.guardianDao().getActiveSessionSync()!!
         database.guardianDao().updateActiveSession(
             dbSession.copy(
-                lastSeenAtMillis = System.currentTimeMillis() - 5000L
+                lastSeenAtMillis = System.currentTimeMillis() - 5000L,
+                lastSeenElapsedRealtime = 0L
             )
         )
         
@@ -312,7 +325,8 @@ class GuardianRepositoryRegressionTest {
         database.guardianDao().updateActiveSession(
             dbSession.copy(
                 entryAtMillis = System.currentTimeMillis() - 10000L,
-                lastSeenAtMillis = System.currentTimeMillis() - 3000L
+                lastSeenAtMillis = System.currentTimeMillis() - 3000L,
+                lastSeenElapsedRealtime = 0L
             )
         )
         
@@ -334,7 +348,8 @@ class GuardianRepositoryRegressionTest {
         database.guardianDao().updateActiveSession(
             dbSession.copy(
                 entryAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L,
-                lastSeenAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L
+                lastSeenAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L,
+                lastSeenElapsedRealtime = 0L
             )
         )
         
@@ -343,7 +358,7 @@ class GuardianRepositoryRegressionTest {
         val result = repository.getRestrictedAppByIdSync(id)!!
         val remaining = result.remainingSecondsToday
         assertEquals(0, remaining)
-        assertTrue(result.isFailed)
+        assertFalse(result.isFailed)
     }
 
     @Test
@@ -357,7 +372,8 @@ class GuardianRepositoryRegressionTest {
         database.guardianDao().updateActiveSession(
             dbSession.copy(
                 entryAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L,
-                lastSeenAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L
+                lastSeenAtMillis = System.currentTimeMillis() - 12 * 3600 * 1000L,
+                lastSeenElapsedRealtime = 0L
             )
         )
         
@@ -366,7 +382,7 @@ class GuardianRepositoryRegressionTest {
         val result = repository.getRestrictedAppByIdSync(id)!!
         val remaining = result.remainingSecondsToday
         assertEquals(0, remaining)
-        assertTrue(result.isFailed)
+        assertFalse(result.isFailed)
     }
 
     @Test
@@ -378,7 +394,10 @@ class GuardianRepositoryRegressionTest {
 
         val dbSession = database.guardianDao().getActiveSessionSync()!!
         database.guardianDao().updateActiveSession(
-            dbSession.copy(lastSeenAtMillis = System.currentTimeMillis() - 45_000L)
+            dbSession.copy(
+                lastSeenAtMillis = System.currentTimeMillis() - 45_000L,
+                lastSeenElapsedRealtime = 0L
+            )
         )
 
         repository.updateSessionLastSeen("test.package")
@@ -388,6 +407,144 @@ class GuardianRepositoryRegressionTest {
     }
 
     // --- Yeni Zaman Açığı ve Günlük Reset Testleri ---
+
+    @Test
+    fun `heartbeat charges elapsed realtime when wall clock moves backwards`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val fakeTime = FakeTimeProvider()
+        val timedRepository = GuardianRepository(context, database.guardianDao(), fakeTime)
+        val id = timedRepository.upsertRestrictedApp("test.package", "Test", 30)
+        val app = timedRepository.getRestrictedAppByIdSync(id)!!
+
+        timedRepository.startSession(app)
+        fakeTime.wallMillis -= 5_000L
+        fakeTime.elapsedMillis += 45_000L
+
+        timedRepository.updateSessionLastSeen("test.package")
+
+        val result = timedRepository.getRestrictedAppByIdSync(id)!!
+        assertTrue(result.remainingSecondsToday in 1753..1757)
+    }
+
+    @Test
+    fun `usage stats reconciliation initializes unknown baseline without charging old usage`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 120)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        repository.updateRestrictedApp(
+            app.copy(
+                usageStatsBaselineMillisToday = GuardianRepository.UNKNOWN_USAGE_STATS_BASELINE,
+                lastUsageStatsObservedMillisToday = 0L
+            )
+        )
+
+        val result = repository.reconcileRestrictedAppWithObservedUsage(
+            appId = id,
+            observedUsageMillisToday = 75 * 60_000L
+        )
+
+        val updated = repository.getRestrictedAppByIdSync(id)!!
+        assertTrue(result!!.baselineInitialized)
+        assertEquals(75 * 60_000L, updated.usageStatsBaselineMillisToday)
+        assertEquals(120 * 60, updated.remainingSecondsToday)
+        assertFalse(updated.isFailed)
+    }
+
+    @Test
+    fun `usage stats reconciliation charges measured usage when baseline was unknown`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 120)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        repository.updateRestrictedApp(
+            app.copy(
+                usageStatsBaselineMillisToday = GuardianRepository.UNKNOWN_USAGE_STATS_BASELINE,
+                lastUsageStatsObservedMillisToday = 0L,
+                remainingSecondsToday = 120 * 60
+            )
+        )
+
+        val result = repository.reconcileRestrictedAppWithObservedUsage(
+            appId = id,
+            observedUsageMillisToday = 150 * 60_000L,
+            measuredUsageMillisSinceTrackingStart = 120 * 60_000L
+        )
+
+        val updated = repository.getRestrictedAppByIdSync(id)!!
+        assertTrue(result!!.baselineInitialized)
+        assertEquals(120 * 60, result.adjustedSeconds)
+        assertEquals(30 * 60_000L, updated.usageStatsBaselineMillisToday)
+        assertEquals(0, updated.remainingSecondsToday)
+        assertFalse(updated.isFailed)
+    }
+
+    @Test
+    fun `usage stats reconciliation charges usage after restriction baseline`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 120)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        repository.updateRestrictedApp(
+            app.copy(
+                usageStatsBaselineMillisToday = 10 * 60_000L,
+                lastUsageStatsObservedMillisToday = 10 * 60_000L,
+                remainingSecondsToday = 120 * 60
+            )
+        )
+
+        val result = repository.reconcileRestrictedAppWithObservedUsage(
+            appId = id,
+            observedUsageMillisToday = 95 * 60_000L
+        )
+
+        val updated = repository.getRestrictedAppByIdSync(id)!!
+        assertEquals(85 * 60, result!!.adjustedSeconds)
+        assertEquals(35 * 60, updated.remainingSecondsToday)
+        assertEquals(35, updated.remainingMinutesToday)
+        assertFalse(updated.isFailed)
+    }
+
+    @Test
+    fun `usage stats reconciliation never gives time back`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 120)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        repository.updateRestrictedApp(
+            app.copy(
+                usageStatsBaselineMillisToday = 0L,
+                lastUsageStatsObservedMillisToday = 0L,
+                remainingSecondsToday = 30 * 60,
+                remainingMinutesToday = 30
+            )
+        )
+
+        val result = repository.reconcileRestrictedAppWithObservedUsage(
+            appId = id,
+            observedUsageMillisToday = 10 * 60_000L
+        )
+
+        val updated = repository.getRestrictedAppByIdSync(id)!!
+        assertEquals(null, result)
+        assertEquals(30 * 60, updated.remainingSecondsToday)
+        assertEquals(30, updated.remainingMinutesToday)
+    }
+
+    @Test
+    fun `usage stats reconciliation can exhaust limit without marking failure`() = runBlocking {
+        val id = repository.upsertRestrictedApp("test.package", "Test", 120)
+        val app = repository.getRestrictedAppByIdSync(id)!!
+        repository.updateRestrictedApp(
+            app.copy(
+                usageStatsBaselineMillisToday = 0L,
+                lastUsageStatsObservedMillisToday = 0L,
+                remainingSecondsToday = 120 * 60
+            )
+        )
+
+        val result = repository.reconcileRestrictedAppWithObservedUsage(
+            appId = id,
+            observedUsageMillisToday = 150 * 60_000L
+        )
+
+        val updated = repository.getRestrictedAppByIdSync(id)!!
+        assertEquals(120 * 60, result!!.adjustedSeconds)
+        assertEquals(0, updated.remainingSecondsToday)
+        assertFalse(updated.isFailed)
+    }
 
     class TestTimeProvider(
         var mockTimeMillis: Long = System.currentTimeMillis(),

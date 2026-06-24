@@ -59,6 +59,7 @@ class ServiceKeepAliveWorker(
             if (accessibilityStatus.requiresReenable) {
                 withContext(Dispatchers.IO) {
                     repository.cleanupStaleSessions()
+                    repository.reconcileRestrictedAppsWithUsageStats()
                     repository.insertLog(
                         eventType = "ACCESSIBILITY_HEALTH_WARNING",
                         appName = "",

@@ -21,7 +21,7 @@ import com.gardiyan.app.data.local.entity.UserSessionEntity
         RestrictedAppEntity::class,
         ActiveUsageSessionEntity::class
     ],
-    version = 9,
+    version = 11,
     exportSchema = false
 )
 abstract class GuardianDatabase : RoomDatabase() {
@@ -38,7 +38,15 @@ abstract class GuardianDatabase : RoomDatabase() {
                     GuardianDatabase::class.java,
                     "guardian_db"
                 )
-                .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                .addMigrations(
+                    MIGRATION_4_5,
+                    MIGRATION_5_6,
+                    MIGRATION_6_7,
+                    MIGRATION_7_8,
+                    MIGRATION_8_9,
+                    MIGRATION_9_10,
+                    MIGRATION_10_11
+                )
                 .build()
                 INSTANCE = instance
                 instance
@@ -84,6 +92,85 @@ abstract class GuardianDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE restricted_apps ADD COLUMN lastLimitUpdateDate TEXT NOT NULL DEFAULT ''")
                 db.execSQL("ALTER TABLE restricted_apps ADD COLUMN todayMinLimitMinutes INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "usageStatsBaselineMillisToday",
+                    "ALTER TABLE restricted_apps ADD COLUMN usageStatsBaselineMillisToday INTEGER NOT NULL DEFAULT -1"
+                )
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "lastUsageStatsObservedMillisToday",
+                    "ALTER TABLE restricted_apps ADD COLUMN lastUsageStatsObservedMillisToday INTEGER NOT NULL DEFAULT 0"
+                )
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "lastUsageStatsReconciledAtMillis",
+                    "ALTER TABLE restricted_apps ADD COLUMN lastUsageStatsReconciledAtMillis INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "usageStatsBaselineMillisToday",
+                    "ALTER TABLE restricted_apps ADD COLUMN usageStatsBaselineMillisToday INTEGER NOT NULL DEFAULT -1"
+                )
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "lastUsageStatsObservedMillisToday",
+                    "ALTER TABLE restricted_apps ADD COLUMN lastUsageStatsObservedMillisToday INTEGER NOT NULL DEFAULT 0"
+                )
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "lastUsageStatsReconciledAtMillis",
+                    "ALTER TABLE restricted_apps ADD COLUMN lastUsageStatsReconciledAtMillis INTEGER NOT NULL DEFAULT 0"
+                )
+                addColumnIfMissing(
+                    db,
+                    "active_usage_session",
+                    "entryElapsedRealtime",
+                    "ALTER TABLE active_usage_session ADD COLUMN entryElapsedRealtime INTEGER NOT NULL DEFAULT 0"
+                )
+                addColumnIfMissing(
+                    db,
+                    "active_usage_session",
+                    "lastSeenElapsedRealtime",
+                    "ALTER TABLE active_usage_session ADD COLUMN lastSeenElapsedRealtime INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
+        private fun addColumnIfMissing(
+            db: SupportSQLiteDatabase,
+            tableName: String,
+            columnName: String,
+            alterSql: String
+        ) {
+            var exists = false
+            db.query("PRAGMA table_info(`$tableName`)").use { cursor ->
+                val nameIndex = cursor.getColumnIndex("name")
+                while (cursor.moveToNext()) {
+                    if (nameIndex >= 0 && cursor.getString(nameIndex) == columnName) {
+                        exists = true
+                        break
+                    }
+                }
+            }
+            if (!exists) {
+                db.execSQL(alterSql)
             }
         }
     }

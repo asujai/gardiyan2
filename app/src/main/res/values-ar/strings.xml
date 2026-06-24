@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <string name="accessibility_health_notification_title">حماية Limitra غير نشطة</string>
+    <string name="accessibility_health_notification_desc">يبدو أن إذن إمكانية الوصول مفعّل، لكن خدمة التتبع لا تعمل. أوقف إمكانية الوصول الخاصة بـ Limitra ثم شغّلها مرة أخرى من إعدادات Android.</string>
+    <string name="accessibility_health_log_reenable">يبدو أن إذن إمكانية الوصول مفعّل، لكن إشارة نشاط خدمة التتبع مفقودة أو قديمة. أوقف إمكانية الوصول الخاصة بـ Limitra ثم شغّلها مرة أخرى.</string>
+    <string name="perm_state_reenable">إعادة التفعيل</string>
+    <string name="perm_accessibility_reenable_desc">الإذن ظاهر على أنه مفعّل، لكن خدمة التتبع غير نشطة. أوقف إمكانية الوصول ثم شغّلها مرة أخرى.</string>
+    <string name="accessibility_reenable_warning">يبدو أن إذن إمكانية الوصول مفعّل، لكن Limitra لا يمكنه التأكد من أن خدمة التتبع تعمل. أوقف إمكانية الوصول الخاصة بـ Limitra ثم شغّلها مرة أخرى.</string>
+    <string name="accessibility_reenable_dialog_desc">يبدو أن إذن إمكانية الوصول الخاص بـ Limitra مفعّل، لكن إشارة نشاط الخدمة مفقودة أو قديمة. من إعدادات Android، أوقف إذن إمكانية الوصول الخاص بـ Limitra ثم شغّله مرة أخرى حتى يبدأ تتبع الوقت من جديد.</string>
     <string name="app_name">Limitra</string>
     <string name="accessibility_service_description">يستخدم Limitra هذا الإذن فقط لاكتشاف فتح تطبيق مقيد، من أجل فرض الحدود الرقمية وقيود التطبيقات المحددة. يتم معالجة جميع البيانات محلياً على جهازك؛ لا يتم جمع أي بيانات أو تصديرها. التتبع في الخلفية مخصص فقط لتشغيل قواعد الحظر التي تختارها.</string>
     <string name="notification_channel_service">خدمة حماية Limitra</string>

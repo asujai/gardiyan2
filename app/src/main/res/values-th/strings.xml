@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="accessibility_health_notification_title">การป้องกันของ Limitra ไม่ได้เปิดใช้งาน</string>
+    <string name="accessibility_health_notification_desc">สิทธิ์การช่วยเหลือพิเศษดูเหมือนเปิดใช้งานอยู่ แต่บริการติดตามไม่ทำงาน ปิดแล้วเปิด Limitra Accessibility อีกครั้งในการตั้งค่า Android</string>
+    <string name="accessibility_health_log_reenable">สิทธิ์การช่วยเหลือพิเศษดูเหมือนเปิดใช้งานอยู่ แต่สัญญาณการทำงานของบริการติดตามหายไปหรือล้าสมัย ปิดแล้วเปิด Limitra Accessibility อีกครั้ง</string>
+    <string name="perm_state_reenable">เปิดใช้งานอีกครั้ง</string>
+    <string name="perm_accessibility_reenable_desc">สิทธิ์แสดงว่าเปิดใช้งานอยู่ แต่บริการติดตามไม่ได้ทำงาน ปิดแล้วเปิด Accessibility อีกครั้ง</string>
+    <string name="accessibility_reenable_warning">สิทธิ์การช่วยเหลือพิเศษดูเหมือนเปิดใช้งานอยู่ แต่ Limitra ไม่สามารถยืนยันได้ว่าบริการติดตามกำลังทำงาน ปิดแล้วเปิด Limitra Accessibility อีกครั้ง</string>
+    <string name="accessibility_reenable_dialog_desc">สิทธิ์ Limitra Accessibility ดูเหมือนเปิดใช้งานอยู่ แต่สัญญาณการทำงานของบริการหายไปหรือล้าสมัย ในการตั้งค่า Android ให้ปิดสิทธิ์ Limitra Accessibility แล้วเปิดอีกครั้ง เพื่อให้การติดตามเวลาเริ่มทำงานใหม่</string>
     <string name="app_name">Limitra</string>
     <string name="overlay_brand_icon" translatable="false">&#x1F6E1;&#xFE0F;</string>
     <string name="overlay_initial_countdown" translatable="false">00:10</string>

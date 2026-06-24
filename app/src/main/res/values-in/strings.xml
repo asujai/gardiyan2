@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <string name="accessibility_health_notification_title">Perlindungan Limitra tidak aktif</string>
+    <string name="accessibility_health_notification_desc">Izin Aksesibilitas tampaknya aktif, tetapi layanan pelacakan tidak berjalan. Matikan lalu aktifkan kembali Aksesibilitas Limitra di setelan Android.</string>
+    <string name="accessibility_health_log_reenable">Izin Aksesibilitas tampaknya aktif, tetapi sinyal aktivitas layanan pelacakan hilang atau sudah usang. Matikan lalu aktifkan kembali Aksesibilitas Limitra.</string>
+    <string name="perm_state_reenable">AKTIFKAN ULANG</string>
+    <string name="perm_accessibility_reenable_desc">Izin tercantum sebagai aktif, tetapi layanan pelacakan tidak aktif. Matikan lalu aktifkan kembali Aksesibilitas.</string>
+    <string name="accessibility_reenable_warning">Izin Aksesibilitas tampaknya aktif, tetapi Limitra tidak dapat memastikan bahwa layanan pelacakan berjalan. Matikan lalu aktifkan kembali Aksesibilitas Limitra.</string>
+    <string name="accessibility_reenable_dialog_desc">Izin Aksesibilitas Limitra tampaknya aktif, tetapi sinyal aktivitas layanan hilang atau sudah usang. Di setelan Android, matikan izin Aksesibilitas Limitra lalu aktifkan kembali agar pelacakan waktu dapat dimulai ulang.</string>
     <string name="app_name">Limitra</string>
     <string name="accessibility_service_description">Limitra menggunakan izin ini hanya untuk mendeteksi kapan aplikasi yang dibatasi dibuka, guna menerapkan batas waktu dan batasan digital Anda. Semua data diproses secara lokal di perangkat Anda; tidak ada data yang dikumpulkan atau diekspor. Pelacakan latar belakang semata-mata untuk menjalankan aturan pemblokiran yang Anda pilih.</string>
     <string name="notification_channel_service">Layanan Perlindungan Limitra</string>

@@ -1,6 +1,9 @@
 package com.gardiyan.app.data.repository
 
+import android.app.usage.UsageStatsManager
+import android.app.usage.UsageEvents
 import android.content.Context
+import android.os.Build
 import com.gardiyan.app.data.local.dao.GuardianDao
 import com.gardiyan.app.data.local.entity.ActiveUsageSessionEntity
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
@@ -16,6 +19,15 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+data class UsageStatsReconciliationResult(
+    val appId: Long,
+    val packageName: String,
+    val appName: String,
+    val adjustedSeconds: Int,
+    val remainingSecondsToday: Int,
+    val baselineInitialized: Boolean = false
+)
+
 class GuardianRepository(
     private val context: Context,
     private val guardianDao: GuardianDao,
@@ -27,6 +39,8 @@ class GuardianRepository(
     companion object {
         const val ALL_DAYS = "Pzt,Sal,Çar,Per,Cum,Cmt,Paz"
         const val MAX_DAILY_LIMIT_MINUTES = 23 * 60 + 59
+        const val UNKNOWN_USAGE_STATS_BASELINE = -1L
+        const val USAGE_STATS_RECONCILE_TOLERANCE_SECONDS = 10
 
         // Duvar saatinin monotonik saate göre öne fırlamasına izin verilen tolerans.
         // DST/NTP düzeltmeleri (<=1 saat) yasal sayılır; bunun üzeri saat ileri alma
@@ -144,7 +158,11 @@ class GuardianRepository(
         activeDays: String = ALL_DAYS
     ): Long {
         val today = timeProvider.localDateString()
+        val now = timeProvider.currentTimeMillis()
         val safeDailyLimitMinutes = dailyLimitMinutes.coerceIn(1, MAX_DAILY_LIMIT_MINUTES)
+        val usageStatsBaseline = queryTodayUsageStatsMillis(packageName) ?: UNKNOWN_USAGE_STATS_BASELINE
+        val usageStatsObserved = usageStatsBaseline.coerceAtLeast(0L)
+        val usageStatsReconciledAt = now
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
         return if (existing != null) {
             guardianDao.updateRestrictedApp(
@@ -160,7 +178,10 @@ class GuardianRepository(
                     nextDayLimitMinutes = 0,
                     nextDayActiveDays = "",
                     lastLimitUpdateDate = today,
-                    todayMinLimitMinutes = safeDailyLimitMinutes
+                    todayMinLimitMinutes = safeDailyLimitMinutes,
+                    usageStatsBaselineMillisToday = usageStatsBaseline,
+                    lastUsageStatsObservedMillisToday = usageStatsObserved,
+                    lastUsageStatsReconciledAtMillis = usageStatsReconciledAt
                 )
             )
             existing.id
@@ -172,12 +193,16 @@ class GuardianRepository(
                     dailyLimitMinutes = safeDailyLimitMinutes,
                     remainingMinutesToday = safeDailyLimitMinutes,
                     remainingSecondsToday = safeDailyLimitMinutes * 60,
+                    createdAtMillis = now,
                     isActive = true,
                     isFailed = false,
                     activeDays = activeDays,
                     lastResetDate = today,
                     lastLimitUpdateDate = today,
-                    todayMinLimitMinutes = safeDailyLimitMinutes
+                    todayMinLimitMinutes = safeDailyLimitMinutes,
+                    usageStatsBaselineMillisToday = usageStatsBaseline,
+                    lastUsageStatsObservedMillisToday = usageStatsObserved,
+                    lastUsageStatsReconciledAtMillis = usageStatsReconciledAt
                 )
             )
         }
@@ -190,6 +215,7 @@ class GuardianRepository(
         activeDays: String = ALL_DAYS
     ): Long {
         val today = timeProvider.localDateString()
+        val now = timeProvider.currentTimeMillis()
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
         if (!com.gardiyan.app.BuildConfig.DEBUG) {
             if (existing != null) {
@@ -198,6 +224,9 @@ class GuardianRepository(
         }
         val safeTestSeconds = testSeconds.coerceIn(1, MAX_DAILY_LIMIT_MINUTES * 60)
         val dailyLimitMinutes = (safeTestSeconds + 59) / 60
+        val usageStatsBaseline = queryTodayUsageStatsMillis(packageName) ?: UNKNOWN_USAGE_STATS_BASELINE
+        val usageStatsObserved = usageStatsBaseline.coerceAtLeast(0L)
+        val usageStatsReconciledAt = now
         return if (existing != null) {
             guardianDao.updateRestrictedApp(
                 existing.copy(
@@ -210,7 +239,10 @@ class GuardianRepository(
                     activeDays = activeDays,
                     lastResetDate = today,
                     nextDayLimitMinutes = 0,
-                    nextDayActiveDays = ""
+                    nextDayActiveDays = "",
+                    usageStatsBaselineMillisToday = usageStatsBaseline,
+                    lastUsageStatsObservedMillisToday = usageStatsObserved,
+                    lastUsageStatsReconciledAtMillis = usageStatsReconciledAt
                 )
             )
             existing.id
@@ -222,10 +254,14 @@ class GuardianRepository(
                     dailyLimitMinutes = dailyLimitMinutes,
                     remainingMinutesToday = safeTestSeconds / 60,
                     remainingSecondsToday = safeTestSeconds,
+                    createdAtMillis = now,
                     isActive = true,
                     isFailed = false,
                     activeDays = activeDays,
-                    lastResetDate = today
+                    lastResetDate = today,
+                    usageStatsBaselineMillisToday = usageStatsBaseline,
+                    lastUsageStatsObservedMillisToday = usageStatsObserved,
+                    lastUsageStatsReconciledAtMillis = usageStatsReconciledAt
                 )
             )
         }
@@ -248,11 +284,139 @@ class GuardianRepository(
     }
 
     suspend fun resetRestrictedApp(id: Long) {
-        guardianDao.resetRestrictedApp(id, timeProvider.localDateString())
+        val app = guardianDao.getRestrictedAppByIdSync(id) ?: return
+        val now = timeProvider.currentTimeMillis()
+        val usageStatsBaseline = queryTodayUsageStatsMillis(app.packageName) ?: UNKNOWN_USAGE_STATS_BASELINE
+        val usageStatsObserved = usageStatsBaseline.coerceAtLeast(0L)
+        guardianDao.updateRestrictedApp(
+            app.copy(
+                isActive = true,
+                isFailed = false,
+                remainingSecondsToday = app.dailyLimitMinutes * 60,
+                remainingMinutesToday = app.dailyLimitMinutes,
+                lastResetDate = timeProvider.localDateString(),
+                lastLimitUpdateDate = "",
+                todayMinLimitMinutes = 0,
+                usageStatsBaselineMillisToday = usageStatsBaseline,
+                lastUsageStatsObservedMillisToday = usageStatsObserved,
+                lastUsageStatsReconciledAtMillis = now
+            )
+        )
     }
 
     suspend fun updateRestrictedApp(app: RestrictedAppEntity) {
         guardianDao.updateRestrictedApp(app)
+    }
+
+    suspend fun reconcileRestrictedAppsWithUsageStats(): List<UsageStatsReconciliationResult> {
+        resetDailyCountersIfNeeded()
+        val today = timeProvider.todayDayLabel()
+        val activeAppsForToday = guardianDao.getActiveRestrictedAppsSync().filter { app ->
+            val days = app.activeDays.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+            days.isEmpty() || days.contains(today)
+        }
+
+        return activeAppsForToday.mapNotNull { app ->
+            val observedMillis = queryTodayUsageStatsMillis(app.packageName) ?: return@mapNotNull null
+            val measuredMillisSinceTrackingStart = if (app.usageStatsBaselineMillisToday < 0L) {
+                val trackingStart = usageStatsTrackingStartMillis(app)
+                queryUsageEventsForegroundMillis(app.packageName, trackingStart, timeProvider.currentTimeMillis())
+            } else {
+                null
+            }
+            reconcileRestrictedAppWithObservedUsage(app, observedMillis, measuredMillisSinceTrackingStart)
+        }
+    }
+
+    suspend fun reconcileRestrictedAppWithObservedUsage(
+        appId: Long,
+        observedUsageMillisToday: Long,
+        measuredUsageMillisSinceTrackingStart: Long? = null
+    ): UsageStatsReconciliationResult? {
+        val app = guardianDao.getRestrictedAppByIdSync(appId) ?: return null
+        return reconcileRestrictedAppWithObservedUsage(
+            app = app,
+            observedUsageMillisToday = observedUsageMillisToday,
+            measuredUsageMillisSinceTrackingStart = measuredUsageMillisSinceTrackingStart
+        )
+    }
+
+    private suspend fun reconcileRestrictedAppWithObservedUsage(
+        app: RestrictedAppEntity,
+        observedUsageMillisToday: Long,
+        measuredUsageMillisSinceTrackingStart: Long? = null
+    ): UsageStatsReconciliationResult? {
+        if (!app.isActive || app.isFailed) return null
+
+        val observedMillis = observedUsageMillisToday.coerceAtLeast(0L)
+        val now = timeProvider.currentTimeMillis()
+        val baselineInitialized = app.usageStatsBaselineMillisToday < 0L
+
+        val usageStatsBaseline = if (baselineInitialized) {
+            measuredUsageMillisSinceTrackingStart
+                ?.coerceAtLeast(0L)
+                ?.let { measuredMillis -> (observedMillis - measuredMillis).coerceIn(0L, observedMillis) }
+                ?: observedMillis
+        } else {
+            app.usageStatsBaselineMillisToday
+        }
+
+        val limitSeconds = app.dailyLimitMinutes * 60
+        val usageAfterRestrictionMillis = (observedMillis - usageStatsBaseline)
+            .coerceAtLeast(0L)
+        val usageAfterRestrictionSeconds = elapsedWholeSeconds(usageAfterRestrictionMillis)
+        val usageStatsRemaining = (limitSeconds - usageAfterRestrictionSeconds)
+            .coerceIn(0, limitSeconds)
+        val currentRemaining = app.remainingSecondsToday.coerceIn(0, limitSeconds)
+        val missingSeconds = currentRemaining - usageStatsRemaining
+        val lastObserved = maxOf(app.lastUsageStatsObservedMillisToday, observedMillis)
+
+        if (missingSeconds <= USAGE_STATS_RECONCILE_TOLERANCE_SECONDS) {
+            if (
+                baselineInitialized ||
+                lastObserved != app.lastUsageStatsObservedMillisToday ||
+                app.lastUsageStatsReconciledAtMillis == 0L
+            ) {
+                guardianDao.updateRestrictedApp(
+                    app.copy(
+                        usageStatsBaselineMillisToday = usageStatsBaseline,
+                        lastUsageStatsObservedMillisToday = lastObserved,
+                        lastUsageStatsReconciledAtMillis = now
+                    )
+                )
+            }
+            return if (baselineInitialized) {
+                UsageStatsReconciliationResult(
+                    appId = app.id,
+                    packageName = app.packageName,
+                    appName = app.appName,
+                    adjustedSeconds = 0,
+                    remainingSecondsToday = app.remainingSecondsToday,
+                    baselineInitialized = true
+                )
+            } else {
+                null
+            }
+        }
+
+        guardianDao.updateRestrictedApp(
+            app.copy(
+                remainingSecondsToday = usageStatsRemaining,
+                remainingMinutesToday = usageStatsRemaining / 60,
+                usageStatsBaselineMillisToday = usageStatsBaseline,
+                lastUsageStatsObservedMillisToday = lastObserved,
+                lastUsageStatsReconciledAtMillis = now
+            )
+        )
+
+        return UsageStatsReconciliationResult(
+            appId = app.id,
+            packageName = app.packageName,
+            appName = app.appName,
+            adjustedSeconds = missingSeconds,
+            remainingSecondsToday = usageStatsRemaining,
+            baselineInitialized = baselineInitialized
+        )
     }
 
     suspend fun resetDailyCountersIfNeeded() {
@@ -356,7 +520,10 @@ class GuardianRepository(
                                 nextDayLimitMinutes = 0,
                                 nextDayActiveDays = "",
                                 lastLimitUpdateDate = "",
-                                todayMinLimitMinutes = 0
+                                todayMinLimitMinutes = 0,
+                                usageStatsBaselineMillisToday = 0L,
+                                lastUsageStatsObservedMillisToday = 0L,
+                                lastUsageStatsReconciledAtMillis = 0L
                             )
                         )
                     }
@@ -645,12 +812,15 @@ class GuardianRepository(
     suspend fun startSession(app: RestrictedAppEntity) {
         closeActiveSession("Yeni oturum başlatılıyor")
         val now = timeProvider.currentTimeMillis()
+        val nowElapsed = timeProvider.elapsedRealtime()
         val session = ActiveUsageSessionEntity(
             appId = app.id,
             packageName = app.packageName,
             appName = app.appName,
             entryAtMillis = now,
             lastSeenAtMillis = now,
+            entryElapsedRealtime = nowElapsed,
+            lastSeenElapsedRealtime = nowElapsed,
             isActive = true,
             createdAtMillis = now,
             updatedAtMillis = now
@@ -663,7 +833,8 @@ class GuardianRepository(
         val session = guardianDao.getActiveSessionSync() ?: return
         if (session.packageName == packageName) {
             val now = timeProvider.currentTimeMillis()
-            val deltaMs = now - session.lastSeenAtMillis
+            val nowElapsed = timeProvider.elapsedRealtime()
+            val deltaMs = elapsedSinceLastSeenMillis(session, now, nowElapsed)
 
             // Saat geriye alınırsa lastSeen'i geriye taşımayarak ücretsiz kullanım oluşmasını engelle.
             if (deltaMs <= 0L) {
@@ -677,6 +848,7 @@ class GuardianRepository(
                 // Tam saniyeler düşülürken kalan milisaniyeyi sonraki kalp atışına taşı.
                 val updated = session.copy(
                     lastSeenAtMillis = now - (deltaMs % 1000L),
+                    lastSeenElapsedRealtime = nowElapsed - (deltaMs % 1000L),
                     updatedAtMillis = now
                 )
                 guardianDao.updateActiveSession(updated)
@@ -697,13 +869,15 @@ class GuardianRepository(
     suspend fun closeActiveSession(reason: String) {
         val session = guardianDao.getActiveSessionSync() ?: return
         val now = timeProvider.currentTimeMillis()
-        val elapsedMs = now - session.lastSeenAtMillis
+        val nowElapsed = timeProvider.elapsedRealtime()
+        val elapsedMs = elapsedSinceLastSeenMillis(session, now, nowElapsed)
         val elapsedSec = elapsedWholeSeconds(elapsedMs)
         deductElapsedSeconds(session.appId, elapsedSec, "Kapanan oturumdan düşülen süre")
 
         val closed = session.copy(
             isActive = false,
             lastSeenAtMillis = now,
+            lastSeenElapsedRealtime = nowElapsed,
             updatedAtMillis = now
         )
         guardianDao.updateActiveSession(closed)
@@ -713,20 +887,149 @@ class GuardianRepository(
     suspend fun cleanupStaleSessions() {
         val sessions = guardianDao.getActiveSessionsSync()
         val now = timeProvider.currentTimeMillis()
+        val nowElapsed = timeProvider.elapsedRealtime()
         for (session in sessions) {
-            if (now - session.lastSeenAtMillis > 30000L) {
-                val elapsedMs = now - session.lastSeenAtMillis
+            val elapsedMs = elapsedSinceLastSeenMillis(session, now, nowElapsed)
+            if (elapsedMs > 30000L) {
                 val elapsedSec = elapsedWholeSeconds(elapsedMs)
                 deductElapsedSeconds(session.appId, elapsedSec, "Bayat oturumdan düşülen süre")
 
                 val closed = session.copy(
                     isActive = false,
+                    lastSeenAtMillis = now,
+                    lastSeenElapsedRealtime = nowElapsed,
                     updatedAtMillis = now
                 )
                 guardianDao.updateActiveSession(closed)
                 insertLog("STALE_SESSION_CLEANED", session.appName, "Bayatlayan aktif oturum temizlendi.")
             }
         }
+    }
+
+    private fun elapsedSinceLastSeenMillis(
+        session: ActiveUsageSessionEntity,
+        nowWallMillis: Long,
+        nowElapsedRealtime: Long
+    ): Long {
+        val hasMonotonicClock = session.lastSeenElapsedRealtime > 0L &&
+            nowElapsedRealtime >= session.lastSeenElapsedRealtime
+        return if (hasMonotonicClock) {
+            nowElapsedRealtime - session.lastSeenElapsedRealtime
+        } else {
+            nowWallMillis - session.lastSeenAtMillis
+        }
+    }
+
+    private fun queryTodayUsageStatsMillis(packageName: String): Long? {
+        return try {
+            val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+                ?: return null
+            val now = timeProvider.currentTimeMillis()
+            val start = todayStartMillis()
+            if (now <= start) return 0L
+
+            usageStatsManager.queryAndAggregateUsageStats(start, now)
+                .values
+                .firstOrNull { it.packageName == packageName }
+                ?.totalTimeInForeground
+                ?.coerceAtLeast(0L)
+                ?: 0L
+        } catch (_: SecurityException) {
+            null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun usageStatsTrackingStartMillis(app: RestrictedAppEntity): Long {
+        val unknownBaselineStart = if (
+            app.usageStatsBaselineMillisToday < 0L &&
+            app.lastUsageStatsReconciledAtMillis > 0L
+        ) {
+            app.lastUsageStatsReconciledAtMillis
+        } else {
+            app.createdAtMillis
+        }
+        return maxOf(todayStartMillis(), unknownBaselineStart.coerceAtLeast(0L))
+    }
+
+    private fun queryUsageEventsForegroundMillis(
+        packageName: String,
+        startMillis: Long,
+        endMillis: Long
+    ): Long? {
+        if (endMillis <= startMillis) return 0L
+
+        return try {
+            val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+                ?: return null
+            val queryStart = todayStartMillis().coerceAtMost(startMillis)
+            val usageEvents = usageStatsManager.queryEvents(queryStart, endMillis)
+            val event = UsageEvents.Event()
+            var isPackageForeground = false
+            var lastTimestamp = startMillis
+            var totalMillis = 0L
+
+            while (usageEvents.hasNextEvent()) {
+                usageEvents.getNextEvent(event)
+                val timestamp = event.timeStamp.coerceIn(queryStart, endMillis)
+
+                if (timestamp >= startMillis) {
+                    if (isPackageForeground && timestamp > lastTimestamp) {
+                        totalMillis += timestamp - lastTimestamp
+                    }
+                    lastTimestamp = timestamp
+                }
+
+                if (event.packageName == packageName) {
+                    when {
+                        isUsageForegroundEvent(event.eventType) -> isPackageForeground = true
+                        isUsageBackgroundEvent(event.eventType) -> isPackageForeground = false
+                    }
+                } else if (isUsageForegroundEvent(event.eventType)) {
+                    isPackageForeground = false
+                }
+            }
+
+            if (isPackageForeground && endMillis > lastTimestamp) {
+                totalMillis += endMillis - lastTimestamp
+            }
+
+            totalMillis.coerceAtLeast(0L)
+        } catch (_: SecurityException) {
+            null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun isUsageForegroundEvent(eventType: Int): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            eventType == UsageEvents.Event.ACTIVITY_RESUMED
+        } else {
+            @Suppress("DEPRECATION")
+            eventType == UsageEvents.Event.MOVE_TO_FOREGROUND
+        }
+    }
+
+    private fun isUsageBackgroundEvent(eventType: Int): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            eventType == UsageEvents.Event.ACTIVITY_PAUSED ||
+                eventType == UsageEvents.Event.ACTIVITY_STOPPED
+        } else {
+            @Suppress("DEPRECATION")
+            eventType == UsageEvents.Event.MOVE_TO_BACKGROUND
+        }
+    }
+
+    private fun todayStartMillis(): Long {
+        return Calendar.getInstance().apply {
+            timeInMillis = timeProvider.currentTimeMillis()
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
     }
 
     private fun elapsedWholeSeconds(elapsedMs: Long): Int {
@@ -750,9 +1053,6 @@ class GuardianRepository(
             )
         )
         insertLog("USAGE_PROCESSED", app.appName, "$logPrefix: $chargedSeconds saniye.")
-        if (newRemaining <= 0) {
-            failRestrictedApp(app.id)
-        }
     }
 
     suspend fun evaluateMissedDays() {

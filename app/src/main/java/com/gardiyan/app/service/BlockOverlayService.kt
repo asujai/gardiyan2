@@ -316,6 +316,7 @@ class BlockOverlayService : Service() {
                     if (hasActiveRestrictions) {
                         withContext(Dispatchers.IO) {
                             repository.cleanupStaleSessions()
+                            repository.reconcileRestrictedAppsWithUsageStats()
                         }
 
                         val status = AccessibilityHealthMonitor.getStatus(applicationContext)

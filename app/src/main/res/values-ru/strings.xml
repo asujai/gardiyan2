@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <string name="accessibility_health_notification_title">Защита Limitra не активна</string>
+    <string name="accessibility_health_notification_desc">Разрешение специальных возможностей включено, но служба отслеживания не работает. Отключите и снова включите специальные возможности Limitra в настройках Android.</string>
+    <string name="accessibility_health_log_reenable">Разрешение специальных возможностей включено, но сигнал активности службы отслеживания отсутствует или устарел. Отключите и снова включите специальные возможности Limitra.</string>
+    <string name="perm_state_reenable">ВКЛЮЧИТЬ СНОВА</string>
+    <string name="perm_accessibility_reenable_desc">Разрешение отображается как включенное, но служба отслеживания неактивна. Отключите и снова включите специальные возможности.</string>
+    <string name="accessibility_reenable_warning">Разрешение специальных возможностей включено, но Limitra не может подтвердить, что служба отслеживания работает. Отключите и снова включите специальные возможности Limitra.</string>
+    <string name="accessibility_reenable_dialog_desc">Разрешение специальных возможностей Limitra включено, но сигнал активности службы отсутствует или устарел. В настройках Android отключите разрешение специальных возможностей Limitra, затем включите его снова, чтобы отслеживание времени перезапустилось.</string>
     <string name="app_name">Limitra</string>
     <string name="accessibility_service_description">Limitra использует это разрешение только для обнаружения открытия ограниченного приложения, чтобы применить установленные вами цифровые границы и лимиты времени. Все данные обрабатываются локально на вашем устройстве; данные не собираются и не передаются. Фоновое отслеживание предназначено исключительно для выполнения выбранных вами правил блокировки.</string>
     <string name="notification_channel_service">Служба защиты Limitra</string>

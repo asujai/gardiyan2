@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <string name="accessibility_health_notification_title">Der Limitra-Schutz ist nicht aktiv</string>
+    <string name="accessibility_health_notification_desc">Die Bedienungshilfen-Berechtigung scheint aktiviert zu sein, aber der Tracking-Dienst läuft nicht. Deaktivieren Sie Limitra-Bedienungshilfen in den Android-Einstellungen und aktivieren Sie sie erneut.</string>
+    <string name="accessibility_health_log_reenable">Die Bedienungshilfen-Berechtigung scheint aktiviert zu sein, aber das Aktivitätssignal des Tracking-Dienstes fehlt oder ist veraltet. Deaktivieren Sie Limitra-Bedienungshilfen und aktivieren Sie sie erneut.</string>
+    <string name="perm_state_reenable">ERNEUT AKTIVIEREN</string>
+    <string name="perm_accessibility_reenable_desc">Die Berechtigung wird als aktiviert angezeigt, aber der Tracking-Dienst ist inaktiv. Deaktivieren Sie die Bedienungshilfen und aktivieren Sie sie erneut.</string>
+    <string name="accessibility_reenable_warning">Die Bedienungshilfen-Berechtigung scheint aktiviert zu sein, aber Limitra kann nicht bestätigen, dass der Tracking-Dienst läuft. Deaktivieren Sie Limitra-Bedienungshilfen und aktivieren Sie sie erneut.</string>
+    <string name="accessibility_reenable_dialog_desc">Die Limitra-Bedienungshilfen-Berechtigung scheint aktiviert zu sein, aber das Aktivitätssignal des Dienstes fehlt oder ist veraltet. Deaktivieren Sie in den Android-Einstellungen die Limitra-Bedienungshilfen und aktivieren Sie sie erneut, damit die Zeiterfassung neu starten kann.</string>
     <string name="app_name">Limitra</string>
     <string name="accessibility_service_description">Limitra verwendet diese Berechtigung nur, um zu erkennen, wenn eine eingeschränkte App geöffnet wird, um Ihre digitalen Grenzen und App-Limits durchzusetzen. Alle Daten werden lokal auf Ihrem Gerät verarbeitet. Es werden keine Daten erfasst oder exportiert. Das Hintergrund-Tracking dient ausschließlich der Ausführung der von Ihnen gewählten Sperrregeln.</string>
     <string name="notification_channel_service">Limitra-Schutzdienst</string>

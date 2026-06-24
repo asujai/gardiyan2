@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <string name="accessibility_health_notification_title">Limitra सुरक्षा सक्रिय नहीं है</string>
+    <string name="accessibility_health_notification_desc">Accessibility अनुमति सक्षम दिखती है, लेकिन ट्रैकिंग सेवा नहीं चल रही है. Android सेटिंग्स में Limitra Accessibility को बंद करके फिर चालू करें.</string>
+    <string name="accessibility_health_log_reenable">Accessibility अनुमति सक्षम दिखती है, लेकिन ट्रैकिंग सेवा की सक्रियता संकेत अनुपस्थित या पुरानी है. Limitra Accessibility को बंद करके फिर चालू करें.</string>
+    <string name="perm_state_reenable">फिर से चालू करें</string>
+    <string name="perm_accessibility_reenable_desc">अनुमति सक्षम के रूप में दिख रही है, लेकिन ट्रैकिंग सेवा निष्क्रिय है. Accessibility को बंद करके फिर चालू करें.</string>
+    <string name="accessibility_reenable_warning">Accessibility अनुमति सक्षम दिखती है, लेकिन Limitra यह पुष्टि नहीं कर पा रहा कि ट्रैकिंग सेवा चल रही है. Limitra Accessibility को बंद करके फिर चालू करें.</string>
+    <string name="accessibility_reenable_dialog_desc">Limitra Accessibility अनुमति सक्षम दिखती है, लेकिन सेवा की सक्रियता संकेत अनुपस्थित या पुरानी है. Android सेटिंग्स में Limitra Accessibility अनुमति बंद करें, फिर उसे दोबारा चालू करें ताकि समय ट्रैकिंग फिर शुरू हो सके.</string>
     <string name="app_name">Limitra</string>
     <string name="accessibility_service_description">Limitra इस अनुमति का उपयोग केवल तब करता है जब कोई प्रतिबंधित ऐप खोला जाता है, ताकि आपकी डिजिटल सीमाओं और ऐप सीमाओं को लागू किया जा सके। सभी डेटा आपके डिवाइस पर स्थानीय रूप से संसाधित किया जाता है; कोई भी डेटा एकत्र या निर्यात नहीं किया जाता है। बैकग्राउंड ट्रैकिंग केवल आपके द्वारा चुने गए ब्लॉक नियमों को निष्पादित करने के लिए है।</string>
     <string name="notification_channel_service">Limitra सुरक्षा सेवा</string>

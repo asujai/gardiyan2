@@ -9,7 +9,8 @@ enum class DayStatus {
 
         /** Bir günü "ihlal/başarısız" olarak işaretleyen log türleri. */
         val FAILURE_EVENT_TYPES = setOf(
-            "FAILURE", "VIOLATION", "DAILY_FAILURE", "RESET_HOLD_5S", "CRITICAL_ACTION_COMPLETED"
+            "FAILURE", "VIOLATION", "DAILY_FAILURE", "RESET_HOLD_5S", "CRITICAL_ACTION_COMPLETED",
+            "RESTRICTION_REMOVED", "RESTRICTION_DELETED", "RESTRICTIONS_CLEARED"
         )
 
         /**

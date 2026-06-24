@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <string name="accessibility_health_notification_title">La protección de Limitra no está activa</string>
+    <string name="accessibility_health_notification_desc">El permiso de accesibilidad parece estar activado, pero el servicio de seguimiento no se está ejecutando. Desactive y vuelva a activar Accesibilidad de Limitra en los ajustes de Android.</string>
+    <string name="accessibility_health_log_reenable">El permiso de accesibilidad parece estar activado, pero la señal de actividad del servicio de seguimiento falta o está obsoleta. Desactive y vuelva a activar Accesibilidad de Limitra.</string>
+    <string name="perm_state_reenable">VOLVER A ACTIVAR</string>
+    <string name="perm_accessibility_reenable_desc">El permiso figura como activado, pero el servicio de seguimiento está inactivo. Desactive y vuelva a activar Accesibilidad.</string>
+    <string name="accessibility_reenable_warning">El permiso de accesibilidad parece estar activado, pero Limitra no puede confirmar que el servicio de seguimiento se esté ejecutando. Desactive y vuelva a activar Accesibilidad de Limitra.</string>
+    <string name="accessibility_reenable_dialog_desc">El permiso de Accesibilidad de Limitra parece estar activado, pero la señal de actividad del servicio falta o está obsoleta. En los ajustes de Android, desactive el permiso de Accesibilidad de Limitra y vuelva a activarlo para reiniciar el seguimiento de tiempo.</string>
     <string name="app_name">Limitra</string>
     <string name="accessibility_service_description">Limitra utiliza este permiso únicamente para detectar cuándo se abre una aplicación restringida, con el fin de aplicar sus límites de tiempo y límites digitales. Todos los datos se procesan localmente en su dispositivo; no se recopila ni exporta ningún dato. El seguimiento en segundo plano es únicamente para ejecutar las reglas de bloqueo que elija.</string>
     <string name="notification_channel_service">Servicio de Protección de Limitra</string>

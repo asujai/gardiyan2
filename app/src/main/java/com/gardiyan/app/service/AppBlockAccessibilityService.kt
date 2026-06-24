@@ -21,6 +21,7 @@ import com.gardiyan.app.R
 import com.gardiyan.app.data.local.database.GuardianDatabase
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.data.repository.GuardianRepository
+import com.gardiyan.app.data.repository.UsageStatsReconciliationResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -58,6 +59,8 @@ class AppBlockAccessibilityService : AccessibilityService() {
         private const val NORMAL_POLL_INTERVAL_MS = 2500L
         private const val SUSPICIOUS_POLL_INTERVAL_MS = 250L
         private const val HEALTH_GRACE_MS = 15_000L
+        private const val USAGE_STATS_RECONCILE_INTERVAL_MS = 60_000L
+        private const val LONG_FOREGROUND_LOOKBACK_MS = 6 * 60 * 60 * 1000L
 
         @Volatile
         var instance: AppBlockAccessibilityService? = null
@@ -167,8 +170,8 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     currentTrackedAppId = openSession.appId
                     Log.i(TAG, "Restored active session from DB: ${openSession.packageName}")
 
-                    queryForegroundEvent()?.let { event ->
-                        handleForegroundChange(event.packageName)
+                    queryCurrentForegroundPackage()?.let { foregroundPackage ->
+                        handleForegroundChange(foregroundPackage)
                     }
                 }
 
@@ -315,6 +318,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
             var lastEventTimeForRapidCheck = 0L
             var currentPollIntervalMs = NORMAL_POLL_INTERVAL_MS
             var lastDailyResetCheckTime = 0L
+            var lastUsageStatsReconcileTime = 0L
             var unclearForegroundTicks = 0
 
             while (isActive) {
@@ -368,6 +372,26 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
                     val km = getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
                     val isLocked = km?.isKeyguardLocked ?: false
+
+                    if (now - lastUsageStatsReconcileTime > USAGE_STATS_RECONCILE_INTERVAL_MS) {
+                        lastUsageStatsReconcileTime = now
+                        val reconciled = withContext(Dispatchers.IO) {
+                            repository.reconcileRestrictedAppsWithUsageStats()
+                        }
+                        val exhaustedByUsageStats = reconciled.filter {
+                            it.adjustedSeconds > 0 && it.remainingSecondsToday <= 0
+                        }
+                        if (exhaustedByUsageStats.isNotEmpty() && isScreenOn && !isLocked) {
+                            val foregroundFromUsageStats = queryCurrentForegroundPackage(LONG_FOREGROUND_LOOKBACK_MS)
+                            val effectiveForeground = foregroundFromUsageStats ?: currentForegroundPackage
+                            val exhaustedForegroundApp = exhaustedByUsageStats.firstOrNull {
+                                it.packageName == effectiveForeground
+                            }
+                            if (exhaustedForegroundApp != null) {
+                                enforceUsageStatsLimitIfNeeded(exhaustedForegroundApp, repository)
+                            }
+                        }
+                    }
 
                     val trackedApp = currentTrackedPackage?.let { pkg ->
                         cachedRestrictedApps.firstOrNull { it.packageName == pkg }
@@ -444,9 +468,8 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     }
 
                     // Yedek ön plan doğrulaması
-                    val foregroundEvent = queryForegroundEvent()
-                    if (foregroundEvent != null) {
-                        val foregroundPkg = foregroundEvent.packageName
+                    val foregroundPkg = queryCurrentForegroundPackage()
+                    if (foregroundPkg != null) {
 
                         if (
                             foregroundPkg == packageName &&
@@ -501,13 +524,13 @@ class AppBlockAccessibilityService : AccessibilityService() {
         val timestampMillis: Long
     )
 
-    private fun queryForegroundEvent(): ForegroundEvent? {
+    private fun queryForegroundEvent(lookbackMillis: Long = 5000L): ForegroundEvent? {
         return try {
             val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
                 ?: return null
 
             val endTime = System.currentTimeMillis()
-            val startTime = endTime - 5000L // Son 5 saniye
+            val startTime = endTime - lookbackMillis.coerceAtLeast(1000L)
 
             val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
             var lastForegroundEvent: ForegroundEvent? = null
@@ -536,6 +559,22 @@ class AppBlockAccessibilityService : AccessibilityService() {
             Log.e(TAG, "queryForegroundEvent error: ${e.message}")
             null
         }
+    }
+
+    private fun queryCurrentForegroundPackage(lookbackMillis: Long = 5000L): String? {
+        val activeWindowPackage = rootInActiveWindow
+            ?.packageName
+            ?.toString()
+            ?.takeIf { it.isNotBlank() }
+
+        if (
+            activeWindowPackage != null &&
+            !(activeWindowPackage == packageName && BlockOverlayService.isLockOverlayVisible.get())
+        ) {
+            return activeWindowPackage
+        }
+
+        return queryForegroundEvent(lookbackMillis)?.packageName
     }
 
     // ========================================================================
@@ -630,7 +669,6 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         tickJob?.cancel()
                         tickJob = null
                         entryTimeMillis = 0L
-                        repository.failRestrictedApp(matchingApp.id)
                         if (!BlockOverlayService.isLockOverlayFor(matchingApp.packageName)) {
                             ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
                             BlockOverlayService.showLockOverlay(
@@ -672,7 +710,6 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                         )
                                     )
                                     entryTimeMillis = 0L
-                                    repository.failRestrictedApp(matchingApp.id)
                                     ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
                                     BlockOverlayService.showLockOverlay(
                                         applicationContext,
@@ -697,6 +734,38 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in handleForegroundChange: ${e.message}", e)
                 }
+            }
+        }
+    }
+
+    private suspend fun enforceUsageStatsLimitIfNeeded(
+        result: UsageStatsReconciliationResult,
+        repository: GuardianRepository
+    ) {
+        if (result.remainingSecondsToday > 0) return
+        if (currentForegroundPackage != result.packageName) {
+            currentForegroundPackage = result.packageName
+        }
+        currentTrackedPackage = result.packageName
+        currentTrackedAppId = result.appId
+        entryTimeMillis = 0L
+        tickJob?.cancel()
+        tickJob = null
+
+        if (!BlockOverlayService.isLockOverlayFor(result.packageName)) {
+            ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
+            BlockOverlayService.showLockOverlay(
+                applicationContext,
+                result.appName,
+                result.packageName
+            )
+            withContext(Dispatchers.IO) {
+                repository.closeActiveSession("UsageStats uzlaÅŸtÄ±rmasÄ± limiti doldurdu")
+                repository.insertLog(
+                    eventType = "OVERLAY_SHOWN",
+                    appName = result.appName,
+                    details = "${result.appName} iÃ§in kilit ekranÄ± gÃ¶sterildi. GerekÃ§e: UsageStats uzlaÅŸtÄ±rmasÄ± ile gÃ¼nlÃ¼k kullanÄ±m limiti doldu."
+                )
             }
         }
     }

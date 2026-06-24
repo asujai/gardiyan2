@@ -23,8 +23,10 @@ import com.gardiyan.app.service.AppBlockAccessibilityService
 import com.gardiyan.app.service.BlockOverlayService
 import com.gardiyan.app.service.KeepAliveScheduler
 import com.gardiyan.app.service.DailySuccessScheduler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 /**
@@ -39,6 +41,28 @@ internal fun isAccessibilityComponentEnabled(
     className: String
 ): Boolean {
     return AccessibilityHealthMonitor.isComponentEnabled(enabledServicesSetting, packageName, className)
+}
+
+internal fun shouldPenalizeRestrictionRemoval(app: RestrictedAppEntity): Boolean =
+    app.remainingSecondsToday <= 0
+
+internal fun RestrictedAppEntity.withReducedDailyLimit(
+    newLimitMinutes: Int,
+    nextActiveDays: String
+): RestrictedAppEntity {
+    val oldLimitSecs = dailyLimitMinutes * 60
+    val usedSecs = (oldLimitSecs - remainingSecondsToday).coerceAtLeast(0)
+    val newLimitSecs = newLimitMinutes * 60
+    val newRemainingSecs = (newLimitSecs - usedSecs).coerceAtLeast(0)
+
+    return copy(
+        dailyLimitMinutes = newLimitMinutes,
+        nextDayLimitMinutes = newLimitMinutes,
+        remainingMinutesToday = (newRemainingSecs + 59) / 60,
+        remainingSecondsToday = newRemainingSecs,
+        nextDayActiveDays = nextActiveDays,
+        isFailed = isFailed
+    )
 }
 
 class GuardianViewModel(context: Context) : ViewModel() {
@@ -104,7 +128,8 @@ class GuardianViewModel(context: Context) : ViewModel() {
      */
     fun addRestrictedApp(packageName: String, appName: String, dailyLimitMinutes: Int, activeDays: String = GuardianRepository.ALL_DAYS) {
         viewModelScope.launch {
-            val id = repository.upsertRestrictedApp(packageName, appName, dailyLimitMinutes, activeDays)
+            withContext(Dispatchers.IO) {
+                repository.upsertRestrictedApp(packageName, appName, dailyLimitMinutes, activeDays)
             repository.insertLog(
                 eventType = "RESTRICTION_ADDED",
                 appName = appName,
@@ -112,6 +137,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
             )
             // Eski `targetAppPackage` alanı için de set et (geri uyumluluk)
             markSessionHavingRestrictions()
+            }
             // Servis canlıysa veya değilse restart
             ensureMonitoringRunning()
         }
@@ -124,13 +150,15 @@ class GuardianViewModel(context: Context) : ViewModel() {
      */
     fun startQuickTest(context: Context, packageName: String, appName: String, testSeconds: Int = 10, activeDays: String = GuardianRepository.ALL_DAYS) {
         viewModelScope.launch {
-            repository.insertQuickTestApp(packageName, appName, testSeconds, activeDays)
+            withContext(Dispatchers.IO) {
+                repository.insertQuickTestApp(packageName, appName, testSeconds, activeDays)
             repository.insertLog(
                 eventType = "QUICK_TEST_STARTED",
                 appName = appName,
                 details = "$appName için hızlı test başlatıldı: ${testSeconds} saniye sonra kilit"
             )
             markSessionHavingRestrictions()
+            }
             // A11y + overlay servisini başlat (henüz yoksa)
             if (!BlockOverlayService.isServiceRunning.get()) {
                 startMonitoringService(appContext)
@@ -143,6 +171,8 @@ class GuardianViewModel(context: Context) : ViewModel() {
             val app = repository.getRestrictedAppByIdSync(id)
             repository.removeRestrictedApp(id)
             if (app != null) {
+                val shouldPenalize = shouldPenalizeRestrictionRemoval(app)
+
                 // Aktif oturum bu uygulama ise kapat
                 val activeSession = repository.getActiveSession()
                 if (activeSession != null && activeSession.packageName == app.packageName) {
@@ -154,16 +184,32 @@ class GuardianViewModel(context: Context) : ViewModel() {
                     BlockOverlayService.hideLockOverlay()
                 }
 
-                repository.insertLog(
-                    eventType = "RESTRICTION_REMOVED",
-                    appName = app.appName,
-                    details = "${app.appName} restriction was removed through a protected action."
-                )
-                repository.insertLog(
-                    eventType = "RESTRICTION_DELETED",
-                    appName = app.appName,
-                    details = "${app.appName} restriction was removed through a protected action."
-                )
+                if (shouldPenalize) {
+                    // Limiti dolmuş kısıtlamayı silmek disiplin başarısızlığıdır.
+                    val session = repository.getSessionSync()
+                    if (session != null) {
+                        repository.saveSession(
+                            session.copy(
+                                level = 1,
+                                hasRedBadge = true,
+                                activeRedemptionDaysLeft = 2,
+                                redemptionStreakGoal = 2,
+                                consecutiveSuccessDays = 0
+                            )
+                        )
+                    }
+
+                    repository.insertLog(
+                        eventType = "RESTRICTION_REMOVED",
+                        appName = app.appName,
+                        details = "${app.appName} restriction was removed after its daily limit was exhausted."
+                    )
+                    repository.insertLog(
+                        eventType = "RESTRICTION_DELETED",
+                        appName = app.appName,
+                        details = "${app.appName} restriction was removed after its daily limit was exhausted."
+                    )
+                }
             }
 
             // Başka aktif kısıtlama kaldı mı kontrol et, kalmadıysa servisi durdur
@@ -204,18 +250,9 @@ class GuardianViewModel(context: Context) : ViewModel() {
 
             if (isLimitChanged) {
                 // Sadece limit azaltma veya eşitlik durumu buraya gelebilir
-                val oldLimitSecs = app.dailyLimitMinutes * 60
-                val usedSecs = (oldLimitSecs - app.remainingSecondsToday).coerceAtLeast(0)
-                val newLimitSecs = newLimitMinutes * 60
-                val newRemainingSecs = (newLimitSecs - usedSecs).coerceAtLeast(0)
-
-                updatedApp = updatedApp.copy(
-                    dailyLimitMinutes = newLimitMinutes,
-                    nextDayLimitMinutes = newLimitMinutes,
-                    remainingMinutesToday = (newRemainingSecs + 59) / 60,
-                    remainingSecondsToday = newRemainingSecs,
-                    nextDayActiveDays = if (isActiveDaysChanged) newActiveDays else updatedApp.nextDayActiveDays,
-                    isFailed = newRemainingSecs <= 0
+                updatedApp = updatedApp.withReducedDailyLimit(
+                    newLimitMinutes = newLimitMinutes,
+                    nextActiveDays = if (isActiveDaysChanged) newActiveDays else updatedApp.nextDayActiveDays
                 )
                 repository.insertLog(
                     eventType = "LIMIT_CHANGED",

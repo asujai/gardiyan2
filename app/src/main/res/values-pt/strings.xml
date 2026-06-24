@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <string name="accessibility_health_notification_title">A proteção do Limitra não está ativa</string>
+    <string name="accessibility_health_notification_desc">A permissão de acessibilidade parece estar ativada, mas o serviço de rastreamento não está em execução. Desative e ative novamente a Acessibilidade do Limitra nas configurações do Android.</string>
+    <string name="accessibility_health_log_reenable">A permissão de acessibilidade parece estar ativada, mas o sinal de atividade do serviço de rastreamento está ausente ou desatualizado. Desative e ative novamente a Acessibilidade do Limitra.</string>
+    <string name="perm_state_reenable">REATIVAR</string>
+    <string name="perm_accessibility_reenable_desc">A permissão aparece como ativada, mas o serviço de rastreamento está inativo. Desative e ative novamente a Acessibilidade.</string>
+    <string name="accessibility_reenable_warning">A permissão de acessibilidade parece estar ativada, mas o Limitra não consegue confirmar que o serviço de rastreamento está em execução. Desative e ative novamente a Acessibilidade do Limitra.</string>
+    <string name="accessibility_reenable_dialog_desc">A permissão de Acessibilidade do Limitra parece estar ativada, mas o sinal de atividade do serviço está ausente ou desatualizado. Nas configurações do Android, desative a permissão de Acessibilidade do Limitra e ative-a novamente para que o rastreamento de tempo possa reiniciar.</string>
     <string name="app_name">Limitra</string>
     <string name="accessibility_service_description">O Limitra usa esta permissão apenas para detectar quando um aplicativo restrito é aberto, a fim de aplicar seus limites diários e barreiras digitais. Todos os dados son processados localmente no seu dispositivo; nenhum dado é coletado ou exportado. O rastreamento em segundo plano serve exclusivamente para executar as regras de bloqueio escolhidas.</string>
     <string name="notification_channel_service">Serviço de Proteção Limitra</string>

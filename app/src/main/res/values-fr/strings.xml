@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <string name="accessibility_health_notification_title">La protection Limitra n’est pas active</string>
+    <string name="accessibility_health_notification_desc">L’autorisation d’accessibilité semble activée, mais le service de suivi ne fonctionne pas. Désactivez puis réactivez l’accessibilité Limitra dans les paramètres Android.</string>
+    <string name="accessibility_health_log_reenable">L’autorisation d’accessibilité semble activée, mais le signal d’activité du service de suivi est absent ou obsolète. Désactivez puis réactivez l’accessibilité Limitra.</string>
+    <string name="perm_state_reenable">RÉACTIVER</string>
+    <string name="perm_accessibility_reenable_desc">L’autorisation est indiquée comme activée, mais le service de suivi est inactif. Désactivez puis réactivez l’accessibilité.</string>
+    <string name="accessibility_reenable_warning">L’autorisation d’accessibilité semble activée, mais Limitra ne peut pas confirmer que le service de suivi fonctionne. Désactivez puis réactivez l’accessibilité Limitra.</string>
+    <string name="accessibility_reenable_dialog_desc">L’autorisation d’accessibilité Limitra semble activée, mais le signal d’activité du service est absent ou obsolète. Dans les paramètres Android, désactivez l’autorisation d’accessibilité Limitra, puis réactivez-la afin que le suivi du temps puisse redémarrer.</string>
     <string name="app_name">Limitra</string>
     <string name="accessibility_service_description">Limitra utilise cette autorisation uniquement pour détecter l\'ouverture d\'une application restreinte, afin d\'appliquer vos limites de temps et vos barrières numériques. Toutes les données sont traitées localement sur votre appareil ; aucune donnée n\'est collectée ou exportée. Le suivi en arrière-plan sert uniquement à exécuter les règles de blocage de votre choix.</string>
     <string name="notification_channel_service">Service de Protection de Limitra</string>
