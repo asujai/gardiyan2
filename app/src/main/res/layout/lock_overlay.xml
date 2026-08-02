@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#090D16"> <!-- Deep premium dark slate background -->
+    android:background="#090D16"
+    tools:ignore="Overdraw"> <!-- Deep premium dark slate background -->
 
     <LinearLayout
         android:id="@+id/cardLayout"

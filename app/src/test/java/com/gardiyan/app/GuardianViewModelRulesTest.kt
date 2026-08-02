@@ -3,12 +3,37 @@ package com.gardiyan.app
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.viewmodel.shouldPenalizeRestrictionRemoval
 import com.gardiyan.app.viewmodel.withReducedDailyLimit
+import com.gardiyan.app.viewmodel.buildRestrictionAssignments
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class GuardianViewModelRulesTest {
+
+    @Test
+    fun `unnamed apps are saved as separate app cards with their own names`() {
+        val assignments = buildRestrictionAssignments(
+            restrictionName = "  ",
+            apps = listOf("Netflix" to "com.netflix", "Reddit" to "com.reddit"),
+            namedGroupId = "unused-group"
+        )
+
+        assertEquals(listOf("com.netflix", "com.reddit"), assignments.map { it.groupId })
+        assertEquals(listOf("Netflix", "Reddit"), assignments.map { it.displayName })
+    }
+
+    @Test
+    fun `custom named apps share one restriction group`() {
+        val assignments = buildRestrictionAssignments(
+            restrictionName = " Gece Sosyal Medya ",
+            apps = listOf("TikTok" to "com.tiktok", "Instagram" to "com.instagram"),
+            namedGroupId = "shared-group"
+        )
+
+        assertTrue(assignments.all { it.groupId == "shared-group" })
+        assertTrue(assignments.all { it.displayName == "Gece Sosyal Medya" })
+    }
 
     @Test
     fun `removing a restriction before its limit is exhausted is not a discipline failure`() {

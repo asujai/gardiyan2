@@ -4,8 +4,11 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.gardiyan.app.R
+import com.gardiyan.app.isInitialPermissionGateCompleted
+import com.gardiyan.app.markInitialPermissionGateCompleted
 import com.gardiyan.app.data.local.database.GuardianDatabase
 import com.gardiyan.app.data.repository.GuardianRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -31,14 +34,13 @@ class ServiceKeepAliveWorker(
             if (!hasActiveRestrictions) {
                 return Result.success()
             }
+            if (!isInitialPermissionGateCompleted(applicationContext)) {
+                markInitialPermissionGateCompleted(applicationContext)
+            }
 
             // Pil optimizasyon muafiyeti kontrolü
             val pm = applicationContext.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
-            val isIgnoringBattery = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                pm?.isIgnoringBatteryOptimizations(applicationContext.packageName) == true
-            } else {
-                true
-            }
+            val isIgnoringBattery = pm?.isIgnoringBatteryOptimizations(applicationContext.packageName) == true
 
             if (!isIgnoringBattery) {
                 withContext(Dispatchers.IO) {
@@ -55,8 +57,18 @@ class ServiceKeepAliveWorker(
                 BlockOverlayService.start(applicationContext)
             }
 
-            val accessibilityStatus = AccessibilityHealthMonitor.getStatus(applicationContext)
-            if (accessibilityStatus.requiresReenable) {
+            var accessibilityStatus = AccessibilityHealthMonitor.getStatus(applicationContext)
+            if (
+                accessibilityStatus.requiresReenable &&
+                AppBlockAccessibilityService.requestHealthRecovery("Keep-alive worker detected stale heartbeat")
+            ) {
+                delay(1_000L)
+                accessibilityStatus = AccessibilityHealthMonitor.getStatus(applicationContext)
+            }
+            if (
+                isInitialPermissionGateCompleted(applicationContext) &&
+                !accessibilityStatus.isOperational
+            ) {
                 withContext(Dispatchers.IO) {
                     repository.cleanupStaleSessions()
                     repository.reconcileRestrictedAppsWithUsageStats()

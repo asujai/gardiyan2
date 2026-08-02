@@ -90,7 +90,7 @@
     <string name="setup_target_2h">2 Jam</string>
     <string name="setup_target_add">TAMBAH BATASAN</string>
     <string name="setup_target_select_app_title">PILIH APLIKASI</string>
-    <string name="setup_target_select_app_placeholder">Pilih aplikasi untuk dilindungi...</string>
+    <string name="setup_target_select_app_placeholder">Pilih aplikasi untuk dilindungi…</string>
     <string name="setup_target_daily_limit">BATAS PENGGUNAAN HARIAN</string>
     <string name="setup_target_custom_limit">Masukkan batas menit khusus</string>
     <string name="setup_target_days">HARI PERLINDUNGAN</string>
@@ -102,7 +102,7 @@
     <string name="setup_target_btn_test">MULAI UJI CEPAT (10s)</string>
     <string name="setup_target_btn_activate">AKTIFKAN BATASAN</string>
     <string name="setup_target_btn_complete">SELESAIKAN PROSES &amp; AKTIFKAN PERLINDUNGAN</string>
-    <string name="setup_target_search_placeholder">Cari nama aplikasi atau nama paket...</string>
+    <string name="setup_target_search_placeholder">Cari nama aplikasi atau nama paket…</string>
     <string name="setup_target_no_match">Tidak Ada Aplikasi yang Cocok</string>
     <string name="setup_target_no_match_desc">Tidak ditemukan aplikasi terinstal yang cocok dengan \"%1$s\".</string>
     <string name="setup_target_confirm_selection">KONFIRMASI PILIHAN (%1$d APLIKASI)</string>
@@ -278,8 +278,6 @@
     <string name="unit_hour">jam</string>
     <string name="unit_minute">mnt</string>
     <string name="log_desc_system_permission">Status izin sistem telah berubah.</string>
-    <string name="overlay_brand_icon" translatable="false">🛡️</string>
-    <string name="overlay_initial_countdown" translatable="false">00:10</string>
     <string name="profile_terms">Terms of Use</string>
     <string name="profile_terms_desc">Review terms of use and user agreement.</string>
     <string name="perm_privacy_msg">Your privacy is protected. Limitra does not share your usage data with third parties or send it to the internet; data is processed locally only on your device.</string>
@@ -386,7 +384,7 @@
     <string name="quote_author_45">Seneca</string>
     <string name="quote_text_46">Whenever you say, \'I will let it go today, I will pay attention tomorrow,\' know that you have said this: \'Today I will be shameless, impudent, and base; today I will be angry and a slave to others.\' See what evil you present to yourself!</string>
     <string name="quote_author_46">Epictetus</string>
-    <string name="quote_text_47">Look back and remember: How many people plundered your life without you even realizing... When you see how little is left of your time, you will realize you are dying untimely.</string>
+    <string name="quote_text_47">Look back and remember: How many people plundered your life without you even realizing… When you see how little is left of your time, you will realize you are dying untimely.</string>
     <string name="quote_author_47">Seneca</string>
     <string name="quote_text_48">Losing oneself in the multiplicity of choices is the nature of aesthetic choice; whereas unless a person chooses himself absolutely, he only makes momentary and temporary decisions.</string>
     <string name="quote_author_48">Søren Kierkegaard</string>

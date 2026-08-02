@@ -1,5 +1,6 @@
 package com.gardiyan.app.ui.screens
 
+import android.app.TimePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -54,6 +55,10 @@ fun SetupTargetScreen(
     val context = LocalContext.current
     val installedApps = remember { viewModel.getInstalledApps(context) }
     var selectedApps by remember { mutableStateOf<Set<Pair<String, String>>>(emptySet()) }
+    var restrictionName by remember { mutableStateOf("") }
+    var activeWindowEnabled by remember { mutableStateOf(false) }
+    var activeStartMinutes by remember { mutableStateOf(0) }
+    var activeEndMinutes by remember { mutableStateOf(8 * 60) }
     
     // Time picker states
     var selectedHours by remember { mutableStateOf(1) }
@@ -141,6 +146,51 @@ fun SetupTargetScreen(
                         modifier = Modifier.padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.setup_target_restriction_name_optional),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MutedGray,
+                                letterSpacing = 0.5.sp
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            OutlinedTextField(
+                                value = restrictionName,
+                                onValueChange = { if (it.length <= 50) restrictionName = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                    Text(
+                                        text = stringResource(R.string.setup_target_restriction_name_placeholder),
+                                        color = MutedGray,
+                                        fontSize = 13.sp
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Edit, contentDescription = null, tint = MutedGray)
+                                },
+                                trailingIcon = {
+                                    if (restrictionName.isNotEmpty()) {
+                                        IconButton(onClick = { restrictionName = "" }) {
+                                            Icon(Icons.Default.Close, contentDescription = null, tint = MutedGray)
+                                        }
+                                    }
+                                },
+                                singleLine = true,
+                                shape = RoundedCornerShape(14.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = SuccessGreen,
+                                    unfocusedBorderColor = BorderGray,
+                                    focusedContainerColor = MatteSurface,
+                                    unfocusedContainerColor = MatteSurface,
+                                    focusedTextColor = PureBlack,
+                                    unfocusedTextColor = PureBlack
+                                )
+                            )
+                        }
+
+                        HorizontalDivider(color = BorderGray, thickness = 1.dp)
+
                         // SECTION 1: App Selection
                         Column {
                             Row(
@@ -387,6 +437,86 @@ fun SetupTargetScreen(
 
                         HorizontalDivider(color = BorderGray, thickness = 1.dp)
 
+                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = stringResource(R.string.setup_target_active_window),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MutedGray,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = stringResource(R.string.setup_target_active_window_desc),
+                                        fontSize = 11.sp,
+                                        color = MutedGray,
+                                        lineHeight = 15.sp
+                                    )
+                                }
+                                Switch(
+                                    checked = activeWindowEnabled,
+                                    onCheckedChange = { activeWindowEnabled = it },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color.White,
+                                        checkedTrackColor = SuccessGreen,
+                                        uncheckedThumbColor = MutedGray,
+                                        uncheckedTrackColor = BorderGray
+                                    )
+                                )
+                            }
+
+                            if (activeWindowEnabled) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(MatteSurface)
+                                        .border(1.dp, BorderGray, RoundedCornerShape(16.dp))
+                                        .padding(14.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    ScheduleTimeField(
+                                        label = stringResource(R.string.setup_target_start_time),
+                                        minutes = activeStartMinutes,
+                                        modifier = Modifier.weight(1f),
+                                        onClick = {
+                                            TimePickerDialog(
+                                                context,
+                                                { _, hour, minute -> activeStartMinutes = hour * 60 + minute },
+                                                activeStartMinutes / 60,
+                                                activeStartMinutes % 60,
+                                                true
+                                            ).show()
+                                        }
+                                    )
+                                    Text("–", color = MutedGray, fontWeight = FontWeight.Bold)
+                                    ScheduleTimeField(
+                                        label = stringResource(R.string.setup_target_end_time),
+                                        minutes = activeEndMinutes,
+                                        modifier = Modifier.weight(1f),
+                                        onClick = {
+                                            TimePickerDialog(
+                                                context,
+                                                { _, hour, minute -> activeEndMinutes = hour * 60 + minute },
+                                                activeEndMinutes / 60,
+                                                activeEndMinutes % 60,
+                                                true
+                                            ).show()
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        HorizontalDivider(color = BorderGray, thickness = 1.dp)
+
                         // SECTION 3: Days Selection
                         Column {
                             Row(
@@ -478,10 +608,16 @@ fun SetupTargetScreen(
                                 Toast.makeText(context, context.getString(R.string.setup_target_error_zero_duration), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
-                            val daysStr = selectedDays.joinToString(",")
-                            selectedApps.forEach { app ->
-                                viewModel.addRestrictedApp(app.second, app.first, currentTotalMinutes, activeDays = daysStr)
-                            }
+                            val daysStr = daysOfWeek.filter { it in selectedDays }.joinToString(",")
+                            viewModel.addRestrictionGroup(
+                                restrictionName = restrictionName,
+                                apps = selectedApps.toList(),
+                                dailyLimitMinutes = currentTotalMinutes,
+                                activeDays = daysStr,
+                                activeWindowEnabled = activeWindowEnabled,
+                                activeStartMinutes = activeStartMinutes,
+                                activeEndMinutes = activeEndMinutes
+                            )
                             Toast.makeText(
                                 context,
                                 context.getString(R.string.setup_target_toast_added, selectedApps.size),
@@ -746,6 +882,44 @@ fun SelectedAppChip(
                     modifier = Modifier.size(10.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ScheduleTimeField(
+    label: String,
+    minutes: Int,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            color = MutedGray
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(DarkCharcoal)
+                .border(1.dp, BorderGray, RoundedCornerShape(12.dp))
+                .clickable(onClick = onClick)
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Default.DateRange, contentDescription = null, tint = MutedGray, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = String.format(Locale.ROOT, "%02d:%02d", minutes / 60, minutes % 60),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = PureBlack
+            )
         }
     }
 }

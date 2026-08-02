@@ -1,5 +1,9 @@
 package com.gardiyan.app.ui.screens
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,11 +38,17 @@ fun PermissionsScreen(
     isUsageEnabled: Boolean,
     isAccessibilityEnabled: Boolean,
     accessibilityNeedsReenable: Boolean,
+    accessibilityFailSafeActive: Boolean,
     isBatteryExempted: Boolean,
     isNotificationsEnabled: Boolean,
+    canContinueToApp: Boolean,
     onNavigateToDashboard: () -> Unit
 ) {
     val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { }
+    )
     val hasAllPermissions = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted
 
     var showAccessibilityDialog by remember { mutableStateOf(false) }
@@ -314,7 +324,11 @@ fun PermissionsScreen(
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = stringResource(R.string.accessibility_reenable_warning),
+                        text = if (accessibilityFailSafeActive) {
+                            stringResource(R.string.accessibility_failsafe_warning)
+                        } else {
+                            stringResource(R.string.accessibility_reenable_warning)
+                        },
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                         color = DangerRed,
@@ -367,13 +381,21 @@ fun PermissionsScreen(
             ModernPermissionCard(
                 title = stringResource(R.string.perm_accessibility_title),
                 description = if (accessibilityNeedsReenable) {
-                    stringResource(R.string.perm_accessibility_reenable_desc)
+                    if (accessibilityFailSafeActive) {
+                        stringResource(R.string.perm_accessibility_failsafe_desc)
+                    } else {
+                        stringResource(R.string.perm_accessibility_reenable_desc)
+                    }
                 } else {
                     stringResource(R.string.perm_accessibility_desc)
                 },
                 isGranted = isAccessibilityEnabled,
                 stateText = if (accessibilityNeedsReenable) {
-                    stringResource(R.string.perm_state_reenable)
+                    if (accessibilityFailSafeActive) {
+                        stringResource(R.string.perm_state_failsafe)
+                    } else {
+                        stringResource(R.string.perm_state_reenable)
+                    }
                 } else {
                     null
                 },
@@ -398,13 +420,19 @@ fun PermissionsScreen(
                 title = stringResource(R.string.perm_notification_title),
                 description = stringResource(R.string.perm_notification_desc),
                 isGranted = isNotificationsEnabled,
-                onClick = { viewModel.openNotificationSettings(context) }
+                onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        viewModel.openNotificationSettings(context)
+                    }
+                }
             )
         }
 
         Button(
             onClick = { onNavigateToDashboard() },
-            enabled = hasAllPermissions,
+            enabled = canContinueToApp,
             colors = ButtonDefaults.buttonColors(
                 containerColor = PureBlack,
                 contentColor = OnPureBlack,

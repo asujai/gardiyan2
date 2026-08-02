@@ -22,16 +22,20 @@ class PackageReplacedReceiver : BroadcastReceiver() {
             val pendingResult = goAsync()
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val db = GuardianDatabase.getDatabase(context.applicationContext)
-                    val repository = GuardianRepository(context.applicationContext, db.guardianDao())
+                    val appContext = context.applicationContext
+                    KeepAliveScheduler.schedule(appContext)
+                    DailySuccessScheduler.schedule(appContext)
+
+                    val db = GuardianDatabase.getDatabase(appContext)
+                    val repository = GuardianRepository(appContext, db.guardianDao())
                     val hasActiveRestrictions = repository.getActiveRestrictedAppsSync().isNotEmpty()
 
                     if (hasActiveRestrictions) {
-                        val serviceIntent = Intent(context, BlockOverlayService::class.java)
+                        val serviceIntent = Intent(appContext, BlockOverlayService::class.java)
                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                            context.startForegroundService(serviceIntent)
+                            appContext.startForegroundService(serviceIntent)
                         } else {
-                            context.startService(serviceIntent)
+                            appContext.startService(serviceIntent)
                         }
                     }
                 } catch (e: Exception) {

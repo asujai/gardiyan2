@@ -13,6 +13,7 @@ import com.gardiyan.app.ui.screens.DisciplineDetailScreen
 import com.gardiyan.app.ui.screens.UsageDetailsScreen
 import com.gardiyan.app.ui.screens.SavedQuotesScreen
 import com.gardiyan.app.viewmodel.GuardianViewModel
+import com.gardiyan.app.hasRequiredSetupPermissions
 
 const val ROUTE_PERMISSIONS = "permissions"
 const val ROUTE_DASHBOARD = "dashboard"
@@ -31,14 +32,21 @@ fun AppNavGraph(
     isUsageEnabled: Boolean,
     isAccessibilityEnabled: Boolean,
     accessibilityNeedsReenable: Boolean,
+    accessibilityFailSafeActive: Boolean,
     isBatteryExempted: Boolean,
-    isNotificationsEnabled: Boolean
+    isNotificationsEnabled: Boolean,
+    canEnterMainApp: Boolean
 ) {
-    val hasAllPermissions = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted
+    val hasAllPermissions = hasRequiredSetupPermissions(
+        isOverlayEnabled = isOverlayEnabled,
+        isUsageEnabled = isUsageEnabled,
+        isAccessibilityEnabled = isAccessibilityEnabled,
+        isBatteryExempted = isBatteryExempted
+    )
 
     NavHost(
         navController = navController,
-        startDestination = if (hasAllPermissions) ROUTE_DASHBOARD else ROUTE_PERMISSIONS
+        startDestination = if (canEnterMainApp) ROUTE_DASHBOARD else ROUTE_PERMISSIONS
     ) {
         composable(ROUTE_PERMISSIONS) {
             PermissionsScreen(
@@ -47,8 +55,10 @@ fun AppNavGraph(
                 isUsageEnabled = isUsageEnabled,
                 isAccessibilityEnabled = isAccessibilityEnabled,
                 accessibilityNeedsReenable = accessibilityNeedsReenable,
+                accessibilityFailSafeActive = accessibilityFailSafeActive,
                 isBatteryExempted = isBatteryExempted,
                 isNotificationsEnabled = isNotificationsEnabled,
+                canContinueToApp = canEnterMainApp || hasAllPermissions,
                 onNavigateToDashboard = {
                     navController.navigate(ROUTE_DASHBOARD) {
                         popUpTo(ROUTE_PERMISSIONS) { inclusive = true }

@@ -20,6 +20,7 @@ import com.gardiyan.app.MainActivity
 import com.gardiyan.app.R
 import com.gardiyan.app.data.local.database.GuardianDatabase
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
+import com.gardiyan.app.data.model.isScheduledAt
 import com.gardiyan.app.data.repository.GuardianRepository
 import com.gardiyan.app.data.repository.UsageStatsReconciliationResult
 import kotlinx.coroutines.CoroutineScope
@@ -76,6 +77,12 @@ class AppBlockAccessibilityService : AccessibilityService() {
             return lastHeartbeatElapsedRealtime > 0L && heartbeatAge in 0L..HEALTH_GRACE_MS
         }
 
+        fun requestHealthRecovery(reason: String): Boolean {
+            val service = instance ?: return false
+            service.recoverHealth(reason)
+            return true
+        }
+
         // Şu anda izlenen hedef uygulamaya GİRİŞ zamanı (epoch ms).
         // Kullanıcı kısıtlı uygulamayı açtığı an kaydedilir, çıktığı an sıfırlanır.
         @Volatile
@@ -124,11 +131,8 @@ class AppBlockAccessibilityService : AccessibilityService() {
     }
 
     private fun getCachedActiveRestrictedAppsForToday(): List<RestrictedAppEntity> {
-        val today = GuardianRepository.todayDayLabel()
-        return getCachedActiveRestrictedApps().filter { app ->
-            val days = app.activeDays.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-            days.isEmpty() || days.contains(today)
-        }
+        val now = System.currentTimeMillis()
+        return getCachedActiveRestrictedApps().filter { it.isScheduledAt(now) }
     }
 
     override fun onServiceConnected() {
@@ -352,23 +356,25 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         ?.let { pkg ->
                             val app = cachedRestrictedApps.firstOrNull { it.packageName == pkg }
                             if (app != null) {
-                                withContext(Dispatchers.IO) {
-                                    repository.updateSessionLastSeen(pkg)
-                                }
-                                if (app.isActive && !app.isFailed) {
-                                    checkAndTriggerNotifications(app)
+                                if (!app.isScheduledAt(now)) {
+                                    // A scheduled window may end while the target stays open.
+                                    // Re-run foreground handling so the session is closed and
+                                    // no usage outside the configured window is charged.
+                                    handleForegroundChange(pkg)
+                                } else {
+                                    withContext(Dispatchers.IO) {
+                                        repository.updateSessionLastSeen(pkg)
+                                    }
+                                    if (app.isActive && !app.isFailed) {
+                                        checkAndTriggerNotifications(app)
+                                    }
                                 }
                             }
                         }
 
                     // Ekran ve Kilit durumu tespiti
                     val pm = getSystemService(Context.POWER_SERVICE) as? PowerManager
-                    val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                        pm?.isInteractive ?: true
-                    } else {
-                        @Suppress("DEPRECATION")
-                        pm?.isScreenOn ?: true
-                    }
+                    val isScreenOn = pm?.isInteractive ?: true
 
                     val km = getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
                     val isLocked = km?.isKeyguardLocked ?: false
@@ -470,20 +476,31 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     // Yedek ön plan doğrulaması
                     val foregroundPkg = queryCurrentForegroundPackage()
                     if (foregroundPkg != null) {
+                        val scheduledTargetNeedsEntry =
+                            foregroundPkg != packageName &&
+                            currentTrackedPackage == null &&
+                            cachedRestrictedApps.any { app ->
+                                app.packageName == foregroundPkg && app.isScheduledAt(now)
+                            }
 
                         if (
                             foregroundPkg == packageName &&
                             BlockOverlayService.isLockOverlayVisible.get()
                         ) {
                             handleLimitraForeground()
-                        } else if (foregroundPkg != currentForegroundPackage && foregroundPkg != packageName) {
-                            Log.w(TAG, "UsageStats fallback detected different package: $foregroundPkg (A11y had: $currentForegroundPackage)")
-                            withContext(Dispatchers.IO) {
-                                repository.insertLog(
-                                    eventType = "USAGE_STATS_FALLBACK",
-                                    appName = "",
-                                    details = "UsageStats yedek doğrulaması: Ön plan = $foregroundPkg (A11y = $currentForegroundPackage)"
-                                )
+                        } else if (
+                            foregroundPkg != packageName &&
+                            (foregroundPkg != currentForegroundPackage || scheduledTargetNeedsEntry)
+                        ) {
+                            if (foregroundPkg != currentForegroundPackage) {
+                                Log.w(TAG, "UsageStats fallback detected different package: $foregroundPkg (A11y had: $currentForegroundPackage)")
+                                withContext(Dispatchers.IO) {
+                                    repository.insertLog(
+                                        eventType = "USAGE_STATS_FALLBACK",
+                                        appName = "",
+                                        details = "UsageStats yedek doğrulaması: Ön plan = $foregroundPkg (A11y = $currentForegroundPackage)"
+                                    )
+                                }
                             }
                             handleForegroundChange(foregroundPkg)
                         }
@@ -505,6 +522,24 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 lastHeartbeatElapsedRealtime = SystemClock.elapsedRealtime()
                 AccessibilityHealthMonitor.recordServiceHeartbeat(applicationContext)
                 delay(AccessibilityHealthMonitor.HEARTBEAT_INTERVAL_MS)
+            }
+        }
+    }
+
+    private fun recoverHealth(reason: String) {
+        Log.w(TAG, "Recovering accessibility health: $reason")
+        heartbeatJob?.cancel()
+        heartbeatJob = null
+        usageStatsPollingJob?.cancel()
+        usageStatsPollingJob = null
+
+        recordHealthyTrackingTick()
+        startHeartbeat()
+        startUsageStatsPolling()
+
+        a11yScope.launch {
+            queryCurrentForegroundPackage()?.let { foregroundPackage ->
+                handleForegroundChange(foregroundPackage)
             }
         }
     }
@@ -599,8 +634,12 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     val db = GuardianDatabase.getDatabase(applicationContext)
                     val repository = GuardianRepository(applicationContext, db.guardianDao())
                     
-                    // Veritabanı sorgusu yerine RAM önbelleğini kullan
-                    val activeApps = getCachedActiveRestrictedAppsForToday()
+                    // Engelleme kararında önbellek kullanma. Limit sıfıra indiğinde
+                    // Room Flow'unun RAM önbelleğini güncellemesi kısa sürebilir; bu
+                    // aralıkta hedef yeniden açılırsa eski süreyle devam edebilirdi.
+                    val activeApps = withContext(Dispatchers.IO) {
+                        repository.getActiveRestrictedAppsForTodaySync()
+                    }
 
                     if (com.gardiyan.app.BuildConfig.DEBUG) {
                         Log.d(TAG, "handleForegroundChange: foregroundPackage=$foregroundPackage, activeAppsCount=${activeApps.size}")
@@ -631,6 +670,9 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     }
 
                     if (matchingApp == null) {
+                        if (currentTrackedPackage == foregroundPackage) {
+                            handleExit(repository, activeApps)
+                        }
                         if (BlockOverlayService.isLockOverlayVisible.get()) {
                             Log.d(TAG, "Hiding lock overlay because foreground package is unrelated: $foregroundPackage")
                             BlockOverlayService.hideLockOverlay()
@@ -703,12 +745,23 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                         return@withLock
                                     }
                                     Log.d(TAG, "Tick fired: ${matchingApp.appName} remaining=$remaining reached zero")
-                                    repository.updateRestrictedApp(
-                                        matchingApp.copy(
+                                    val latestApp = repository.getRestrictedAppByIdSync(matchingApp.id)
+                                        ?: return@withLock
+                                    if (!latestApp.isScheduledAt(System.currentTimeMillis())) {
+                                        repository.closeActiveSession("Aktif saat aralığı sona erdi")
+                                        clearTrackingState()
+                                        return@withLock
+                                    }
+                                    val exhaustedApp = latestApp.copy(
                                             remainingSecondsToday = 0,
                                             remainingMinutesToday = 0
-                                        )
                                     )
+                                    repository.updateRestrictedApp(exhaustedApp)
+                                    // Flow güncellemesi gelene kadar tüm hızlı denetimler de
+                                    // sıfır süreyi görsün.
+                                    cachedRestrictedApps = cachedRestrictedApps.map { app ->
+                                        if (app.id == exhaustedApp.id) exhaustedApp else app
+                                    }
                                     entryTimeMillis = 0L
                                     ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
                                     BlockOverlayService.showLockOverlay(

@@ -66,12 +66,12 @@ class DayStatusTest {
     }
 
     @Test
-    fun `past day without logs is gray not evaluated`() {
+    fun `past day with an active target and no violation is green`() {
         val status = DayStatus.evaluate(
             isFuture = false, isToday = false, hasActiveTargets = true,
             todayHasViolation = false, dayHasSuccessLog = false, dayHasFailureLog = false
         )
-        assertEquals(DayStatus.NONE, status)
+        assertEquals(DayStatus.SUCCESS, status)
     }
 
     @Test

@@ -51,4 +51,24 @@ class AccessibilityHealthMonitorTest {
         assertFalse(AccessibilityHealthMonitor.isFreshHeartbeatAge(30_001L, 30_000L))
         assertFalse(AccessibilityHealthMonitor.isFreshHeartbeatAge(null, 30_000L))
     }
+
+    @Test
+    fun `fail safe protection requires active and fresh fallback heartbeat`() {
+        val activeStatus = AccessibilityHealthMonitor.Status(
+            isPermissionGranted = true,
+            isServiceHeartbeatFresh = false,
+            isTrackingHeartbeatFresh = false,
+            isFallbackProtectionActive = true,
+            isFallbackProtectionFresh = true,
+            serviceHeartbeatAgeMillis = 45_000L,
+            trackingHeartbeatAgeMillis = 45_000L,
+            fallbackProtectionHeartbeatAgeMillis = 1_000L,
+            isServiceMarkedBound = false
+        )
+        val staleStatus = activeStatus.copy(isFallbackProtectionFresh = false)
+
+        assertTrue(activeStatus.requiresReenable)
+        assertTrue(activeStatus.hasFailSafeProtection)
+        assertFalse(staleStatus.hasFailSafeProtection)
+    }
 }

@@ -21,7 +21,7 @@ import com.gardiyan.app.data.local.entity.UserSessionEntity
         RestrictedAppEntity::class,
         ActiveUsageSessionEntity::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class GuardianDatabase : RoomDatabase() {
@@ -45,7 +45,8 @@ abstract class GuardianDatabase : RoomDatabase() {
                     MIGRATION_7_8,
                     MIGRATION_8_9,
                     MIGRATION_9_10,
-                    MIGRATION_10_11
+                    MIGRATION_10_11,
+                    MIGRATION_11_12
                 )
                 .build()
                 INSTANCE = instance
@@ -150,6 +151,43 @@ abstract class GuardianDatabase : RoomDatabase() {
                     "lastSeenElapsedRealtime",
                     "ALTER TABLE active_usage_session ADD COLUMN lastSeenElapsedRealtime INTEGER NOT NULL DEFAULT 0"
                 )
+            }
+        }
+
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "restrictionGroupId",
+                    "ALTER TABLE restricted_apps ADD COLUMN restrictionGroupId TEXT NOT NULL DEFAULT ''"
+                )
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "restrictionName",
+                    "ALTER TABLE restricted_apps ADD COLUMN restrictionName TEXT NOT NULL DEFAULT ''"
+                )
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "activeWindowEnabled",
+                    "ALTER TABLE restricted_apps ADD COLUMN activeWindowEnabled INTEGER NOT NULL DEFAULT 0"
+                )
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "activeStartMinutes",
+                    "ALTER TABLE restricted_apps ADD COLUMN activeStartMinutes INTEGER NOT NULL DEFAULT 0"
+                )
+                addColumnIfMissing(
+                    db,
+                    "restricted_apps",
+                    "activeEndMinutes",
+                    "ALTER TABLE restricted_apps ADD COLUMN activeEndMinutes INTEGER NOT NULL DEFAULT 0"
+                )
+                db.execSQL("UPDATE restricted_apps SET restrictionGroupId = packageName WHERE restrictionGroupId = ''")
+                db.execSQL("UPDATE restricted_apps SET restrictionName = appName WHERE restrictionName = ''")
             }
         }
 

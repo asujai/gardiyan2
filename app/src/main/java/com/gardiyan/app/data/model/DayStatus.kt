@@ -27,7 +27,10 @@ enum class DayStatus {
          *     - bugün ihlal varsa           -> FAILURE (kırmızı)
          *     - aksi halde                  -> SUCCESS (yeşil)
          *       (korunan uygulamalara hiç girilmese bile bugün temizse yeşil sayılır)
-         * - Değerlendirilemeyen geçmiş gün  -> NONE (gri)
+         * - Geçmiş gün:
+         *     - aktif hedef varsa ve ihlal kaydı yoksa -> SUCCESS (yeşil)
+         *       (uygulama o gün açılmamış olsa bile limit kuralı geçerlidir)
+         *     - aktif hedef yoksa                      -> NONE (gri)
          */
         fun evaluate(
             isFuture: Boolean,
@@ -45,6 +48,7 @@ enum class DayStatus {
                 todayHasViolation -> FAILURE
                 else -> SUCCESS
             }
+            hasActiveTargets -> SUCCESS
             else -> NONE
         }
     }

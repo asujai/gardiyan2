@@ -1,5 +1,6 @@
 package com.gardiyan.app
 
+import android.app.usage.UsageStatsManager
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
@@ -14,8 +15,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Shadows
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowUsageStatsManager
+import org.robolectric.shadows.ShadowUsageStatsManager.UsageStatsBuilder
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
@@ -38,6 +42,7 @@ class GuardianRepositoryRegressionTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        ShadowUsageStatsManager.reset()
         database = Room.inMemoryDatabaseBuilder(context, GuardianDatabase::class.java)
             .allowMainThreadQueries()
             .build()
@@ -123,14 +128,14 @@ class GuardianRepositoryRegressionTest {
     }
 
     @Test
-    fun `evaluation fails if no active engine log is present`() = runBlocking {
+    fun `evaluation succeeds without an engine log when restriction existed and no violation occurred`() = runBlocking {
         repository.insertDefaultSessionIfMissing()
         repository.upsertRestrictedApp("test.package", "Test", 30)
         
         val success = repository.evaluateDailySuccess(GuardianRepository.todayKey())
         
-        assertFalse(success)
-        assertEquals(0, database.guardianDao().getAllLogsSync().count { it.eventType == "SUCCESS_DAY" })
+        assertTrue(success)
+        assertEquals(1, database.guardianDao().getAllLogsSync().count { it.eventType == "SUCCESS_DAY" })
     }
 
     @Test
@@ -546,6 +551,118 @@ class GuardianRepositoryRegressionTest {
         assertFalse(updated.isFailed)
     }
 
+    @Test
+    fun `daily reset uses usage stats snapshot as baseline so carried over minutes are not charged`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearSecureResetPrefs(context)
+        val resetAt = localMillis(2026, 6, 11, 0, 5)
+        val dayStart = localMillis(2026, 6, 11, 0, 0)
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = resetAt,
+            mockElapsedRealtime = 2_000_000L,
+            mockLocalDateString = "2026-06-11"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val usageStatsShadow = Shadows.shadowOf(usageStatsManager)
+        val usageStats = UsageStatsBuilder.newBuilder()
+            .setPackageName("test.package")
+            .setFirstTimeStamp(dayStart)
+            .setLastTimeStamp(resetAt)
+            .setLastTimeUsed(resetAt)
+            .setTotalTimeInForeground(20 * 60_000L)
+            .build()
+        usageStatsShadow.addUsageStats(UsageStatsManager.INTERVAL_DAILY, usageStats)
+        usageStatsShadow.addUsageStats(UsageStatsManager.INTERVAL_BEST, usageStats)
+
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 120)
+        val app = secureRepository.getRestrictedAppByIdSync(id)!!
+        secureRepository.updateRestrictedApp(
+            app.copy(
+                lastResetDate = "2026-06-10",
+                remainingMinutesToday = 0,
+                remainingSecondsToday = 0,
+                isFailed = true,
+                usageStatsBaselineMillisToday = 0L,
+                lastUsageStatsObservedMillisToday = 0L,
+                lastUsageStatsReconciledAtMillis = 0L
+            )
+        )
+
+        secureRepository.resetDailyCountersIfNeeded()
+
+        val resetApp = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(120 * 60, resetApp.remainingSecondsToday)
+        assertEquals(20 * 60_000L, resetApp.usageStatsBaselineMillisToday)
+        assertEquals(20 * 60_000L, resetApp.lastUsageStatsObservedMillisToday)
+
+        val reconciliation = secureRepository.reconcileRestrictedAppWithObservedUsage(
+            appId = id,
+            observedUsageMillisToday = 20 * 60_000L
+        )
+
+        val updated = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(null, reconciliation)
+        assertEquals(120 * 60, updated.remainingSecondsToday)
+    }
+
+    @Test
+    fun `daily reset carries only active session usage after local midnight`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearSecureResetPrefs(context)
+        val sessionStart = localMillis(2026, 6, 10, 23, 50)
+        val resetAt = localMillis(2026, 6, 11, 0, 5)
+        val elapsedAtStart = 1_000_000L
+        val elapsedAtReset = elapsedAtStart + (resetAt - sessionStart)
+        val testProvider = TestTimeProvider(
+            mockTimeMillis = sessionStart,
+            mockElapsedRealtime = elapsedAtStart,
+            mockLocalDateString = "2026-06-10"
+        )
+        val secureRepository = GuardianRepository(context, database.guardianDao(), testProvider)
+
+        val id = secureRepository.upsertRestrictedApp("test.package", "Test", 30)
+        secureRepository.resetDailyCountersIfNeeded()
+        secureRepository.startSession(secureRepository.getRestrictedAppByIdSync(id)!!)
+
+        val activeSession = database.guardianDao().getActiveSessionSync()!!
+        database.guardianDao().updateActiveSession(
+            activeSession.copy(
+                lastSeenAtMillis = resetAt - 10_000L,
+                lastSeenElapsedRealtime = elapsedAtReset - 10_000L
+            )
+        )
+        secureRepository.updateRestrictedApp(
+            secureRepository.getRestrictedAppByIdSync(id)!!.copy(
+                lastResetDate = "2026-06-10",
+                remainingMinutesToday = 0,
+                remainingSecondsToday = 0,
+                isFailed = true
+            )
+        )
+
+        testProvider.mockTimeMillis = resetAt
+        testProvider.mockElapsedRealtime = elapsedAtReset
+        testProvider.mockLocalDateString = "2026-06-11"
+
+        secureRepository.resetDailyCountersIfNeeded()
+
+        val resetApp = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(25 * 60, resetApp.remainingSecondsToday)
+        assertFalse(resetApp.isFailed)
+
+        val realignedSession = database.guardianDao().getActiveSessionSync()!!
+        assertEquals(resetAt, realignedSession.entryAtMillis)
+        assertEquals(resetAt, realignedSession.lastSeenAtMillis)
+
+        testProvider.mockTimeMillis += 2 * 60_000L
+        testProvider.mockElapsedRealtime += 2 * 60_000L
+        secureRepository.updateSessionLastSeen("test.package")
+
+        val afterTwoMinutes = secureRepository.getRestrictedAppByIdSync(id)!!
+        assertEquals(23 * 60, afterTwoMinutes.remainingSecondsToday)
+    }
+
     class TestTimeProvider(
         var mockTimeMillis: Long = System.currentTimeMillis(),
         var mockElapsedRealtime: Long = android.os.SystemClock.elapsedRealtime(),
@@ -572,6 +689,25 @@ class GuardianRepositoryRegressionTest {
                 else -> ""
             }
         }
+    }
+
+    private fun localMillis(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long {
+        return java.util.Calendar.getInstance().apply {
+            set(java.util.Calendar.YEAR, year)
+            set(java.util.Calendar.MONTH, month - 1)
+            set(java.util.Calendar.DAY_OF_MONTH, day)
+            set(java.util.Calendar.HOUR_OF_DAY, hour)
+            set(java.util.Calendar.MINUTE, minute)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
+    private fun clearSecureResetPrefs(context: Context) {
+        context.getSharedPreferences("gardiyan_secure_reset_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
     }
 
     @Test

@@ -82,11 +82,28 @@
     <string name="setup_target_1h">1 Saat</string>
     <string name="setup_target_2h">2 Saat</string>
     <string name="setup_target_add">KISITLAMA EKLE</string>
+    <string name="setup_target_restriction_name">KISITLAMA ADI</string>
+    <string name="setup_target_restriction_name_optional">KISITLAMA ADI (İSTEĞE BAĞLI)</string>
+    <string name="setup_target_restriction_name_placeholder">Örn. Gece Sosyal Medya</string>
+    <string name="setup_target_error_no_name">Bir kısıtlama adı girin</string>
+    <string name="protected_apps_time_left">%1$s kaldı</string>
+    <string name="protected_apps_usage_progress">%1$d%% kaldı</string>
     <string name="setup_target_select_app_title">UYGULAMA SEÇİN</string>
     <string name="setup_target_select_app_placeholder">Korunacak uygulamaları seçin…</string>
     <string name="setup_target_daily_limit">GÜNLÜK KULLANIM LİMİTİ</string>
     <string name="setup_target_custom_limit">Özel dakika sınırı girin</string>
     <string name="setup_target_days">KORUMA GÜNLERİ</string>
+    <string name="setup_target_active_window">AKTİF SAAT ARALIĞI</string>
+    <string name="setup_target_active_window_desc">Seçtiğiniz uygulamalar yalnızca belirlediğiniz saatler arasında kısıtlanır.</string>
+    <string name="setup_target_active_window_toggle">Belirli saatlerde aktif et</string>
+    <string name="setup_target_start_time">BAŞLANGIÇ</string>
+    <string name="setup_target_end_time">BİTİŞ</string>
+    <string name="protected_group_apps">KISITLANAN UYGULAMALAR</string>
+    <string name="protected_group_app_count">%1$d uygulama</string>
+    <string name="protected_group_active">Aktif</string>
+    <string name="protected_group_scheduled">Planlandı</string>
+    <string name="protected_group_all_day">Tüm gün</string>
+    <string name="protected_group_every_day">Her gün</string>
     <string name="setup_target_error_no_app">Önce en az bir uygulama seçin</string>
     <string name="setup_target_error_no_day">Lütfen en az bir gün seçin</string>
     <string name="setup_target_error_zero_duration">Lütfen 0 dakikadan büyük bir limit seçin</string>
@@ -158,8 +175,8 @@
     <string name="keep_alive_notification_desc">Korumayı aktif tutmak için pil optimizasyonu kısıtlamasını kaldırın.</string>
     <string name="keep_alive_notification_long">Pil optimizasyonu muafiyeti verilmediği için koruma motoru arka planda durdurulmuş olabilir.</string>
     <string name="accessibility_health_notification_title">Limitra koruması aktif değil</string>
-    <string name="accessibility_health_notification_desc">Erişilebilirlik izni açık görünüyor, ancak takip servisi çalışmıyor. Android ayarlarında Limitra Erişilebilirlik iznini kapatıp tekrar açın.</string>
-    <string name="accessibility_health_log_reenable">Erişilebilirlik izni açık görünüyor, ancak takip servisi heartbeat\'i yok veya bayat. Limitra Erişilebilirlik iznini kapatıp tekrar açın.</string>
+    <string name="accessibility_health_notification_desc">Erişilebilirlik izni kapalı ya da takip servisi çalışmıyor. Limitra\'yı kullanmaya devam edebilirsiniz; tam koruma için Android ayarlarından Erişilebilirlik iznini tekrar etkinleştirin.</string>
+    <string name="accessibility_health_log_reenable">Erişilebilirlik kapalı ya da takip servisi heartbeat\'i yok veya bayat. Tam koruma için Limitra Erişilebilirlik iznini tekrar etkinleştirin.</string>
     <string name="overlay_restricted_app">Kısıtlı Uygulama</string>
     <string name="overlay_active">Limitra aktif</string>
     <string name="overlay_desc">Seçtiğin uygulama sınırları korunuyor.</string>
@@ -223,9 +240,12 @@
     <string name="perm_state_active">AKTİF</string>
     <string name="perm_state_grant">YETKİ VER</string>
     <string name="perm_state_reenable">TEKRAR AÇ</string>
+    <string name="perm_state_failsafe">YEDEK AKTİF</string>
     <string name="perm_accessibility_reenable_desc">İzin açık listeleniyor, ancak takip servisi aktif değil. Erişilebilirlik iznini kapatıp tekrar açın.</string>
-    <string name="accessibility_reenable_warning">Erişilebilirlik izni açık görünüyor, ancak Limitra takip servisinin çalıştığını doğrulayamıyor. Limitra Erişilebilirlik iznini kapatıp tekrar açın.</string>
-    <string name="accessibility_reenable_dialog_desc">Limitra Erişilebilirlik izni açık görünüyor, ancak servis heartbeat\'i yok veya bayat. Süre takibinin yeniden başlaması için Android ayarlarında Limitra Erişilebilirlik iznini kapatın, sonra tekrar açın.</string>
+    <string name="perm_accessibility_failsafe_desc">Ana takip servisi aktif değil, ancak yedek koruma Kullanım Erişimi ile limitleri uyguluyor. Anlık algılama için Erişilebilirlik iznini kapatıp tekrar açın.</string>
+    <string name="accessibility_reenable_warning">Erişilebilirlik dikkat gerektiriyor. Limitra\'yı kullanmaya devam edebilirsiniz; ancak Erişilebilirlik tekrar açılana kadar anlık koruma azalabilir.</string>
+    <string name="accessibility_failsafe_warning">Erişilebilirlik takibinin tekrar etkinleştirilmesi gerekiyor. Yedek koruma aktif ve limitleri uygulamaya devam edecek; ancak anlık algılama için Erişilebilirlik iznini kapatıp tekrar açın.</string>
+    <string name="accessibility_reenable_dialog_desc">Limitra Erişilebilirlik dikkat gerektiriyor; izin kapalı olabilir veya servis heartbeat\'i bayat. Süre takibinin yeniden başlaması için Android ayarlarını açıp Limitra Erişilebilirlik iznini tekrar etkinleştirin.</string>
     <string name="timeline_today">Bugün</string>
     <string name="timeline_yesterday">Dün</string>
     <string name="timeline_this_week">Bu Hafta</string>
@@ -424,8 +444,6 @@
     <string name="quote_author_anonymous">Anonim</string>
     <string name="btn_save">Kaydet</string>
     <string name="btn_delete">Sil</string>
-    <string name="overlay_brand_icon" translatable="false">🛡️</string>
-    <string name="overlay_initial_countdown" translatable="false">00:10</string>
     <string name="discipline_detail_title">Disiplin Geçmişi</string>
     <string name="discipline_detail_completed_series">Tamamlanan Seriler</string>
     <string name="discipline_detail_active_series">Aktif Seri</string>

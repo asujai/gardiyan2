@@ -27,6 +27,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.gardiyan.app.navigation.*
+import com.gardiyan.app.service.AccessibilityHealthMonitor
 import com.gardiyan.app.service.BlockOverlayService
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
@@ -86,7 +87,12 @@ fun MainNavigationContent(
     var accessibilityStatus by remember { mutableStateOf(viewModel.getAccessibilityServiceStatus(context)) }
     var isBatteryExempted by remember { mutableStateOf(viewModel.isBatteryOptimizationIgnored(context)) }
     var isNotificationsEnabled by remember { mutableStateOf(viewModel.areNotificationsEnabled(context)) }
+    var hasCompletedInitialPermissionGate by remember {
+        mutableStateOf(isInitialPermissionGateCompleted(context))
+    }
+    val restrictedApps by viewModel.restrictedApps.collectAsState()
     val isAccessibilityEnabled = accessibilityStatus.isOperational
+    val isAccessibilityFailSafeActive = accessibilityStatus.hasFailSafeProtection
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -158,16 +164,49 @@ fun MainNavigationContent(
         }
     }
 
-    val hasAllPermissions = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted
+    val hasAllPermissions = hasRequiredSetupPermissions(
+        isOverlayEnabled = isOverlayEnabled,
+        isUsageEnabled = isUsageEnabled,
+        isAccessibilityEnabled = isAccessibilityEnabled,
+        isBatteryExempted = isBatteryExempted
+    )
+    val canOpenMainApp = canEnterMainApp(
+        hasCompletedInitialPermissionGate = hasCompletedInitialPermissionGate,
+        hasRequiredSetupPermissions = hasAllPermissions
+    )
+    val shouldForceInitialPermissionGate = shouldShowInitialPermissionGate(
+        hasCompletedInitialPermissionGate = hasCompletedInitialPermissionGate,
+        hasRequiredSetupPermissions = hasAllPermissions
+    )
 
     LaunchedEffect(hasAllPermissions) {
-        if (!hasAllPermissions) {
+        if (hasAllPermissions && !hasCompletedInitialPermissionGate) {
+            markInitialPermissionGateCompleted(context)
+            hasCompletedInitialPermissionGate = true
+        }
+    }
+
+    LaunchedEffect(restrictedApps.isNotEmpty()) {
+        if (restrictedApps.isNotEmpty() && !hasCompletedInitialPermissionGate) {
+            markInitialPermissionGateCompleted(context)
+            hasCompletedInitialPermissionGate = true
+        }
+    }
+
+    LaunchedEffect(hasCompletedInitialPermissionGate, isAccessibilityEnabled) {
+        if (hasCompletedInitialPermissionGate && !isAccessibilityEnabled) {
+            AccessibilityHealthMonitor.maybeNotifyReenableRequired(context)
+        }
+    }
+
+    LaunchedEffect(shouldForceInitialPermissionGate, canOpenMainApp, currentRoute) {
+        if (shouldForceInitialPermissionGate) {
             if (currentRoute != ROUTE_PERMISSIONS) {
                 navController.navigate(ROUTE_PERMISSIONS) {
                     popUpTo(0) { inclusive = true }
                 }
             }
-        } else if (currentRoute == ROUTE_PERMISSIONS) {
+        } else if (canOpenMainApp && currentRoute == ROUTE_PERMISSIONS) {
             navController.navigate(ROUTE_DASHBOARD) {
                 popUpTo(0) { inclusive = true }
             }
@@ -176,7 +215,7 @@ fun MainNavigationContent(
 
     Scaffold(
         bottomBar = {
-            if (hasAllPermissions && (currentRoute == ROUTE_DASHBOARD || currentRoute == ROUTE_PROTECTED || currentRoute == ROUTE_SETTINGS)) {
+            if (canOpenMainApp && (currentRoute == ROUTE_DASHBOARD || currentRoute == ROUTE_PROTECTED || currentRoute == ROUTE_SETTINGS)) {
                 NavigationBar(
                     containerColor = DarkCharcoal,
                     contentColor = PureWhite
@@ -259,8 +298,10 @@ fun MainNavigationContent(
                 isUsageEnabled = isUsageEnabled,
                 isAccessibilityEnabled = isAccessibilityEnabled,
                 accessibilityNeedsReenable = accessibilityStatus.requiresReenable,
+                accessibilityFailSafeActive = isAccessibilityFailSafeActive,
                 isBatteryExempted = isBatteryExempted,
-                isNotificationsEnabled = isNotificationsEnabled
+                isNotificationsEnabled = isNotificationsEnabled,
+                canEnterMainApp = canOpenMainApp
             )
         }
     }

@@ -54,3 +54,6 @@ testsprite_tests/testsprite-mcp-test-report.*
 testsprite_tests/tmp/
 testsprite_tests/raw_report.md
 
+.claude/
+
+

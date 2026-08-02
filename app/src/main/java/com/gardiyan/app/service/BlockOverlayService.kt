@@ -1,11 +1,14 @@
 package com.gardiyan.app.service
 
 import android.app.AlarmManager
+import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.app.usage.UsageEvents
+import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -13,6 +16,7 @@ import android.graphics.PixelFormat
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
 import android.view.Gravity
@@ -26,6 +30,7 @@ import androidx.core.app.ServiceCompat
 import com.gardiyan.app.MainActivity
 import com.gardiyan.app.R
 import com.gardiyan.app.data.local.database.GuardianDatabase
+import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.data.repository.GuardianRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,6 +75,9 @@ class BlockOverlayService : Service() {
     companion object {
         private const val TAG = "BlockOverlayService"
         private const val ALARM_RESTART_REQUEST_CODE = 300
+        private const val FALLBACK_PROTECTION_POLL_MS = 2_000L
+        private const val FALLBACK_RECONCILE_INTERVAL_MS = 15_000L
+        private const val FALLBACK_FOREGROUND_LOOKBACK_MS = 6 * 60 * 60 * 1000L
         const val CHANNEL_ID = "gardiyan_service_channel"
         const val NOTIF_ID = 101
 
@@ -90,6 +98,9 @@ class BlockOverlayService : Service() {
 
         @JvmStatic
         val isLockOverlayVisible = AtomicBoolean(false)
+
+        @JvmStatic
+        val isFallbackProtectionActive = AtomicBoolean(false)
 
         @Volatile
         private var serviceInstance: WeakReference<BlockOverlayService>? = null
@@ -171,6 +182,8 @@ class BlockOverlayService : Service() {
     private var lockOverlayView: View? = null
     private var cycleJob: Job? = null
     private var trackingHealthJob: Job? = null
+    private var fallbackTrackedPackage: String? = null
+    private var fallbackTrackedAppId: Long = -1L
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -206,9 +219,13 @@ class BlockOverlayService : Service() {
     override fun onDestroy() {
         Log.w(TAG, "Service destroyed")
         isServiceRunning.set(false)
+        isFallbackProtectionActive.set(false)
+        AccessibilityHealthMonitor.recordFallbackProtectionState(applicationContext, false)
         serviceInstance = null
         appContextRef = null
         visibleOverlayPackage = null
+        fallbackTrackedPackage = null
+        fallbackTrackedAppId = -1L
         cycleJob?.cancel()
         cycleJob = null
         trackingHealthJob?.cancel()
@@ -231,19 +248,11 @@ class BlockOverlayService : Service() {
             
             // Play Store politika riski ve SCHEDULE_EXACT_ALARM izni gereksinimini kaldırmak için
             // setAndAllowWhileIdle veya normal set kullanımı tercih edilir.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmService.setAndAllowWhileIdle(
-                    AlarmManager.ELAPSED_REALTIME,
-                    SystemClock.elapsedRealtime() + 1000L,
-                    pendingIntent
-                )
-            } else {
-                alarmService.set(
-                    AlarmManager.ELAPSED_REALTIME,
-                    SystemClock.elapsedRealtime() + 1000L,
-                    pendingIntent
-                )
-            }
+            alarmService.setAndAllowWhileIdle(
+                AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + 1000L,
+                pendingIntent
+            )
         } catch (e: Exception) {
             Log.e(TAG, "Failed to schedule service restart: ${e.message}")
         }
@@ -306,22 +315,49 @@ class BlockOverlayService : Service() {
             val db = GuardianDatabase.getDatabase(applicationContext)
             val repository = GuardianRepository(applicationContext, db.guardianDao())
             var hasWarnedUntilHealthy = false
+            var lastReconcileAt = 0L
 
             while (isActive) {
+                var nextDelayMs = AccessibilityHealthMonitor.HEARTBEAT_STALE_MS
                 try {
-                    val hasActiveRestrictions = withContext(Dispatchers.IO) {
-                        repository.getActiveRestrictedAppsSync().isNotEmpty()
+                    val activeAppsForToday = withContext(Dispatchers.IO) {
+                        repository.getActiveRestrictedAppsForTodaySync()
                     }
+                    val hasActiveRestrictions = activeAppsForToday.isNotEmpty()
 
                     if (hasActiveRestrictions) {
-                        withContext(Dispatchers.IO) {
-                            repository.cleanupStaleSessions()
-                            repository.reconcileRestrictedAppsWithUsageStats()
+                        var status = AccessibilityHealthMonitor.getStatus(applicationContext)
+                        if (
+                            status.requiresReenable &&
+                            AppBlockAccessibilityService.requestHealthRecovery("Foreground watchdog detected stale heartbeat")
+                        ) {
+                            delay(1_000L)
+                            status = AccessibilityHealthMonitor.getStatus(applicationContext)
                         }
 
-                        val status = AccessibilityHealthMonitor.getStatus(applicationContext)
-                        if (status.requiresReenable) {
-                            if (!hasWarnedUntilHealthy) {
+                        val shouldRunFallback = !status.isOperational
+                        if (shouldRunFallback) {
+                            nextDelayMs = FALLBACK_PROTECTION_POLL_MS
+                            isFallbackProtectionActive.set(true)
+                            AccessibilityHealthMonitor.recordFallbackProtectionState(applicationContext, true)
+
+                            val now = System.currentTimeMillis()
+                            if (now - lastReconcileAt >= FALLBACK_RECONCILE_INTERVAL_MS) {
+                                lastReconcileAt = now
+                                withContext(Dispatchers.IO) {
+                                    repository.cleanupStaleSessions()
+                                    repository.reconcileRestrictedAppsWithUsageStats()
+                                }
+                            }
+
+                            val foregroundPackage = queryUsageStatsForegroundPackage()
+                            runFallbackProtectionTick(
+                                repository = repository,
+                                activeAppsForToday = activeAppsForToday,
+                                foregroundPackage = foregroundPackage
+                            )
+
+                            if (status.requiresReenable && !hasWarnedUntilHealthy) {
                                 Log.w(TAG, "Accessibility tracking heartbeat is stale; re-enable required")
                                 withContext(Dispatchers.IO) {
                                     repository.insertLog(
@@ -333,18 +369,148 @@ class BlockOverlayService : Service() {
                                 AccessibilityHealthMonitor.maybeNotifyReenableRequired(applicationContext)
                                 hasWarnedUntilHealthy = true
                             }
-                        } else if (status.isOperational) {
+                        } else {
+                            isFallbackProtectionActive.set(false)
+                            AccessibilityHealthMonitor.recordFallbackProtectionState(applicationContext, false)
+                            closeFallbackTrackedSession(repository, "Erişilebilirlik motoru tekrar sağlıklı")
+                            withContext(Dispatchers.IO) {
+                                repository.cleanupStaleSessions()
+                                repository.reconcileRestrictedAppsWithUsageStats()
+                            }
                             hasWarnedUntilHealthy = false
                         }
                     } else {
+                        isFallbackProtectionActive.set(false)
+                        AccessibilityHealthMonitor.recordFallbackProtectionState(applicationContext, false)
+                        closeFallbackTrackedSession(repository, "Aktif kısıtlama yok")
                         hasWarnedUntilHealthy = false
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Tracking health watchdog failed: ${e.message}", e)
                 }
 
-                delay(AccessibilityHealthMonitor.HEARTBEAT_STALE_MS)
+                delay(nextDelayMs)
             }
+        }
+    }
+
+    private suspend fun runFallbackProtectionTick(
+        repository: GuardianRepository,
+        activeAppsForToday: List<RestrictedAppEntity>,
+        foregroundPackage: String?
+    ) {
+        if (!isDeviceInteractiveAndUnlocked() || foregroundPackage.isNullOrBlank()) {
+            closeFallbackTrackedSession(repository, "Yedek motor on plani dogrulayamadi")
+            return
+        }
+
+        val matchingApp = activeAppsForToday.firstOrNull { it.packageName == foregroundPackage }
+        if (matchingApp == null) {
+            closeFallbackTrackedSession(repository, "Yedek motor hedef uygulamadan cikis algiladi")
+            if (
+                isLockOverlayVisible.get() &&
+                visibleOverlayPackage != null &&
+                visibleOverlayPackage != foregroundPackage
+            ) {
+                hideLockOverlay()
+            }
+            return
+        }
+
+        val app = withContext(Dispatchers.IO) {
+            repository.getRestrictedAppByIdSync(matchingApp.id)
+        } ?: matchingApp
+
+        if (app.remainingSecondsToday <= 0 || app.isFailed) {
+            fallbackTrackedPackage = app.packageName
+            fallbackTrackedAppId = app.id
+            withContext(Dispatchers.IO) {
+                repository.closeActiveSession("Yedek motor limit doldugu icin kilitledi")
+            }
+            showLockOverlay(applicationContext, app.appName, app.packageName)
+            return
+        }
+
+        if (fallbackTrackedPackage != app.packageName) {
+            closeFallbackTrackedSession(repository, "Yedek motor yeni hedefe gecti")
+            fallbackTrackedPackage = app.packageName
+            fallbackTrackedAppId = app.id
+            withContext(Dispatchers.IO) {
+                repository.startSession(app)
+            }
+        } else {
+            withContext(Dispatchers.IO) {
+                repository.updateSessionLastSeen(app.packageName)
+            }
+        }
+
+        val updatedApp = withContext(Dispatchers.IO) {
+            repository.getRestrictedAppByIdSync(app.id)
+        } ?: app
+
+        if (updatedApp.remainingSecondsToday <= 0 || updatedApp.isFailed) {
+            withContext(Dispatchers.IO) {
+                repository.closeActiveSession("Yedek motor kullanim hakkini tuketti")
+            }
+            showLockOverlay(applicationContext, updatedApp.appName, updatedApp.packageName)
+        } else if (isLockOverlayFor(updatedApp.packageName)) {
+            hideLockOverlay()
+        }
+    }
+
+    private suspend fun closeFallbackTrackedSession(
+        repository: GuardianRepository,
+        reason: String
+    ) {
+        if (fallbackTrackedPackage == null) return
+        withContext(Dispatchers.IO) {
+            repository.closeActiveSession(reason)
+        }
+        fallbackTrackedPackage = null
+        fallbackTrackedAppId = -1L
+    }
+
+    private fun isDeviceInteractiveAndUnlocked(): Boolean {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
+        val isScreenOn = powerManager?.isInteractive ?: true
+        val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+        val isLocked = keyguardManager?.isKeyguardLocked ?: false
+        return isScreenOn && !isLocked
+    }
+
+    private fun queryUsageStatsForegroundPackage(): String? {
+        return try {
+            val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+                ?: return null
+            val endTime = System.currentTimeMillis()
+            val startTime = endTime - FALLBACK_FOREGROUND_LOOKBACK_MS
+            val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
+            val event = UsageEvents.Event()
+            var lastForegroundPackage: String? = null
+
+            while (usageEvents.hasNextEvent()) {
+                usageEvents.getNextEvent(event)
+                if (isUsageForegroundEvent(event.eventType)) {
+                    lastForegroundPackage = event.packageName
+                }
+            }
+
+            lastForegroundPackage
+        } catch (e: SecurityException) {
+            Log.w(TAG, "UsageStats permission missing for fallback protection: ${e.message}")
+            null
+        } catch (e: Exception) {
+            Log.e(TAG, "Fallback foreground query failed: ${e.message}", e)
+            null
+        }
+    }
+
+    private fun isUsageForegroundEvent(eventType: Int): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            eventType == UsageEvents.Event.ACTIVITY_RESUMED
+        } else {
+            @Suppress("DEPRECATION")
+            eventType == UsageEvents.Event.MOVE_TO_FOREGROUND
         }
     }
 
@@ -654,8 +820,8 @@ class BlockOverlayService : Service() {
      */
     private fun resolveAppIsDarkTheme(): Boolean {
         val prefs = getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
-        val mode = prefs.getString("theme_mode", "DARK") ?: "DARK"
-        val palette = prefs.getString("theme_palette", "PREMIUM_DARK") ?: "PREMIUM_DARK"
+        val mode = prefs.getString("theme_mode", "LIGHT") ?: "LIGHT"
+        val palette = prefs.getString("theme_palette", "BLUE") ?: "BLUE"
         if (palette == "PREMIUM_DARK") return true
         return when (mode) {
             "LIGHT" -> false

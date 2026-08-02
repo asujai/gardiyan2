@@ -5,7 +5,6 @@ import android.app.usage.UsageStatsManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.PowerManager
 import android.os.Process
 import android.provider.Settings
@@ -28,6 +27,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Calendar
+import java.util.UUID
 
 /**
  * enabled_accessibility_services secure ayar dizesinde bizim erişilebilirlik
@@ -45,6 +45,29 @@ internal fun isAccessibilityComponentEnabled(
 
 internal fun shouldPenalizeRestrictionRemoval(app: RestrictedAppEntity): Boolean =
     app.remainingSecondsToday <= 0
+
+internal data class RestrictionAssignment(
+    val appName: String,
+    val packageName: String,
+    val groupId: String,
+    val displayName: String
+)
+
+internal fun buildRestrictionAssignments(
+    restrictionName: String,
+    apps: List<Pair<String, String>>,
+    namedGroupId: String
+): List<RestrictionAssignment> {
+    val safeName = restrictionName.trim()
+    return apps.map { (appName, packageName) ->
+        RestrictionAssignment(
+            appName = appName,
+            packageName = packageName,
+            groupId = if (safeName.isEmpty()) packageName else namedGroupId,
+            displayName = safeName.ifBlank { appName }
+        )
+    }
+}
 
 internal fun RestrictedAppEntity.withReducedDailyLimit(
     newLimitMinutes: Int,
@@ -446,25 +469,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
     }
 
     fun openUsageStatsSettings(context: Context) {
-        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-            data = android.net.Uri.parse("package:${context.packageName}")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            val fallback = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            try {
-                context.startActivity(fallback)
-            } catch (e2: Exception) {
-                val settingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                try { context.startActivity(settingsIntent) } catch (e3: Exception) {}
-            }
-        }
+        launchFirstAvailableSettingsIntent(context, usageAccessSettingsIntents(context.packageName))
     }
 
     fun hasOverlayPermission(context: Context): Boolean {
@@ -472,25 +477,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
     }
 
     fun openOverlaySettings(context: Context) {
-        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
-            data = android.net.Uri.parse("package:${context.packageName}")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            val fallbackIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            try {
-                context.startActivity(fallbackIntent)
-            } catch (e2: Exception) {
-                val settingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                try { context.startActivity(settingsIntent) } catch (e3: Exception) {}
-            }
-        }
+        launchFirstAvailableSettingsIntent(context, overlaySettingsIntents(context.packageName))
     }
 
     fun isAccessibilityServiceEnabled(context: Context): Boolean {
@@ -498,99 +485,95 @@ class GuardianViewModel(context: Context) : ViewModel() {
     }
 
     fun getAccessibilityServiceStatus(context: Context): AccessibilityHealthMonitor.Status {
-        return AccessibilityHealthMonitor.getStatus(context)
+        var status = AccessibilityHealthMonitor.getStatus(context)
+        if (
+            status.requiresReenable &&
+            AppBlockAccessibilityService.requestHealthRecovery("UI status check detected stale heartbeat")
+        ) {
+            status = AccessibilityHealthMonitor.getStatus(context)
+        }
+        return status
+    }
+
+    fun addRestrictionGroup(
+        restrictionName: String,
+        apps: List<Pair<String, String>>,
+        dailyLimitMinutes: Int,
+        activeDays: String = GuardianRepository.ALL_DAYS,
+        activeWindowEnabled: Boolean = false,
+        activeStartMinutes: Int = 0,
+        activeEndMinutes: Int = 0
+    ) {
+        if (apps.isEmpty()) return
+        val safeName = restrictionName.trim()
+        val assignments = buildRestrictionAssignments(
+            restrictionName = safeName,
+            apps = apps,
+            namedGroupId = if (safeName.isNotEmpty()) UUID.randomUUID().toString() else ""
+        )
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                assignments.forEach { assignment ->
+                    repository.upsertRestrictedApp(
+                        packageName = assignment.packageName,
+                        appName = assignment.appName,
+                        dailyLimitMinutes = dailyLimitMinutes,
+                        activeDays = activeDays,
+                        restrictionGroupId = assignment.groupId,
+                        restrictionName = assignment.displayName,
+                        activeWindowEnabled = activeWindowEnabled,
+                        activeStartMinutes = activeStartMinutes,
+                        activeEndMinutes = activeEndMinutes
+                    )
+                }
+                repository.insertLog(
+                    eventType = "RESTRICTION_ADDED",
+                    appName = safeName.ifBlank { apps.first().first },
+                    details = "${safeName.ifBlank { apps.joinToString { it.first } }} kısıtlaması ${apps.size} uygulama için eklendi: günde $dailyLimitMinutes dakika"
+                )
+                markSessionHavingRestrictions()
+            }
+            ensureMonitoringRunning()
+        }
     }
 
     fun openAccessibilitySettings(context: Context) {
-        val componentName = ComponentName(context, AppBlockAccessibilityService::class.java).flattenToString()
-        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-            val args = android.os.Bundle().apply {
-                putString(":settings:fragment_args_key", componentName)
-            }
-            putExtra(":settings:fragment_args_key", componentName)
-            putExtra(":settings:show_fragment_args", args)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            val fallback = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            try {
-                context.startActivity(fallback)
-            } catch (e2: Exception) {
-                val settingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                try { context.startActivity(settingsIntent) } catch (e3: Exception) {}
-            }
-        }
+        val componentName = ComponentName(context, AppBlockAccessibilityService::class.java)
+        launchFirstAvailableSettingsIntent(context, accessibilitySettingsIntents(componentName))
     }
 
     fun isBatteryOptimizationIgnored(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-            pm.isIgnoringBatteryOptimizations(context.packageName)
-        } else {
-            true
-        }
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        return pm.isIgnoringBatteryOptimizations(context.packageName)
     }
 
     fun requestBatteryOptimizationIgnore(context: Context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
-        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            try {
-                val fallback = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                context.startActivity(fallback)
-            } catch (e2: Exception) {
-                val settingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                try { context.startActivity(settingsIntent) } catch (e3: Exception) {}
-            }
-        }
+        launchFirstAvailableSettingsIntent(
+            context,
+            batteryOptimizationSettingsIntents(context.packageName)
+        )
     }
 
     fun areNotificationsEnabled(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-            nm.areNotificationsEnabled()
-        } else {
-            true
-        }
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        return nm.areNotificationsEnabled()
     }
 
     fun openNotificationSettings(context: Context) {
-        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-        } else {
-            Intent("android.settings.APP_NOTIFICATION_SETTINGS").apply {
-                putExtra("app_package", context.packageName)
-                putExtra("app_uid", context.applicationInfo.uid)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-        }
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            val fallback = Intent(Settings.ACTION_SETTINGS).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
+        launchFirstAvailableSettingsIntent(
+            context,
+            notificationSettingsIntents(context.packageName, context.applicationInfo.uid)
+        )
+    }
+
+    private fun launchFirstAvailableSettingsIntent(context: Context, intents: List<Intent>) {
+        for (intent in intents) {
             try {
-                context.startActivity(fallback)
-            } catch (e2: Exception) {
-                // Zaten safe fallback
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                return
+            } catch (_: Exception) {
+                // Üretici bu ekranı sağlamıyorsa sıradaki daha genel ve güvenli hedefi dene.
             }
         }
     }

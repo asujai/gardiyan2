@@ -20,8 +20,8 @@ enum class AppThemePalette {
 }
 
 // Global olarak tema durumunu tutan MutableState'ler
-val currentThemeMode = mutableStateOf(AppThemeMode.DARK)
-val currentThemePalette = mutableStateOf(AppThemePalette.PREMIUM_DARK)
+val currentThemeMode = mutableStateOf(AppThemeMode.LIGHT)
+val currentThemePalette = mutableStateOf(AppThemePalette.BLUE)
 
 @Composable
 fun MyApplicationTheme(
@@ -33,11 +33,11 @@ fun MyApplicationTheme(
     // Senkron olarak SharedPreferences'tan oku ve global state'leri güncelle
     remember(context) {
         val prefs = context.getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
-        val savedMode = prefs.getString("theme_mode", AppThemeMode.DARK.name) ?: AppThemeMode.DARK.name
-        val restoredMode = runCatching { AppThemeMode.valueOf(savedMode) }.getOrDefault(AppThemeMode.DARK)
+        val savedMode = prefs.getString("theme_mode", AppThemeMode.LIGHT.name) ?: AppThemeMode.LIGHT.name
+        val restoredMode = runCatching { AppThemeMode.valueOf(savedMode) }.getOrDefault(AppThemeMode.LIGHT)
         
-        val savedPalette = prefs.getString("theme_palette", AppThemePalette.PREMIUM_DARK.name) ?: AppThemePalette.PREMIUM_DARK.name
-        val restoredPalette = runCatching { AppThemePalette.valueOf(savedPalette) }.getOrDefault(AppThemePalette.PREMIUM_DARK)
+        val savedPalette = prefs.getString("theme_palette", AppThemePalette.BLUE.name) ?: AppThemePalette.BLUE.name
+        val restoredPalette = runCatching { AppThemePalette.valueOf(savedPalette) }.getOrDefault(AppThemePalette.BLUE)
 
         currentThemeMode.value = restoredMode
         currentThemePalette.value = if (restoredMode != AppThemeMode.DARK && restoredPalette == AppThemePalette.PREMIUM_DARK) {

@@ -20,6 +20,8 @@ class BootReceiver : BroadcastReceiver() {
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {
+                    KeepAliveScheduler.schedule(appContext)
+                    DailySuccessScheduler.schedule(appContext)
                     val hasActiveRestrictions = repository.getActiveRestrictedAppsSync().isNotEmpty()
                     if (hasActiveRestrictions) {
                         val serviceIntent = Intent(appContext, BlockOverlayService::class.java)

@@ -8,8 +8,6 @@
     <string name="accessibility_reenable_warning">สิทธิ์การช่วยเหลือพิเศษดูเหมือนเปิดใช้งานอยู่ แต่ Limitra ไม่สามารถยืนยันได้ว่าบริการติดตามกำลังทำงาน ปิดแล้วเปิด Limitra Accessibility อีกครั้ง</string>
     <string name="accessibility_reenable_dialog_desc">สิทธิ์ Limitra Accessibility ดูเหมือนเปิดใช้งานอยู่ แต่สัญญาณการทำงานของบริการหายไปหรือล้าสมัย ในการตั้งค่า Android ให้ปิดสิทธิ์ Limitra Accessibility แล้วเปิดอีกครั้ง เพื่อให้การติดตามเวลาเริ่มทำงานใหม่</string>
     <string name="app_name">Limitra</string>
-    <string name="overlay_brand_icon" translatable="false">&#x1F6E1;&#xFE0F;</string>
-    <string name="overlay_initial_countdown" translatable="false">00:10</string>
     <string name="accessibility_service_description">Limitra ใช้สิทธิ์นี้เพื่อตรวจจับเมื่อมีการเปิดแอปที่ถูกจำกัด เพื่อบังคับใช้ขอบเขตดิจิทัลและขีดจำกัดของแอป ข้อมูลทั้งหมดจะถูกประมวลผลภายในอุปกรณ์ของคุณ ไม่มีการรวบรวมหรือส่งออกข้อมูล การติดตามในเบื้องหลังมีไว้เพื่อเรียกใช้กฎการบล็อกที่คุณเลือกเท่านั้น</string>
     <string name="notification_channel_service">บริการป้องกันของ Limitra</string>
     <string name="notification_channel_service_desc">ทำงานเพื่อให้การป้องกันยังคงใช้งานได้และบังคับใช้ขีดจำกัดที่คุณตั้งไว้ภายในอุปกรณ์ ข้อมูลของคุณจะยังคงอยู่ในอุปกรณ์ของคุณทั้งหมด</string>
@@ -389,7 +387,7 @@
     <string name="quote_author_45">Seneca</string>
     <string name="quote_text_46">ทุกครั้งที่เธอพูดว่า \'วันนี้ฉันจะปล่อยมันไป วันพรุ่งนี้ฉันจะเอาใจใส่\' จงรู้ว่าเธอได้พูดสิ่งนี้: \'วันนี้ฉันจะทำตัวไร้ยางอาย หยาบคาย และต่ำช้า วันนี้ฉันจะโกรธและเป็นทาสของคนอื่น\' จงดูว่าเธอได้นำเสนอความชั่วร้ายใดให้แก่ตัวเอง!</string>
     <string name="quote_author_46">Epictetus</string>
-    <string name="quote_text_47">จงมองย้อนกลับไปและจดจำ: มีกี่คนที่มาปล้นชีวิตเธอไปโดยที่เธอไม่ทันรู้ตัว... เมื่อเห็นว่าเวลาของเธอเหลือน้อยเพียงใด เธอจะตระหนักได้ว่าตนเองกำลังจะตายก่อนวัยอันควร</string>
+    <string name="quote_text_47">จงมองย้อนกลับไปและจดจำ: มีกี่คนที่มาปล้นชีวิตเธอไปโดยที่เธอไม่ทันรู้ตัว… เมื่อเห็นว่าเวลาของเธอเหลือน้อยเพียงใด เธอจะตระหนักได้ว่าตนเองกำลังจะตายก่อนวัยอันควร</string>
     <string name="quote_author_47">Seneca</string>
     <string name="quote_text_48">การสูญเสียตัวเองในตัวเลือกที่หลากหลายคือธรรมชาติของทางเลือกเชิงสุนทรียะ ขณะที่หากไม่มีการตัดสินใจเลือกตนเองอย่างเด็ดขาด เขาก็จะทำการตัดสินใจเพียงชั่วคราวเท่านั้น</string>
     <string name="quote_author_48">Søren Kierkegaard</string>

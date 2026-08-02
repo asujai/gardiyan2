@@ -12,9 +12,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,9 +38,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.gardiyan.app.R
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
-import com.gardiyan.app.data.repository.GuardianRepository
+import com.gardiyan.app.data.model.RestrictionSchedule
+import com.gardiyan.app.data.model.isScheduledAt
 import com.gardiyan.app.ui.components.AppIconView
-import com.gardiyan.app.ui.components.ModernRestrictionCard
 import com.gardiyan.app.ui.components.DurationWheelPicker
 import com.gardiyan.app.ui.components.localizedHours
 import com.gardiyan.app.ui.components.localizedMinutes
@@ -45,6 +50,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+private data class RestrictionGroupUi(
+    val id: String,
+    val name: String,
+    val apps: List<RestrictedAppEntity>
+) {
+    val representative: RestrictedAppEntity get() = apps.first()
+    val isLimitReached: Boolean get() = apps.any { it.remainingSecondsToday <= 0 || it.isFailed }
+}
 
 enum class ProtectedFilter(val titleRes: Int) {
     ALL(R.string.log_filter_all),
@@ -57,24 +70,44 @@ enum class ProtectedFilter(val titleRes: Int) {
 fun ProtectedAppsScreen(
     viewModel: GuardianViewModel
 ) {
-    val session by viewModel.userSession.collectAsState()
     val restrictedApps by viewModel.restrictedApps.collectAsState()
     val activeApps = remember(restrictedApps) { restrictedApps.filter { it.isActive } }
+    val restrictionGroups = remember(activeApps) {
+        activeApps
+            .groupBy { it.restrictionGroupId.ifBlank { it.packageName } }
+            .map { (groupId, apps) ->
+                RestrictionGroupUi(
+                    id = groupId,
+                    name = apps.first().restrictionName.ifBlank { apps.first().appName },
+                    apps = apps.sortedBy { it.appName.lowercase(Locale.getDefault()) }
+                )
+            }
+            .sortedBy { it.name.lowercase(Locale.getDefault()) }
+    }
 
     var selectedFilter by remember { mutableStateOf(ProtectedFilter.ALL) }
     var selectedAppForManagement by remember { mutableStateOf<RestrictedAppEntity?>(null) }
+    var expandedGroupIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var scheduleClockMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val filteredApps = remember(activeApps, selectedFilter) {
-        activeApps.filter { app ->
-            val isLocked = app.remainingSecondsToday <= 0
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(30_000L)
+            scheduleClockMillis = System.currentTimeMillis()
+        }
+    }
+
+    val filteredGroups = remember(restrictionGroups, selectedFilter) {
+        restrictionGroups.filter { group ->
+            val isLocked = group.isLimitReached
             when (selectedFilter) {
                 ProtectedFilter.ALL -> true
                 ProtectedFilter.ACTIVE -> !isLocked
                 ProtectedFilter.LOCKED -> isLocked
-                ProtectedFilter.REACHED_LIMIT -> isLocked || app.isFailed
+                ProtectedFilter.REACHED_LIMIT -> isLocked
             }
         }
     }
@@ -144,7 +177,7 @@ fun ProtectedAppsScreen(
                 }
 
                 // App Cards or Empty State
-                if (filteredApps.isEmpty()) {
+                if (filteredGroups.isEmpty()) {
                     item {
                         Card(
                             modifier = Modifier
@@ -194,12 +227,19 @@ fun ProtectedAppsScreen(
                         }
                     }
                 } else {
-                    items(filteredApps, key = { it.id }) { app ->
-                        ModernRestrictionCard(
-                            app = app,
-                            onClick = {
-                                selectedAppForManagement = app
-                            }
+                    items(filteredGroups, key = { it.id }) { group ->
+                        RestrictionGroupCard(
+                            group = group,
+                            nowMillis = scheduleClockMillis,
+                            expanded = group.id in expandedGroupIds,
+                            onToggle = {
+                                expandedGroupIds = if (group.id in expandedGroupIds) {
+                                    expandedGroupIds - group.id
+                                } else {
+                                    expandedGroupIds + group.id
+                                }
+                            },
+                            onAppClick = { app -> selectedAppForManagement = app }
                         )
                     }
                 }
@@ -534,6 +574,240 @@ fun ProtectedAppsScreen(
             }
         }
     }
+}
+
+@Composable
+private fun RestrictionGroupCard(
+    group: RestrictionGroupUi,
+    nowMillis: Long,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    onAppClick: (RestrictedAppEntity) -> Unit
+) {
+    val app = group.representative
+    val isSingleApp = group.apps.size == 1
+    val currentlyActive = group.apps.any { it.isScheduledAt(nowMillis) }
+    val timeText = if (app.activeWindowEnabled) {
+        String.format(
+            Locale.ROOT,
+            "%02d:%02d – %02d:%02d",
+            app.activeStartMinutes / 60,
+            app.activeStartMinutes % 60,
+            app.activeEndMinutes / 60,
+            app.activeEndMinutes % 60
+        )
+    } else {
+        stringResource(R.string.protected_group_all_day)
+    }
+    val selectedDays = app.activeDays.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+    val daysText = if (selectedDays.isEmpty() || selectedDays.size == RestrictionSchedule.dayLabels.size) {
+        stringResource(R.string.protected_group_every_day)
+    } else {
+        selectedDays.joinToString(" · ")
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, BorderGray, RoundedCornerShape(22.dp)),
+        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+        shape = RoundedCornerShape(22.dp)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onToggle)
+                    .padding(18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                if (isSingleApp) {
+                    AppRemainingProgress(
+                        app = app,
+                        modifier = Modifier.size(52.dp),
+                        showPercentage = false
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(SuccessGreen.copy(alpha = 0.10f))
+                            .border(1.5.dp, SuccessGreen, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Lock, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(23.dp))
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = group.name,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PureBlack,
+                        maxLines = 1
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$timeText  ·  $daysText",
+                        fontSize = 12.sp,
+                        color = MutedGray,
+                        maxLines = 2,
+                        lineHeight = 16.sp
+                    )
+                    if (isSingleApp) {
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.protected_apps_time_left,
+                                formatRemainingTime(app.remainingSecondsToday)
+                            ),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (app.remainingSecondsToday <= 0) DangerRed else PureBlack
+                        )
+                    }
+                }
+
+                Surface(
+                    color = if (group.isLimitReached) DangerRed.copy(alpha = 0.10f) else SuccessGreen.copy(alpha = 0.10f),
+                    shape = RoundedCornerShape(99.dp)
+                ) {
+                    Text(
+                        text = when {
+                            group.isLimitReached -> stringResource(R.string.protected_apps_limit_reached)
+                            currentlyActive -> stringResource(R.string.protected_group_active)
+                            else -> stringResource(R.string.protected_group_scheduled)
+                        },
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (group.isLimitReached) DangerRed else SuccessGreen
+                    )
+                }
+
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = MutedGray
+                )
+            }
+
+            if (expanded) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 18.dp), color = BorderGray)
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.protected_group_apps),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MutedGray,
+                        letterSpacing = 0.6.sp
+                    )
+                    Text(
+                        text = stringResource(R.string.protected_group_app_count, group.apps.size),
+                        fontSize = 12.sp,
+                        color = MutedGray
+                    )
+                    group.apps.forEach { protectedApp ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(MatteSurface)
+                                .border(1.dp, BorderGray, RoundedCornerShape(14.dp))
+                                .clickable { onAppClick(protectedApp) }
+                                .padding(13.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            AppIconView(
+                                packageName = protectedApp.packageName,
+                                modifier = Modifier.size(38.dp).clip(RoundedCornerShape(10.dp))
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = protectedApp.appName,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = PureBlack
+                                )
+                                Text(
+                                    text = if (protectedApp.remainingSecondsToday <= 0) {
+                                        stringResource(R.string.protected_apps_limit_reached)
+                                    } else {
+                                        stringResource(
+                                            R.string.protected_apps_time_left,
+                                            formatRemainingTime(protectedApp.remainingSecondsToday)
+                                        )
+                                    },
+                                    fontSize = 11.sp,
+                                    color = if (protectedApp.remainingSecondsToday <= 0) DangerRed else MutedGray
+                                )
+                            }
+                            AppRemainingProgress(
+                                app = protectedApp,
+                                modifier = Modifier.size(48.dp),
+                                showPercentage = true
+                            )
+                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MutedGray)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppRemainingProgress(
+    app: RestrictedAppEntity,
+    modifier: Modifier = Modifier,
+    showPercentage: Boolean
+) {
+    val totalSeconds = (app.dailyLimitMinutes * 60).coerceAtLeast(1)
+    val remainingSeconds = app.remainingSecondsToday.coerceIn(0, totalSeconds)
+    val progress = remainingSeconds.toFloat() / totalSeconds.toFloat()
+    val percentage = (progress * 100).toInt()
+    val progressColor = if (remainingSeconds <= 0) DangerRed else SuccessGreen
+    val progressDescription = stringResource(R.string.protected_apps_usage_progress, percentage)
+
+    Box(
+        modifier = modifier.semantics { contentDescription = progressDescription },
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.fillMaxSize(),
+            color = progressColor,
+            trackColor = BorderGray.copy(alpha = 0.45f),
+            strokeWidth = 3.5.dp
+        )
+        if (showPercentage) {
+            Text(
+                text = "$percentage%",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = PureBlack
+            )
+        } else {
+            AppIconView(
+                packageName = app.packageName,
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+            )
+        }
+    }
+}
+
+private fun formatRemainingTime(remainingSeconds: Int): String {
+    val roundedMinutes = if (remainingSeconds <= 0) 0 else (remainingSeconds + 59) / 60
+    return String.format(Locale.ROOT, "%02d:%02d", roundedMinutes / 60, roundedMinutes % 60)
 }
 
 @Composable
