@@ -6,19 +6,16 @@
 - **Yayındaki Sürüm:** Version Code 14 (v1.1.7) - Production %100
 
 ## Son İşlem
-- `playconsole-cli` (v0.5.15) ve `gpc` Windows ortamına kuruldu, PATH'e eklendi.
-- Service account (`gardiyan-cli@semiotic-nexus-506121-k2.iam.gserviceaccount.com`) Play Console API'sine başarıyla bağlandı.
-- Tracks, listings ve bundles bağlantı testleri başarıyla doğrulandı.
+- `playconsole-cli` (gpc) üzerinden 11 farklı dil (`en-US`, `tr-TR`, `ar`, `de-DE`, `es-ES`, `fr-FR`, `hi-IN`, `id`, `pt-BR`, `ru-RU`, `th`) için ASO odaklı başlıklar, kısa açıklamalar ve politika uyumlu tam açıklamalar Google Play Store'a canlı olarak eşitlendi (`gpc listings sync`).
 
 ## Doğrulama
-- `gpc doctor`: Credentials, Service Account, Package Name, Android Publisher API doğrulandı (PASS).
+- `gpc listings list`: 11 yerelleştirmenin tamamı Google Play Console üzerinde doğrulandı (PASS).
 - `gpc tracks list`: Production v14 doğrulandı.
-- `gpc listings list`: En-US mağaza bilgileri başarıyla çekildi.
-- `gpc bundles list`: 7-14 arası sürümler başarıyla listelendi.
 
 ## Bilinen Sorunlar / Notlar
-- Google Cloud projesinde Vitals/Crash analizini CLI'dan çekebilmek için `Google Play Developer Reporting API` etkinleştirilebilir: https://console.developers.google.com/apis/api/playdeveloperreporting.googleapis.com/overview?project=443577644776
+- Mağaza ekran görüntüleri (mockup/grafik sunumu) ve görsel optimizasyonu bir sonraki aşama olarak planlandı.
+- Google Cloud projesinde Vitals/Crash analizini CLI'dan çekebilmek için `Google Play Developer Reporting API` etkinleştirilebilir.
 
 ## Sonraki İşler / Öneriler
-- Kod geliştirmeleri, yeni sürüm oluşturma ve Play Store'a doğrudan CLI üzerinden dağıtım yapılabilir.
-- **Önerilen Model:** Antigravity (UI/Store), Claude (Core/Services), Codex (Test/Fix).
+- Mağaza ekran görüntüleri ve grafik varlıklarının (1024x500 Feature Graphic, Mockup Screens) hazırlanması ve güncellenmesi.
+- **Önerilen Model:** Antigravity (UI/UX, Tasarım, Mağaza Varlıkları).

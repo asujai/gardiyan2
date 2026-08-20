@@ -1,0 +1,19 @@
+﻿Limitra: Digital Detox & Smart App Blocker
+
+Do you find yourself endlessly scrolling through social media or losing hours to games? Is screen time cutting into your productivity? Limitra is a powerful digital detox assistant designed to help you reclaim control of your focus time and build healthy digital habits.
+
+Set your daily limits, start focus sessions, and eliminate distractions while achieving your goals.
+
+KEY FEATURES:
+• Smart App Blocker: Set daily limits for selected apps. Once your limit is reached, access is blocked instantly.
+• Advanced Focus Mode: Temporarily block social media, games, and video apps to focus completely on work or study.
+• On-Device Usage Insights: Track your daily and weekly screen time statistics locally with clean charts.
+• Strict & Reliable Enforcement: Designed for users who want real, strict limits rather than passive tracking.
+• 100% Offline & Private: No remote servers, no ads, no trackers. All data stays strictly on your device.
+
+PERMISSIONS & COMPLIANCE DISCLOSURES:
+To ensure reliable blocking and prevent unauthorized bypass, Limitra requires:
+1. Accessibility Service API: Used solely to detect when a restricted app is launched and trigger the lock screen. We NEVER read, collect, store, or transmit any private messages, passwords, financial info, or personal data. All processing occurs locally on your device.
+2. Display Over Other Apps (Overlay): Required to display the protective lock overlay when your limit is reached.
+
+Take back control of your time with Limitra!

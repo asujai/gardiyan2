@@ -1,0 +1,19 @@
+﻿Limitra: Dijital Detoks ve Akıllı Uygulama Engelleyici
+
+Gününüzün büyük bir kısmını sosyal medyada kaydırarak veya oyunlarda zaman harcayarak mı geçiriyorsunuz? Telefon bağımlılığı üretkenliğinizi mi düşürüyor? Limitra, kontrolü tekrar elinize almanız ve odaklanma sürenizi artırmanız için tasarlanmış güçlü bir dijital detoks yardımcısıdır.
+
+Günlük sınırlarınızı belirleyin, odaklanma seansları oluşturun ve dikkatinizi dağıtacak her şeyi geride bırakın.
+
+ÖNE ÇIKAN ÖZELLİKLER:
+• Akıllı Uygulama Engelleme: Belirlediğiniz süre dolduğunda kısıtlı uygulamalara erişim anında kilitlenir.
+• Gelişmiş Odaklanma Modu: Sosyal medya, oyun ve video uygulamalarını geçici olarak engelleyerek tamamen işinize veya derslerinize odaklanın.
+• Detaylı Ekran Süresi Takibi: Cihazınızda hangi uygulamada ne kadar zaman harcadığınızı yerel grafiklerle takip edin.
+• Gerçek ve Tavizsiz Disiplin: Pasif sayaçlar yerine belirlediğiniz kuralları tavizsiz şekilde uygular.
+• %100 Çevrimdışı ve Güvenli: Uzak sunucu yok, reklam yok, veri takibi yok. Tüm verileriniz yalnızca telefonunuzda saklanır.
+
+İZİNLER VE POLİTİKA AÇIKLAMALARI:
+Limitra'nın kararlı çalışabilmesi ve engelleme kurallarını uygulayabilmesi için aşağıdaki iki izin gereklidir:
+1. Erişilebilirlik Hizmeti (Accessibility Service API): Yalnızca kısıtlanan bir uygulamanın açılış anını tespit edip kilit ekranını tetiklemek amacıyla kullanılır. Özel mesajlarınız, şifreleriniz, finansal bilgileriniz veya kişisel verileriniz KESİNLİKLE okunmaz, toplanmaz, kaydedilmez ve sunuculara gönderilmez. Tüm süreç cihazınızda yerel işlenir.
+2. Diğer Uygulamaların Üzerinde Görüntüleme (Overlay): Günlük limitiniz dolduğunda koruyucu kilit ekranını gösterebilmek için gereklidir.
+
+Zamanınızın kontrolünü Limitra ile yeniden elinize alın!
