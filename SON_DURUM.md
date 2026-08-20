@@ -1,21 +1,24 @@
 ﻿# SON DURUM
 
 ## Genel Bakış
-- **Proje:** Gardiyan (Limitra) - Android Uygulama Kontrol ve Zaman Sınırı Yöneticisi
+- **Proje:** Limitra AppBlock (Gardiyan) - Android Uygulama Kontrol ve Zaman Sınırı Yöneticisi
 - **Paket Adı:** `com.gardiyan.app`
 - **Yayındaki Sürüm:** Version Code 14 (v1.1.7) - Production %100
 
 ## Son İşlem
-- `playconsole-cli` (gpc) üzerinden 11 farklı dil (`en-US`, `tr-TR`, `ar`, `de-DE`, `es-ES`, `fr-FR`, `hi-IN`, `id`, `pt-BR`, `ru-RU`, `th`) için ASO odaklı başlıklar, kısa açıklamalar ve politika uyumlu tam açıklamalar Google Play Store'a canlı olarak eşitlendi (`gpc listings sync`).
+- Uygulama adı tüm dillerde (`strings.xml` ve Play Store metadata) **"Limitra AppBlock"** olarak güncellendi.
+- 11 dildeki mağaza başlıkları `Limitra AppBlock: ...` formatında Google Play Store'a canlı eşitlendi.
+- Destek e-postası ve Geliştirici Adı (`lumoria` -> `Limitra`) durumu incelendi.
 
 ## Doğrulama
-- `gpc listings list`: 11 yerelleştirmenin tamamı Google Play Console üzerinde doğrulandı (PASS).
-- `gpc tracks list`: Production v14 doğrulandı.
+- `gpc listings list`: 11 dildeki `Limitra AppBlock` başlıkları doğrulandı (PASS).
+- `strings.xml`: 11 dildeki `app_name` = `Limitra AppBlock` doğrulandı.
+- `gpc apps get`: Destek e-postası `lumoriapdf@gmail.com` olarak tespit edildi.
 
 ## Bilinen Sorunlar / Notlar
-- Mağaza ekran görüntüleri (mockup/grafik sunumu) ve görsel optimizasyonu bir sonraki aşama olarak planlandı.
-- Google Cloud projesinde Vitals/Crash analizini CLI'dan çekebilmek için `Google Play Developer Reporting API` etkinleştirilebilir.
+- Geliştirici hesap adı (`lumoria` -> `Limitra`) hesap sahibinin Google Play Console web panelindeki Geliştirici Hesabı > Hakkınızda ekranından 10 saniyede güncellenebilir.
+- Ekran görüntüleri ve grafik varlıklarının (Mockup/Feature Graphic) incelenmesi.
 
 ## Sonraki İşler / Öneriler
-- Mağaza ekran görüntüleri ve grafik varlıklarının (1024x500 Feature Graphic, Mockup Screens) hazırlanması ve güncellenmesi.
-- **Önerilen Model:** Antigravity (UI/UX, Tasarım, Mağaza Varlıkları).
+- Mağaza ekran görüntüleri ve görsel varlıklarının konuşulup hazırlanması.
+- **Önerilen Model:** Antigravity (UI/UX, Tasarım, Görsel Varlıklar).

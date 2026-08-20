@@ -1,5 +1,13 @@
 ﻿# İŞLEM GEÇMİŞİ
 
+## [2026-08-21 00:48] - Uygulama Adının Limitra AppBlock Olarak Güncellenmesi
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** [GÜNCELLENDİ] pp/src/main/res/values*/strings.xml (11 dil), metadata/*/title.txt (11 dil), SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Android kodundaki tüm pp_name tanımları Limitra AppBlock yapıldı. Play Store'daki 11 dilin başlığı Limitra AppBlock: ... formatında güncellenerek gpc listings sync ile canlıya aktarıldı. Destek e-postası (lumoriapdf@gmail.com) ve geliştirici adı tespit edildi.
+* **Doğrulama:** gpc listings list ile 11 dilin başlığı doğrulandı.
+* **Bilinen Sorunlar:** Yok
+* **Sonraki Öneri:** Ekran görüntüleri ve grafik tasarım çalışmaları.
 ## [2026-08-21 00:46] - 11 Dilde ASO Başlık ve Mağaza Açıklamalarının Play Store'a Senkronizasyonu
 
 * **Model:** Antigravity
@@ -16,4 +24,5 @@
 * **Doğrulama:** `gpc doctor`, `gpc tracks list`, `gpc listings list`, `gpc bundles list` komutlarıyla Google Play Developer API erişimi başarıyla test edildi. Canlıdaki Production v14 ve mağaza bilgileri çekildi.
 * **Bilinen Sorunlar:** Reporting API (vitals/crash) için Google Cloud üzerinde ilgili API'nin tek tıkla açılması önerildi.
 * **Sonraki Öneri:** Yeni sürüm dağıtımı veya mağaza metinleri güncellemeleri doğrudan `gpc` ile yürütülebilir.
+
 
