@@ -6,16 +6,20 @@
 - **Yayındaki Sürüm:** Version Code 14 (v1.1.7) - Production %100
 
 ## Son İşlem
-- Play Store resmi destek e-postası `destek@limitra.online` ve web sitesi `https://limitra.online/` olarak canlıda güncellendi.
-- Uygulama içi `ProfileScreen.kt` dosyasındaki geliştirici iletişim ve e-posta tetikleyici adresleri `destek@limitra.online` olarak güncellendi.
+- Yeni nesil mağaza vitrin görselleri (Feature Graphic 1024x500 + Türkçe 5'li Ekran Görüntüsü Seti + İngilizce 5'li Ekran Görüntüsü Seti) Google Play Console'a canlı olarak yüklendi (`gpc images sync`).
+- Eski raw ekran görüntüleri temizlendi.
+- Mağaza kısa ve tam açıklamaları "Abonelik Yok / Ömür Boyu Erişim / %100 Çevrimdışı ve Güvenli" değer önermeleriyle güncellendi.
+- Destek e-postası `destek@limitra.online` ve web sitesi `https://limitra.online/` olarak canlıda doğrulandı.
 
 ## Doğrulama
-- `gpc apps get`: `contact_email` = `destek@limitra.online`, `contact_website` = `https://limitra.online/` doğrulandı (PASS).
-- `gpc listings list`: 11 dildeki `Limitra AppBlock` başlıkları canlıda doğrulandı.
+- `gpc images list`: `tr-TR` (5 screenshot + 1 featureGraphic) ve `en-US` (5 screenshot + 1 featureGraphic) doğrulandı (PASS).
+- `gpc listings list`: 11 dilin tamamı yeni başlık ve güncellenen açıklamalarla doğrulandı (PASS).
+- `gpc apps get`: Destek e-postası `destek@limitra.online` doğrulandı.
 
 ## Bilinen Sorunlar / Notlar
-- Çok dilli görsel stratejisi belirlendi: Google Play Store kullanıcının cihaz diline göre o dile ait görselleri otomatik sunar.
+- Geliştirici hesap adı (`lumoria` -> `Limitra`) web panelinden güncellenebilir.
+- Yeni sürüm derleme ve dağıtım iş akışı doğrudan CLI ile yürütülebilir.
 
 ## Sonraki İşler / Öneriler
-- Çok dilli ekran görüntüleri ve öne çıkan görsel (Feature Graphic) tasarımı.
-- **Önerilen Model:** Antigravity (UI/UX, Tasarım).
+- Kod geliştirmeleri, yeni özellikler ve yeni sürüm (Version Code 15) hazırlığı.
+- **Önerilen Model:** Antigravity (UI/Stil), Claude (Core/Servisler), Codex (Test/Analiz).

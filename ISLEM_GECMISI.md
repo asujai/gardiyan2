@@ -1,5 +1,13 @@
 ﻿# İŞLEM GEÇMİŞİ
 
+## [2026-08-21 01:23] - Yeni Nesil Mağaza Görselleri ve Açıklamalarının Play Store'a Canlı Yüklenmesi
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** [YENİ] store_assets/, play_store_images/, [GÜNCELLENDİ] metadata/tr-TR/, metadata/en-US/, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** 1024x500 Feature Graphic ve hem Türkçe hem İngilizce için 5'er adet ASO odaklı mockup ekran görüntüsü üretildi, gpc images sync ile Google Play Store'a yüklendi. Eski ham ekran görüntüleri temizlendi. Mağaza açıklamaları aboneliksiz/ömür boyu sahiplik konseptiyle güncellendi.
+* **Doğrulama:** gpc images list ve gpc listings list ile 12 görselin ve tüm açıklamaların canlıda yayında olduğu doğrulandı.
+* **Bilinen Sorunlar:** Yok
+* **Sonraki Öneri:** Kod geliştirmeleri ve yeni sürümün (v15) hazırlanması.
 ## [2026-08-21 00:52] - Destek E-postasının (destek@limitra.online) Canlıya Alınması
 
 * **Model:** Antigravity
@@ -32,6 +40,7 @@
 * **Doğrulama:** `gpc doctor`, `gpc tracks list`, `gpc listings list`, `gpc bundles list` komutlarıyla Google Play Developer API erişimi başarıyla test edildi. Canlıdaki Production v14 ve mağaza bilgileri çekildi.
 * **Bilinen Sorunlar:** Reporting API (vitals/crash) için Google Cloud üzerinde ilgili API'nin tek tıkla açılması önerildi.
 * **Sonraki Öneri:** Yeni sürüm dağıtımı veya mağaza metinleri güncellemeleri doğrudan `gpc` ile yürütülebilir.
+
 
 
 
