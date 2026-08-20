@@ -55,5 +55,6 @@ testsprite_tests/tmp/
 testsprite_tests/raw_report.md
 
 .claude/
-
-
+*service_account*.json
+*service-account*.json
+play-service-account.json
