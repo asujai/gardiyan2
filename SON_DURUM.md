@@ -6,19 +6,16 @@
 - **Yayındaki Sürüm:** Version Code 14 (v1.1.7) - Production %100
 
 ## Son İşlem
-- Uygulama adı tüm dillerde (`strings.xml` ve Play Store metadata) **"Limitra AppBlock"** olarak güncellendi.
-- 11 dildeki mağaza başlıkları `Limitra AppBlock: ...` formatında Google Play Store'a canlı eşitlendi.
-- Destek e-postası ve Geliştirici Adı (`lumoria` -> `Limitra`) durumu incelendi.
+- Play Store resmi destek e-postası `destek@limitra.online` ve web sitesi `https://limitra.online/` olarak canlıda güncellendi.
+- Uygulama içi `ProfileScreen.kt` dosyasındaki geliştirici iletişim ve e-posta tetikleyici adresleri `destek@limitra.online` olarak güncellendi.
 
 ## Doğrulama
-- `gpc listings list`: 11 dildeki `Limitra AppBlock` başlıkları doğrulandı (PASS).
-- `strings.xml`: 11 dildeki `app_name` = `Limitra AppBlock` doğrulandı.
-- `gpc apps get`: Destek e-postası `lumoriapdf@gmail.com` olarak tespit edildi.
+- `gpc apps get`: `contact_email` = `destek@limitra.online`, `contact_website` = `https://limitra.online/` doğrulandı (PASS).
+- `gpc listings list`: 11 dildeki `Limitra AppBlock` başlıkları canlıda doğrulandı.
 
 ## Bilinen Sorunlar / Notlar
-- Geliştirici hesap adı (`lumoria` -> `Limitra`) hesap sahibinin Google Play Console web panelindeki Geliştirici Hesabı > Hakkınızda ekranından 10 saniyede güncellenebilir.
-- Ekran görüntüleri ve grafik varlıklarının (Mockup/Feature Graphic) incelenmesi.
+- Çok dilli görsel stratejisi belirlendi: Google Play Store kullanıcının cihaz diline göre o dile ait görselleri otomatik sunar.
 
 ## Sonraki İşler / Öneriler
-- Mağaza ekran görüntüleri ve görsel varlıklarının konuşulup hazırlanması.
-- **Önerilen Model:** Antigravity (UI/UX, Tasarım, Görsel Varlıklar).
+- Çok dilli ekran görüntüleri ve öne çıkan görsel (Feature Graphic) tasarımı.
+- **Önerilen Model:** Antigravity (UI/UX, Tasarım).

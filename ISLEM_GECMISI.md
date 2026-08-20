@@ -1,5 +1,13 @@
 ﻿# İŞLEM GEÇMİŞİ
 
+## [2026-08-21 00:52] - Destek E-postasının (destek@limitra.online) Canlıya Alınması
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** [GÜNCELLENDİ] pp/src/main/java/com/gardiyan/app/ui/screens/ProfileScreen.kt, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Google Play Publisher API üzerinden mağaza destek e-postası destek@limitra.online ve web sitesi https://limitra.online/ olarak canlıda güncellendi. ProfileScreen.kt içindeki destek adresleri güncellendi.
+* **Doğrulama:** gpc apps get çıktısıyla e-posta doğrulaması yapıldı.
+* **Bilinen Sorunlar:** Yok
+* **Sonraki Öneri:** Ekran görüntüleri ve grafik varlıklarının tasarlanması.
 ## [2026-08-21 00:48] - Uygulama Adının Limitra AppBlock Olarak Güncellenmesi
 
 * **Model:** Antigravity
@@ -24,5 +32,6 @@
 * **Doğrulama:** `gpc doctor`, `gpc tracks list`, `gpc listings list`, `gpc bundles list` komutlarıyla Google Play Developer API erişimi başarıyla test edildi. Canlıdaki Production v14 ve mağaza bilgileri çekildi.
 * **Bilinen Sorunlar:** Reporting API (vitals/crash) için Google Cloud üzerinde ilgili API'nin tek tıkla açılması önerildi.
 * **Sonraki Öneri:** Yeni sürüm dağıtımı veya mağaza metinleri güncellemeleri doğrudan `gpc` ile yürütülebilir.
+
 
 

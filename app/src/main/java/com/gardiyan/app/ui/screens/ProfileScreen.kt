@@ -3,6 +3,8 @@ package com.gardiyan.app.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -15,13 +17,22 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,9 +40,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.gardiyan.app.R
+import com.gardiyan.app.BuildConfig
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import com.gardiyan.app.ads.AdsConfig
+import com.gardiyan.app.ads.AdsCoordinator
 import com.gardiyan.app.data.local.entity.UserSessionEntity
+import com.gardiyan.app.data.timeline.parseRestrictionLogDetails
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import java.util.Calendar
@@ -41,6 +56,12 @@ import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.ui.components.formatUsageDuration
 import com.gardiyan.app.ui.components.localizedMinutes
 import androidx.compose.runtime.produceState
+
+private enum class ProfileSection {
+    SUMMARY,
+    TIMELINE,
+    SETTINGS
+}
 
 @Composable
 fun ProfileScreen(
@@ -55,11 +76,11 @@ fun ProfileScreen(
     val session by viewModel.userSession.collectAsState()
     val logs by viewModel.allLogs.collectAsState()
     val restrictedApps by viewModel.restrictedApps.collectAsState()
+    val isPrivacyOptionsRequired by AdsCoordinator.isPrivacyOptionsRequired.collectAsState()
 
     var filterDate by remember { mutableStateOf(TimelineDateFilter.ALL_TIME) }
     var filterType by remember { mutableStateOf(TimelineTypeFilter.ALL) }
-    var isSettingsVisible by remember { mutableStateOf(false) }
-    var isTimelineVisible by remember { mutableStateOf(false) }
+    var selectedSection by remember { mutableStateOf(ProfileSection.SUMMARY) }
 
     var showDeleteDataDialog by remember { mutableStateOf(false) }
     var showDataUsageDialog by remember { mutableStateOf(false) }
@@ -150,16 +171,7 @@ fun ProfileScreen(
             }
         }
 
-        val resultList = mutableListOf<com.gardiyan.app.data.local.entity.StatusLogEntity>()
-        var lastLog: com.gardiyan.app.data.local.entity.StatusLogEntity? = null
-        for (log in step1) {
-            if (lastLog != null && lastLog.eventType == log.eventType && lastLog.appName == log.appName) {
-                continue
-            }
-            resultList.add(log)
-            lastLog = log
-        }
-        resultList.take(100)
+        deduplicateTimelineLogs(step1)
     }
 
     val groupedLogs = remember(filteredLogs) {
@@ -213,12 +225,6 @@ fun ProfileScreen(
         todayHasViolation -> DangerRed
         else -> SuccessGreen
     }
-    val todayStatusIcon = when {
-        activeApps.isEmpty() -> "☕"
-        todayHasViolation -> "⚠️"
-        else -> "🛡️"
-    }
-
     val lastSuccessLog = remember(logs) {
         logs.firstOrNull { it.eventType == "DAILY_SUCCESS" || it.eventType == "SUCCESS" || it.eventType == "SUCCESS_DAY" }
     }
@@ -278,31 +284,29 @@ fun ProfileScreen(
     }
     val nextLevelNote = stringResource(nextLevelNoteRes)
 
-    val levelProgress = when (level) {
-        1 -> (consecutiveSuccessDays.toFloat() / 3f).coerceIn(0f, 1f)
-        2 -> (consecutiveSuccessDays.toFloat() / 7f).coerceIn(0f, 1f)
-        3 -> (consecutiveSuccessDays.toFloat() / 15f).coerceIn(0f, 1f)
-        4 -> (consecutiveSuccessDays.toFloat() / 30f).coerceIn(0f, 1f)
-        5 -> (consecutiveSuccessDays.toFloat() / 60f).coerceIn(0f, 1f)
-        else -> 1f
-    }
+    val profileProgress = calculateProfileProgress(
+        level = level,
+        consecutiveSuccessDays = consecutiveSuccessDays,
+        hasRedBadge = hasBadge,
+        activeRedemptionDaysLeft = activeRedemptionDaysLeft,
+        redemptionStreakGoal = redemptionStreakGoal
+    )
 
     val progress: Float
     val progressLabel: String
     val progressText: String
     val progressColor: Color
 
-    if (hasBadge && activeRedemptionDaysLeft > 0) {
-        val completedDays = (redemptionStreakGoal - activeRedemptionDaysLeft).coerceAtLeast(0)
-        progress = completedDays.toFloat() / redemptionStreakGoal.toFloat()
+    if (profileProgress.mode == ProfileProgressMode.REDEMPTION) {
+        progress = profileProgress.progress
         progressLabel = stringResource(R.string.profile_redemption_progress)
-        progressText = stringResource(R.string.profile_redemption_progress_format, completedDays, redemptionStreakGoal)
+        progressText = stringResource(R.string.profile_redemption_progress_format, profileProgress.completed, profileProgress.goal)
         progressColor = DangerRed
     } else {
         progressLabel = stringResource(R.string.profile_next_level_progress)
         progressColor = SuccessGreen
-        progress = levelProgress
-        progressText = "${(levelProgress * 100).toInt()}%"
+        progress = profileProgress.progress
+        progressText = "${(profileProgress.progress * 100).toInt()}%"
     }
 
     val totalSavedMillis by produceState<Long>(initialValue = 0L, key1 = restrictedApps) {
@@ -496,7 +500,14 @@ fun ProfileScreen(
                             onError = { error ->
                                 isClearingData = false
                                 showDeleteDataDialog = false
-                                android.widget.Toast.makeText(context, "Hata oluştu: ${error.localizedMessage}", android.widget.Toast.LENGTH_LONG).show()
+                                android.widget.Toast.makeText(
+                                    context,
+                                    context.getString(
+                                        R.string.profile_clear_error,
+                                        error.localizedMessage ?: context.getString(R.string.profile_unknown_error)
+                                    ),
+                                    android.widget.Toast.LENGTH_LONG
+                                ).show()
                             }
                         )
                     },
@@ -564,7 +575,14 @@ fun ProfileScreen(
             onDismissRequest = { showThemeDialog = false },
             title = { Text(stringResource(R.string.profile_theme_dialog_title), fontWeight = FontWeight.Bold, color = PureBlack) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 520.dp)
+                        .verticalScroll(rememberScrollState())
+                        .imePadding(),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
                     Text(stringResource(R.string.profile_theme_dialog_mode_section), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MutedGray)
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf(
@@ -576,7 +594,7 @@ fun ProfileScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { updateThemeMode(context, mode) }
-                                    .padding(vertical = 4.dp),
+                                    .heightIn(min = 48.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 RadioButton(
@@ -604,7 +622,7 @@ fun ProfileScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { updateThemePalette(context, palette) }
-                                    .padding(vertical = 4.dp),
+                                    .heightIn(min = 48.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 RadioButton(
@@ -718,12 +736,16 @@ fun ProfileScreen(
             },
             text = {
                 Column(
-                    modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 520.dp)
+                        .verticalScroll(rememberScrollState())
+                        .imePadding(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.settings_quote_dialog_desc),
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         color = MutedGray,
                         lineHeight = 16.sp
                     )
@@ -807,7 +829,7 @@ fun ProfileScreen(
                             ) {
                                 Text(
                                     text = if (editingQuoteId != null) stringResource(R.string.saved_quotes_btn_update) else stringResource(R.string.saved_quotes_btn_add),
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -834,10 +856,13 @@ fun ProfileScreen(
                                 .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "📝",
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(end = 8.dp)
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = PureBlack,
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .size(20.dp)
                             )
                             Text(
                                 text = stringResource(R.string.saved_quotes_title),
@@ -853,7 +878,7 @@ fun ProfileScreen(
                             ) {
                                 Text(
                                     text = customQuotesList.size.toString(),
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PureBlack
                                 )
@@ -949,40 +974,40 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = stringResource(R.string.profile_app_name), fontSize = 11.sp, color = MutedGray)
-                        Text(text = stringResource(R.string.app_name), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        Text(text = stringResource(R.string.profile_app_name), fontSize = 12.sp, color = MutedGray)
+                        Text(text = stringResource(R.string.app_name), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PureBlack)
                     }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = stringResource(R.string.profile_version), fontSize = 11.sp, color = MutedGray)
-                        Text(text = appVersion, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        Text(text = stringResource(R.string.profile_version), fontSize = 12.sp, color = MutedGray)
+                        Text(text = appVersion, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PureBlack)
                     }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = stringResource(R.string.profile_version_code), fontSize = 11.sp, color = MutedGray)
-                        Text(text = appVersionCode, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        Text(text = stringResource(R.string.profile_version_code), fontSize = 12.sp, color = MutedGray)
+                        Text(text = appVersionCode, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PureBlack)
                     }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = stringResource(R.string.profile_android_version), fontSize = 11.sp, color = MutedGray)
-                        Text(text = android.os.Build.VERSION.RELEASE, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        Text(text = stringResource(R.string.profile_android_version), fontSize = 12.sp, color = MutedGray)
+                        Text(text = android.os.Build.VERSION.RELEASE, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PureBlack)
                     }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = stringResource(R.string.profile_developer_contact), fontSize = 11.sp, color = MutedGray)
-                        Text(text = "lumoriapdf@gmail.com", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PureBlack)
+                        Text(text = stringResource(R.string.profile_developer_contact), fontSize = 12.sp, color = MutedGray)
+                        Text(text = "destek@limitra.online", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PureBlack)
                     }
                 }
             },
@@ -1114,59 +1139,26 @@ fun ProfileScreen(
         )
     }
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MatteSurface)
-            .padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = when {
-                        isTimelineVisible -> stringResource(R.string.profile_timeline)
-                        isSettingsVisible -> stringResource(R.string.profile_settings)
-                        else -> stringResource(R.string.profile_title)
-                    },
-                    fontSize = 18.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Black,
-                    color = PureBlack,
-                    letterSpacing = 0.5.sp
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (isTimelineVisible) {
-                        TextButton(onClick = { showFilterDialog = true }) {
-                            Text(text = stringResource(R.string.profile_filter_btn_text), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = SuccessGreen)
-                        }
-                    }
-                    IconButton(
-                        onClick = {
-                            if (isTimelineVisible) {
-                                isTimelineVisible = false
-                            } else {
-                                isSettingsVisible = !isSettingsVisible
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (isTimelineVisible || isSettingsVisible) Icons.Default.Close else Icons.Default.Settings,
-                            contentDescription = if (isTimelineVisible || isSettingsVisible) stringResource(R.string.btn_close) else stringResource(R.string.protected_apps_settings),
-                            tint = PureBlack
-                        )
-                    }
-                }
-            }
-        }
+        ProfileSectionHeader(
+            selectedSection = selectedSection,
+            onSectionSelected = { selectedSection = it },
+            onFilterClick = { showFilterDialog = true }
+        )
 
-        if (isTimelineVisible) {
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+        if (selectedSection == ProfileSection.TIMELINE) {
             item {
                 Row(
                     modifier = Modifier
@@ -1221,7 +1213,7 @@ fun ProfileScreen(
                         }
                         Text(
                             text = displayGroupName.uppercase(),
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             fontFamily = FontFamily.SansSerif,
                             color = MutedGray,
                             letterSpacing = 0.5.sp,
@@ -1267,7 +1259,34 @@ fun ProfileScreen(
                         }
 
                         val friendlyDetails = when (log.eventType) {
-                            "RESTRICTION_ADDED" -> stringResource(R.string.log_desc_restriction_added, log.appName)
+                            "RESTRICTION_ADDED" -> buildString {
+                                append(stringResource(R.string.log_desc_restriction_added, log.appName))
+                                val restrictionDetails = parseRestrictionLogDetails(log.details)
+                                if (restrictionDetails != null) {
+                                    append(" · ")
+                                    append(
+                                        stringResource(
+                                            R.string.profile_restriction_log_limit,
+                                            restrictionDetails.dailyLimitMinutes
+                                        )
+                                    )
+                                    if (
+                                        restrictionDetails.restrictionName.isNotBlank() &&
+                                        restrictionDetails.restrictionName != log.appName
+                                    ) {
+                                        append(" · ")
+                                        append(
+                                            stringResource(
+                                                R.string.profile_restriction_log_group,
+                                                restrictionDetails.restrictionName
+                                            )
+                                        )
+                                    }
+                                } else if (log.details.isNotBlank()) {
+                                    append(" · ")
+                                    append(log.details)
+                                }
+                            }
                             "RESTRICTION_REMOVED" -> stringResource(R.string.log_desc_restriction_removed, log.appName)
                             "RESTRICTION_DELETED" -> stringResource(R.string.log_desc_restriction_deleted, log.appName)
                             "QUICK_TEST_STARTED" -> stringResource(R.string.log_desc_test_started, log.appName)
@@ -1294,22 +1313,6 @@ fun ProfileScreen(
                             "CRITICAL_ACTION_COMPLETED" -> stringResource(R.string.log_desc_critical_complete, log.appName)
                             "PERMISSION_CHANGED" -> stringResource(R.string.log_desc_system_permission)
                             else -> log.details
-                        }
-
-                        val statusIcon = when (log.eventType) {
-                            "FAILURE", "RESET_HOLD_5S", "DAILY_FAILURE", "CRITICAL_ACTION_STARTED", "VIOLATION" -> "⚠️"
-                            "CRITICAL_ACTION_COMPLETED", "RESTRICTION_DELETED" -> "🗑️"
-                            "SUCCESS", "DAILY_SUCCESS", "SUCCESS_DAY" -> "🏆"
-                            "RESTRICTION_ADDED", "QUICK_TEST_STARTED" -> "➕"
-                            "SERVICE_STARTED", "SERVICE_RESTARTED", "SESSION_STARTED" -> "🚀"
-                            "SERVICE_STOPPED", "SESSION_CLOSED" -> "🛑"
-                            "SUSPICIOUS_STATE_DETECTED", "USAGE_STATS_FALLBACK", "SESSION_UPDATED" -> "🔍"
-                            "ENGINE_RESYNCED" -> "🔄"
-                            "OVERLAY_SHOWN", "OVERLAY_TRIGGERED" -> "🔒"
-                            "STALE_SESSION_CLEANED" -> "🧹"
-                            "USAGE_PROCESSED" -> "⏳"
-                            "PERMISSION_CHANGED" -> "🔑"
-                            else -> "ℹ️"
                         }
 
                         val statusColor = when (log.eventType) {
@@ -1357,7 +1360,7 @@ fun ProfileScreen(
                                         )
                                         Text(
                                             text = timeStr,
-                                            fontSize = 9.sp,
+                                            fontSize = 12.sp,
                                             fontFamily = FontFamily.Monospace,
                                             color = MutedGray
                                         )
@@ -1365,7 +1368,7 @@ fun ProfileScreen(
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
                                         text = friendlyDetails,
-                                        fontSize = 10.sp,
+                                        fontSize = 12.sp,
                                         color = MutedGray
                                     )
                                 }
@@ -1374,15 +1377,12 @@ fun ProfileScreen(
                     }
                 }
             }
-        } else if (isSettingsVisible) {
+        } else if (selectedSection == ProfileSection.SETTINGS) {
             // 1. İzin Durumu
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, if (allOk) SuccessGreen.copy(alpha = 0.2f) else DangerRed.copy(alpha = 0.15f), RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp)
+                SettingsGroupCard(
+                    title = stringResource(R.string.settings_group_device_permissions),
+                    borderColor = if (allOk) SuccessGreen.copy(alpha = 0.25f) else DangerRed.copy(alpha = 0.25f)
                 ) {
                     Column(
                         modifier = Modifier
@@ -1392,7 +1392,8 @@ fun ProfileScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { isHealthExpanded = !isHealthExpanded },
+                                .clickable { isHealthExpanded = !isHealthExpanded }
+                                .heightIn(min = 56.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -1402,7 +1403,7 @@ fun ProfileScreen(
                             ) {
                                 Text(
                                     text = stringResource(R.string.perm_status),
-                                    fontSize = 13.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PureBlack
                                 )
@@ -1419,14 +1420,15 @@ fun ProfileScreen(
                             ) {
                                 Text(
                                     text = if (allOk) stringResource(R.string.profile_permissions_all_active) else stringResource(R.string.profile_permissions_missing),
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     color = MutedGray,
                                     fontWeight = FontWeight.Medium
                                 )
-                                Text(
-                                    text = if (isHealthExpanded) "▲" else "▼",
-                                    fontSize = 10.sp,
-                                    color = MutedGray
+                                Icon(
+                                    imageVector = if (isHealthExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = MutedGray,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
@@ -1490,15 +1492,6 @@ fun ProfileScreen(
                     AppThemePalette.RED -> stringResource(R.string.profile_theme_red)
                     AppThemePalette.PREMIUM_DARK -> stringResource(R.string.profile_theme_premium)
                 }
-                SettingsRow(
-                    title = stringResource(R.string.profile_appearance),
-                    value = "$currentModeLabel · $currentPaletteLabel",
-                    onClick = { showThemeDialog = true }
-                )
-            }
-
-            // 3. Dil Ayarları
-            item {
                 val currentLocales = AppCompatDelegate.getApplicationLocales()
                 val currentLang = if (!currentLocales.isEmpty()) currentLocales.get(0)?.language ?: "en" else java.util.Locale.getDefault().language
                 val languages = listOf(
@@ -1515,11 +1508,22 @@ fun ProfileScreen(
                     "th" to "Thai / ไทย"
                 )
                 val currentLangLabel = languages.firstOrNull { it.first == currentLang }?.second ?: "English"
-                SettingsRow(
-                    title = stringResource(R.string.profile_language_settings),
-                    value = currentLangLabel,
-                    onClick = { showLanguageDialog = true }
-                )
+
+                SettingsGroupCard(title = stringResource(R.string.settings_group_appearance_language)) {
+                    SettingsRow(
+                        title = stringResource(R.string.profile_appearance),
+                        value = "$currentModeLabel · $currentPaletteLabel",
+                        icon = Icons.Default.Settings,
+                        onClick = { showThemeDialog = true }
+                    )
+                    HorizontalDivider(color = BorderGray.copy(alpha = 0.7f))
+                    SettingsRow(
+                        title = stringResource(R.string.profile_language_settings),
+                        value = currentLangLabel,
+                        icon = Icons.Default.Info,
+                        onClick = { showLanguageDialog = true }
+                    )
+                }
             }
 
             // 3ab. Bildirimler
@@ -1549,123 +1553,121 @@ fun ProfileScreen(
                     }
                 }
 
-                SettingsSwitchRow(
-                    title = stringResource(R.string.profile_notifications_title),
-                    description = stringResource(R.string.profile_notifications_desc),
-                    checked = notificationsEnabledState,
-                    onCheckedChange = { checked ->
-                        if (checked) {
-                            if (isAndroid13OrAbove && !viewModel.areNotificationsEnabled(context)) {
-                                permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-                            } else {
-                                prefs.edit().putBoolean("notifications_enabled", true).apply()
-                                notificationsEnabledState = true
-                            }
-                        } else {
-                            prefs.edit().putBoolean("notifications_enabled", false).apply()
-                            notificationsEnabledState = false
-                        }
-                    }
+                val quoteSummary = deriveQuoteSummaryMode(
+                    customQuotesJson = prefs.getString("custom_quotes_json", "[]") ?: "[]",
+                    showOnlyMyQuotes = prefs.getBoolean("show_only_my_quotes", false),
+                    legacyHasCustomQuote = prefs.getBoolean("has_custom_quote", false),
+                    legacyPreference = prefs.getString("custom_quote_preference", "mix") ?: "mix"
                 )
-            }
-
-            // 3b. Koruma Ekranı Sözü
-            item {
-                val prefs = remember { context.getSharedPreferences("gardiyan_settings", android.content.Context.MODE_PRIVATE) }
-                val hasCustom = prefs.getBoolean("has_custom_quote", false)
-                val customPref = prefs.getString("custom_quote_preference", "mix") ?: "mix"
-                val valueText = if (hasCustom) {
-                    if (customPref == "always") stringResource(R.string.profile_custom_quote_always) else stringResource(R.string.profile_custom_quote_mix)
-                } else {
-                    stringResource(R.string.profile_default_quotes)
+                val valueText = when (quoteSummary) {
+                    QuoteSummaryMode.ONLY_MY_QUOTES -> stringResource(R.string.profile_custom_quote_always)
+                    QuoteSummaryMode.MIXED -> stringResource(R.string.profile_custom_quote_mix)
+                    QuoteSummaryMode.DEFAULT -> stringResource(R.string.profile_default_quotes)
                 }
 
-                SettingsRow(
-                    title = stringResource(R.string.settings_quote_title),
-                    value = valueText,
-                    onClick = { showQuoteSettingsDialog = true }
-                )
+                SettingsGroupCard(title = stringResource(R.string.settings_group_notifications_content)) {
+                    SettingsSwitchRow(
+                        title = stringResource(R.string.profile_notifications_title),
+                        description = stringResource(R.string.profile_notifications_desc),
+                        checked = notificationsEnabledState,
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                if (isAndroid13OrAbove && !viewModel.areNotificationsEnabled(context)) {
+                                    permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                                } else {
+                                    prefs.edit().putBoolean("notifications_enabled", true).apply()
+                                    notificationsEnabledState = true
+                                }
+                            } else {
+                                prefs.edit().putBoolean("notifications_enabled", false).apply()
+                                notificationsEnabledState = false
+                            }
+                        }
+                    )
+                    HorizontalDivider(color = BorderGray.copy(alpha = 0.7f))
+                    SettingsRow(
+                        title = stringResource(R.string.settings_quote_title),
+                        value = valueText,
+                        icon = Icons.Default.Info,
+                        onClick = { showQuoteSettingsDialog = true }
+                    )
+                }
             }
 
             // 4. Destek ve Geri Bildirim
             item {
-                SettingsRow(
-                    title = stringResource(R.string.profile_support),
-                    onClick = { launchEmailIntent(context) },
-                    infoIconClick = { showSupportInfoDialog = true }
-                )
-            }
-
-            // 5. Gizlilik Politikası
-            item {
-                SettingsRow(
-                    title = stringResource(R.string.profile_privacy),
-                    onClick = {
-                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://doc-hosting.flycricket.io/limitra-privacy-policy/1dd2dedf-ea24-4a49-91b5-fa79b0ba9337/privacy"))
-                        runCatching {
-                            context.startActivity(intent)
-                        }.onFailure {
-                            android.widget.Toast.makeText(context, context.getString(R.string.profile_browser_error), android.widget.Toast.LENGTH_SHORT).show()
+                SettingsGroupCard(title = stringResource(R.string.settings_group_support_legal)) {
+                    SettingsRow(
+                        title = stringResource(R.string.profile_support),
+                        icon = Icons.Default.Email,
+                        onClick = { launchEmailIntent(context) },
+                        infoIconClick = { showSupportInfoDialog = true }
+                    )
+                    HorizontalDivider(color = BorderGray.copy(alpha = 0.7f))
+                    SettingsRow(
+                        title = stringResource(R.string.profile_privacy),
+                        icon = Icons.Default.Lock,
+                        onClick = {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://limitra.online/gizlilik-politikasi/"))
+                            runCatching {
+                                context.startActivity(intent)
+                            }.onFailure {
+                                android.widget.Toast.makeText(context, context.getString(R.string.profile_browser_error), android.widget.Toast.LENGTH_SHORT).show()
+                            }
                         }
-                    }
-                )
-            }
-
-            // 5b. Kullanım Şartları
-            item {
-                SettingsRow(
-                    title = stringResource(R.string.profile_terms),
-                    onClick = {
-                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://doc-hosting.flycricket.io/limitra-terms-of-use/8221a2c7-16d3-454e-9a0d-a61495fab4e6/terms"))
-                        runCatching {
-                            context.startActivity(intent)
-                        }.onFailure {
-                            android.widget.Toast.makeText(context, context.getString(R.string.profile_browser_error), android.widget.Toast.LENGTH_SHORT).show()
+                    )
+                    HorizontalDivider(color = BorderGray.copy(alpha = 0.7f))
+                    SettingsRow(
+                        title = stringResource(R.string.profile_terms),
+                        icon = Icons.Default.Info,
+                        onClick = {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://limitra.online/kullanim-sartlari/"))
+                            runCatching {
+                                context.startActivity(intent)
+                            }.onFailure {
+                                android.widget.Toast.makeText(context, context.getString(R.string.profile_browser_error), android.widget.Toast.LENGTH_SHORT).show()
+                            }
                         }
+                    )
+                    if (AdsConfig.isAdsEnabled && isPrivacyOptionsRequired) {
+                        HorizontalDivider(color = BorderGray.copy(alpha = 0.7f))
+                        SettingsRow(
+                            title = stringResource(R.string.profile_privacy_choices),
+                            icon = Icons.Default.Lock,
+                            onClick = {
+                                (context as? android.app.Activity)?.let {
+                                    AdsCoordinator.showPrivacyOptionsForm(it)
+                                }
+                            }
+                        )
                     }
-                )
-            }
-
-            // 6. Hakkında
-            item {
-                SettingsRow(
-                    title = stringResource(R.string.profile_about_title),
-                    value = "Limitra v1.1",
-                    onClick = { showAboutDialog = true }
-                )
+                    HorizontalDivider(color = BorderGray.copy(alpha = 0.7f))
+                    SettingsRow(
+                        title = stringResource(R.string.profile_about_title),
+                        value = stringResource(R.string.profile_version_format, BuildConfig.VERSION_NAME),
+                        icon = Icons.Default.Info,
+                        onClick = { showAboutDialog = true }
+                    )
+                }
             }
 
             // 7. Verilerimi Temizle
             item {
-                SettingsRow(
-                    title = stringResource(R.string.profile_clear_data),
-                    onClick = { showDeleteDataDialog = true },
-                    textColor = DangerRed,
-                    showArrow = false
-                )
-            }
-
-            // 8. Zaman Tüneli Butonu
-            item {
-                Button(
-                    onClick = { isTimelineVisible = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PureBlack,
-                        contentColor = OnPureBlack
-                    ),
-                    shape = RoundedCornerShape(16.dp)
+                SettingsGroupCard(
+                    title = stringResource(R.string.settings_group_data_management),
+                    borderColor = DangerRed.copy(alpha = 0.5f)
                 ) {
-                    Text(
-                        text = stringResource(R.string.profile_timeline),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp,
-                        letterSpacing = 0.5.sp
+                    SettingsRow(
+                        title = stringResource(R.string.profile_clear_data),
+                        value = stringResource(R.string.profile_clear_data_desc),
+                        icon = Icons.Default.Warning,
+                        onClick = { showDeleteDataDialog = true },
+                        textColor = DangerRed,
+                        showArrow = false
                     )
                 }
             }
+
         } else {
             // 1. Profil Hub (Yeni Temiz Seviye Kartı - Tıklanabilir)
             item {
@@ -1685,7 +1687,7 @@ fun ProfileScreen(
                     ) {
                         Text(
                             text = stringResource(R.string.profile_level_format, level),
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.ExtraBold,
                             color = MutedGray,
@@ -1706,28 +1708,33 @@ fun ProfileScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = stringResource(R.string.profile_digital_control_progress), fontSize = 10.sp, color = MutedGray)
+                                Text(text = progressLabel, fontSize = 12.sp, color = MutedGray)
                                 Text(
-                                    text = "${(levelProgress * 100).toInt()}%",
-                                    fontSize = 10.sp,
-                                    color = MutedGray,
+                                    text = progressText,
+                                    fontSize = 12.sp,
+                                    color = progressColor,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             LinearProgressIndicator(
-                                progress = { levelProgress },
+                                progress = { progress },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(6.dp)
                                     .clip(RoundedCornerShape(3.dp)),
-                                color = SuccessGreen,
+                                color = progressColor,
                                 trackColor = MatteSurface
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = nextLevelNote,
-                                fontSize = 10.sp,
+                                text = if (profileProgress.mode == ProfileProgressMode.REDEMPTION) {
+                                    stringResource(R.string.profile_redemption_note)
+                                } else {
+                                    nextLevelNote
+                                },
+                                fontSize = 12.sp,
+                                lineHeight = 17.sp,
                                 color = MutedGray,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
@@ -1739,168 +1746,81 @@ fun ProfileScreen(
 
             // 2. Bento Kartları (Özet Bilgiler)
             item {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Protection Streak Card
-                        Card(
+                val timeDisplayStr = if (totalSavedMillis > 0) {
+                    formatUsageDuration(totalSavedMillis)
+                } else {
+                    stringResource(R.string.profile_saved_time_no_data)
+                }
+                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                    val fontScale = LocalDensity.current.fontScale
+                    val stackCards = shouldStackProfileSummaryCards(maxWidth.value, fontScale)
+                    val cards: @Composable (Modifier) -> Unit = { cardModifier ->
+                        ProfileSummaryCard(
+                            title = stringResource(R.string.profile_streak_title),
+                            value = stringResource(R.string.profile_streak_days, consecutiveSuccessDays),
+                            icon = Icons.Default.Check,
                             onClick = { showStreakDetailDialog = true },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(95.dp)
-                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                            shape = RoundedCornerShape(20.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(14.dp),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.profile_streak_title),
-                                        fontSize = 8.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MutedGray
-                                    )
-                                    Text(text = "🔥", fontSize = 14.sp)
-                                }
-                                Text(
-                                    text = stringResource(R.string.profile_streak_days, consecutiveSuccessDays),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = PureBlack
-                                )
-                            }
-                        }
-
-                        // Saved Time Card
-                        val timeDisplayStr = if (totalSavedMillis > 0) formatUsageDuration(totalSavedMillis) else stringResource(R.string.profile_saved_time_no_data)
-                        Card(
+                            modifier = cardModifier
+                        )
+                        ProfileSummaryCard(
+                            title = stringResource(R.string.profile_saved_time_title),
+                            value = timeDisplayStr,
+                            icon = Icons.Default.Info,
                             onClick = { showSavedTimeDetailDialog = true },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(95.dp)
-                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                            shape = RoundedCornerShape(20.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(14.dp),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.profile_saved_time_title),
-                                        fontSize = 8.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MutedGray
-                                    )
-                                    Text(text = "⏳", fontSize = 14.sp)
-                                }
-                                Text(
-                                    text = timeDisplayStr,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = PureBlack
-                                )
-                            }
-                        }
+                            modifier = cardModifier
+                        )
+                        ProfileSummaryCard(
+                            title = stringResource(R.string.profile_protected_apps_title),
+                            value = stringResource(R.string.profile_protected_apps, activeApps.size),
+                            icon = Icons.Default.Lock,
+                            onClick = { showActiveAppsDetailDialog = true },
+                            modifier = cardModifier
+                        )
+                        ProfileSummaryCard(
+                            title = stringResource(R.string.profile_weekly_summary_title),
+                            value = stringResource(R.string.profile_weekly_success_days_format, weeklySuccessDays),
+                            icon = Icons.Default.Settings,
+                            onClick = { showWeeklySummaryDetailDialog = true },
+                            modifier = cardModifier
+                        )
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                      ) {
-                        // Active Restrictions Card
-                        Card(
-                            onClick = { showActiveAppsDetailDialog = true },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(95.dp)
-                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                            shape = RoundedCornerShape(20.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(14.dp),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.profile_protected_apps_title),
-                                        fontSize = 8.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MutedGray
-                                    )
-                                    Text(text = "🛡️", fontSize = 14.sp)
-                                }
-                                Text(
-                                    text = stringResource(R.string.profile_protected_apps, activeApps.size),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = PureBlack
+                    if (stackCards) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            cards(Modifier.fillMaxWidth())
+                        }
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                ProfileSummaryCard(
+                                    title = stringResource(R.string.profile_streak_title),
+                                    value = stringResource(R.string.profile_streak_days, consecutiveSuccessDays),
+                                    icon = Icons.Default.Check,
+                                    onClick = { showStreakDetailDialog = true },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                ProfileSummaryCard(
+                                    title = stringResource(R.string.profile_saved_time_title),
+                                    value = timeDisplayStr,
+                                    icon = Icons.Default.Info,
+                                    onClick = { showSavedTimeDetailDialog = true },
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
-                        }
-
-                        // Weekly Summary Card
-                        Card(
-                            onClick = { showWeeklySummaryDetailDialog = true },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(95.dp)
-                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                            shape = RoundedCornerShape(20.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(14.dp),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.profile_weekly_summary_title),
-                                        fontSize = 8.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MutedGray
-                                    )
-                                    Text(text = "📅", fontSize = 14.sp)
-                                }
-                                Text(
-                                    text = stringResource(R.string.profile_weekly_success_days_format, weeklySuccessDays),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = PureBlack
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                ProfileSummaryCard(
+                                    title = stringResource(R.string.profile_protected_apps_title),
+                                    value = stringResource(R.string.profile_protected_apps, activeApps.size),
+                                    icon = Icons.Default.Lock,
+                                    onClick = { showActiveAppsDetailDialog = true },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                ProfileSummaryCard(
+                                    title = stringResource(R.string.profile_weekly_summary_title),
+                                    value = stringResource(R.string.profile_weekly_success_days_format, weeklySuccessDays),
+                                    icon = Icons.Default.Settings,
+                                    onClick = { showWeeklySummaryDetailDialog = true },
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
                         }
@@ -1911,6 +1831,88 @@ fun ProfileScreen(
 
         item {
             Spacer(modifier = Modifier.height(24.dp))
+        }
+        }
+    }
+}
+
+@Composable
+private fun ProfileSectionHeader(
+    selectedSection: ProfileSection,
+    onSectionSelected: (ProfileSection) -> Unit,
+    onFilterClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.profile_title),
+                fontSize = 20.sp,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Black,
+                color = PureBlack
+            )
+            if (selectedSection == ProfileSection.TIMELINE) {
+                TextButton(
+                    onClick = onFilterClick,
+                    modifier = Modifier.heightIn(min = 48.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.profile_filter_btn_text),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = SuccessGreen
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(DarkCharcoal)
+                .border(1.dp, BorderGray, RoundedCornerShape(14.dp))
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            val sections = listOf(
+                ProfileSection.SUMMARY to R.string.profile_section_summary,
+                ProfileSection.TIMELINE to R.string.profile_section_timeline,
+                ProfileSection.SETTINGS to R.string.profile_section_settings
+            )
+            sections.forEach { (section, labelRes) ->
+                val isSelected = selectedSection == section
+                Surface(
+                    onClick = { onSectionSelected(section) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 48.dp)
+                        .semantics { selected = isSelected },
+                    color = if (isSelected) PureBlack else Color.Transparent,
+                    contentColor = if (isSelected) OnPureBlack else MutedGray,
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = stringResource(labelRes),
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -1947,13 +1949,16 @@ private fun ThemeOptionRow(
 }
 
 private fun launchEmailIntent(context: android.content.Context) {
+    val recipient = "destek@limitra.online"
+    val subject = context.getString(R.string.profile_mail_subject)
     val emailBody = context.getString(R.string.profile_mail_body)
-
+    val mailUri = android.net.Uri.parse(
+        "mailto:${android.net.Uri.encode(recipient)}" +
+            "?subject=${android.net.Uri.encode(subject)}" +
+            "&body=${android.net.Uri.encode(emailBody)}"
+    )
     val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
-        data = android.net.Uri.parse("mailto:")
-        putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf("lumoriapdf@gmail.com"))
-        putExtra(android.content.Intent.EXTRA_SUBJECT, context.getString(R.string.profile_mail_subject))
-        putExtra(android.content.Intent.EXTRA_TEXT, emailBody)
+        data = mailUri
     }
 
     runCatching {
@@ -2001,7 +2006,7 @@ private fun HealthRow(
         ) {
             Text(
                 text = if (isOk) stringResource(R.string.profile_permission_state_ok) else stringResource(R.string.profile_permission_state_missing),
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isOk) SuccessGreen else DangerRed
             )
@@ -2021,70 +2026,154 @@ private fun HealthRow(
 }
 
 @Composable
+private fun ProfileSummaryCard(
+    title: String,
+    value: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .heightIn(min = 104.dp)
+            .border(1.dp, BorderGray, RoundedCornerShape(18.dp)),
+        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = title,
+                    modifier = Modifier.weight(1f),
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MutedGray
+                )
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = PureBlack,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Text(
+                text = value,
+                fontSize = 18.sp,
+                lineHeight = 22.sp,
+                fontWeight = FontWeight.Black,
+                color = PureBlack
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsGroupCard(
+    title: String,
+    borderColor: Color = BorderGray,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.padding(start = 4.dp),
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = MutedGray
+        )
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, borderColor, RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(content = content)
+        }
+    }
+}
+
+@Composable
 private fun SettingsRow(
     title: String,
     value: String? = null,
     onClick: () -> Unit,
+    icon: ImageVector? = null,
     showArrow: Boolean = true,
     infoIconClick: (() -> Unit)? = null,
     textColor: Color = PureBlack
 ) {
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(20.dp),
-        onClick = onClick
+            .clickable(onClick = onClick)
+            .heightIn(min = 56.dp)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = textColor,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                fontSize = 13.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = textColor,
-                modifier = Modifier.weight(1f)
+                color = textColor
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            if (value != null) {
+                Text(
+                    text = value,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                    color = MutedGray,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
+        }
+        if (infoIconClick != null) {
+            IconButton(
+                onClick = infoIconClick,
+                modifier = Modifier.size(48.dp)
             ) {
-                if (value != null) {
-                    Text(
-                        text = value,
-                        fontSize = 11.sp,
-                        color = MutedGray,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                if (infoIconClick != null) {
-                    IconButton(
-                        onClick = infoIconClick,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = stringResource(R.string.btn_info_desc),
-                            tint = MutedGray,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-                if (showArrow) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = stringResource(R.string.btn_info_desc),
+                    tint = MutedGray,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+        if (showArrow) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
                         tint = MutedGray,
                         modifier = Modifier.size(20.dp)
                     )
-                }
-            }
         }
     }
 }
@@ -2109,32 +2198,9 @@ enum class TimelineTypeFilter(val labelResId: Int) {
     DATA_ACTIONS(R.string.filter_type_data_actions)
 }
 
-data class CustomQuoteItem(
-    val id: String,
-    val text: String,
-    val author: String,
-    val isSelected: Boolean
-)
-
 fun loadCustomQuotes(prefs: android.content.SharedPreferences): List<CustomQuoteItem> {
     val json = prefs.getString("custom_quotes_json", "[]") ?: "[]"
-    val list = mutableListOf<CustomQuoteItem>()
-    try {
-        val array = org.json.JSONArray(json)
-        for (i in 0 until array.length()) {
-            val obj = array.getJSONObject(i)
-            list.add(
-                CustomQuoteItem(
-                    id = obj.optString("id", ""),
-                    text = obj.optString("text", ""),
-                    author = obj.optString("author", ""),
-                    isSelected = obj.optBoolean("isSelected", true)
-                )
-            )
-        }
-    } catch (e: java.lang.Exception) {
-        e.printStackTrace()
-    }
+    val list = parseCustomQuotes(json).toMutableList()
     
     val oldText = prefs.getString("custom_quote_text", "") ?: ""
     val oldAuthor = prefs.getString("custom_quote_author", "") ?: ""
@@ -2189,24 +2255,25 @@ private fun SettingsSwitchRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(20.dp)
+            .clickable { onCheckedChange(!checked) }
+            .heightIn(min = 64.dp)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = PureBlack,
+                modifier = Modifier.size(22.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = PureBlack
                 )
@@ -2214,15 +2281,15 @@ private fun SettingsSwitchRow(
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = description,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         color = MutedGray,
-                        lineHeight = 14.sp
+                        lineHeight = 16.sp
                     )
                 }
             }
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange,
+                onCheckedChange = null,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = PureWhite,
                     checkedTrackColor = SuccessGreen,
@@ -2230,6 +2297,5 @@ private fun SettingsSwitchRow(
                     uncheckedTrackColor = BorderGray
                 )
             )
-        }
     }
 }
