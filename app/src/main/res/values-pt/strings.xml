@@ -7,7 +7,7 @@
     <string name="perm_accessibility_reenable_desc">A permissÃ£o aparece como ativada, mas o serviÃ§o de rastreamento estÃ¡ inativo. Desative e ative novamente a Acessibilidade.</string>
     <string name="accessibility_reenable_warning">A permissÃ£o de acessibilidade parece estar ativada, mas o Limitra nÃ£o consegue confirmar que o serviÃ§o de rastreamento estÃ¡ em execuÃ§Ã£o. Desative e ative novamente a Acessibilidade do Limitra.</string>
     <string name="accessibility_reenable_dialog_desc">A permissÃ£o de Acessibilidade do Limitra parece estar ativada, mas o sinal de atividade do serviÃ§o estÃ¡ ausente ou desatualizado. Nas configuraÃ§Ãµes do Android, desative a permissÃ£o de Acessibilidade do Limitra e ative-a novamente para que o rastreamento de tempo possa reiniciar.</string>
-    <string name="app_name">Limitra AppBlock</string>
+    <string name="app_name">Limitra: AppBlock</string>
     <string name="accessibility_service_description">O Limitra usa esta permissÃ£o apenas para detectar quando um aplicativo restrito Ã© aberto, a fim de aplicar seus limites diÃ¡rios e barreiras digitais. Todos os dados son processados localmente no seu dispositivo; nenhum dado Ã© coletado ou exportado. O rastreamento em segundo plano serve exclusivamente para executar as regras de bloqueio escolhidas.</string>
     <string name="notification_channel_service">ServiÃ§o de ProteÃ§Ã£o Limitra</string>
     <string name="notification_channel_service_desc">Funciona para manter a proteÃ§Ã£o ativa e aplicar localmente os limites definidos. Seus dados permanecem totalmente no seu dispositivo.</string>
@@ -527,4 +527,5 @@
     <string name="profile_notifications_title">NotificaÃ§Ãµes</string>
     <string name="profile_notifications_desc">Mostrar avisos de limite e notificaÃ§Ãµes de status.</string>
 </resources>
+
 

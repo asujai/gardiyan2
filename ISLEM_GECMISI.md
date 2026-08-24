@@ -1,5 +1,13 @@
 ﻿# İŞLEM GEÇMİŞİ
 
+## [2026-08-25 00:03] - Başlığın 'Limitra: AppBlock' Yapılması ve 9 Dilde 54 Görselin Play Store'a Senkronizasyonu
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** [YENİ] play_store_images/ (9 dil / 54 görsel), [GÜNCELLENDİ] metadata/*/title.txt, pp/src/main/res/values*/strings.xml, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Uygulama adı Limitra: AppBlock olarak tüm kod ve mağaza başlıklarında güncellendi. 9 hedef dil (	r-TR, en-US, pt-BR, de-DE, es-ES, r-FR, u-RU, id, r) için her dilin kendi yerel sloganlarını içeren 5'er ekran görüntüsü ve Feature Graphic (54 görsel) gpc images sync ile Google Play Store'a yüklendi.
+* **Doğrulama:** gpc images sync ve gpc listings list ile 54 görselin ve başlıkların canlıda yayında olduğu doğrulandı.
+* **Bilinen Sorunlar:** Yok
+* **Sonraki Öneri:** Yeni sürüm (v15) geliştirme ve derleme adımları.
 ## [2026-08-21 01:23] - Yeni Nesil Mağaza Görselleri ve Açıklamalarının Play Store'a Canlı Yüklenmesi
 
 * **Model:** Antigravity
@@ -40,6 +48,7 @@
 * **Doğrulama:** `gpc doctor`, `gpc tracks list`, `gpc listings list`, `gpc bundles list` komutlarıyla Google Play Developer API erişimi başarıyla test edildi. Canlıdaki Production v14 ve mağaza bilgileri çekildi.
 * **Bilinen Sorunlar:** Reporting API (vitals/crash) için Google Cloud üzerinde ilgili API'nin tek tıkla açılması önerildi.
 * **Sonraki Öneri:** Yeni sürüm dağıtımı veya mağaza metinleri güncellemeleri doğrudan `gpc` ile yürütülebilir.
+
 
 
 

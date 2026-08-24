@@ -1,6 +1,6 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Limitra AppBlock</string>
+    <string name="app_name">Limitra: AppBlock</string>
     <string name="accessibility_service_description">Limitra, bu izni yalnÄ±zca belirlediÄŸiniz dijital sÄ±nÄ±rlarÄ± ve uygulama limitlerini uygulamak amacÄ±yla, kÄ±sÄ±tlÄ± bir uygulama aÃ§Ä±ldÄ±ÄŸÄ±nda bunu algÄ±lamak iÃ§in kullanÄ±r. TÃ¼m veriler cihazÄ±nÄ±zda yerel olarak iÅŸlenir, hiÃ§bir veri toplanmaz veya dÄ±ÅŸarÄ±ya aktarÄ±lmaz. Arka plan izlemesi sadece sizin seÃ§tiÄŸiniz engelleme kurallarÄ±nÄ± yÃ¼rÃ¼tmek iÃ§indir.</string>
     <string name="notification_channel_service">Limitra Koruma Servisi</string>
     <string name="notification_channel_service_desc">KorumayÄ± aktif tutmak ve belirlediÄŸiniz limitleri yerel olarak uygulamak iÃ§in Ã§alÄ±ÅŸÄ±r. Verileriniz tamamen cihazÄ±nÄ±zda kalÄ±r.</string>
@@ -547,4 +547,5 @@
     <string name="profile_notifications_title">Bildirimler</string>
     <string name="profile_notifications_desc">Limit uyarÄ±larÄ±nÄ± ve durum bildirimlerini gÃ¶ster.</string>
 </resources>
+
 

@@ -7,7 +7,7 @@
     <string name="perm_accessibility_reenable_desc">Die Berechtigung wird als aktiviert angezeigt, aber der Tracking-Dienst ist inaktiv. Deaktivieren Sie die Bedienungshilfen und aktivieren Sie sie erneut.</string>
     <string name="accessibility_reenable_warning">Die Bedienungshilfen-Berechtigung scheint aktiviert zu sein, aber Limitra kann nicht bestÃ¤tigen, dass der Tracking-Dienst lÃ¤uft. Deaktivieren Sie Limitra-Bedienungshilfen und aktivieren Sie sie erneut.</string>
     <string name="accessibility_reenable_dialog_desc">Die Limitra-Bedienungshilfen-Berechtigung scheint aktiviert zu sein, aber das AktivitÃ¤tssignal des Dienstes fehlt oder ist veraltet. Deaktivieren Sie in den Android-Einstellungen die Limitra-Bedienungshilfen und aktivieren Sie sie erneut, damit die Zeiterfassung neu starten kann.</string>
-    <string name="app_name">Limitra AppBlock</string>
+    <string name="app_name">Limitra: AppBlock</string>
     <string name="accessibility_service_description">Limitra verwendet diese Berechtigung nur, um zu erkennen, wenn eine eingeschrÃ¤nkte App geÃ¶ffnet wird, um Ihre digitalen Grenzen und App-Limits durchzusetzen. Alle Daten werden lokal auf Ihrem GerÃ¤t verarbeitet. Es werden keine Daten erfasst oder exportiert. Das Hintergrund-Tracking dient ausschlieÃŸlich der AusfÃ¼hrung der von Ihnen gewÃ¤hlten Sperrregeln.</string>
     <string name="notification_channel_service">Limitra-Schutzdienst</string>
     <string name="notification_channel_service_desc">Aktiv, um den Schutz aufrechtzuerhalten und die von Ihnen festgelegten Limits lokal durchzusetzen. Ihre Daten verbleiben vollstÃ¤ndig auf Ihrem GerÃ¤t.</string>
@@ -527,4 +527,5 @@
     <string name="profile_notifications_title">Benachrichtigungen</string>
     <string name="profile_notifications_desc">Limitwarnungen und Statusbenachrichtigungen anzeigen.</string>
 </resources>
+
 

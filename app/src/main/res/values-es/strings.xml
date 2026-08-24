@@ -7,7 +7,7 @@
     <string name="perm_accessibility_reenable_desc">El permiso figura como activado, pero el servicio de seguimiento estÃ¡ inactivo. Desactive y vuelva a activar Accesibilidad.</string>
     <string name="accessibility_reenable_warning">El permiso de accesibilidad parece estar activado, pero Limitra no puede confirmar que el servicio de seguimiento se estÃ© ejecutando. Desactive y vuelva a activar Accesibilidad de Limitra.</string>
     <string name="accessibility_reenable_dialog_desc">El permiso de Accesibilidad de Limitra parece estar activado, pero la seÃ±al de actividad del servicio falta o estÃ¡ obsoleta. En los ajustes de Android, desactive el permiso de Accesibilidad de Limitra y vuelva a activarlo para reiniciar el seguimiento de tiempo.</string>
-    <string name="app_name">Limitra AppBlock</string>
+    <string name="app_name">Limitra: AppBlock</string>
     <string name="accessibility_service_description">Limitra utiliza este permiso Ãºnicamente para detectar cuÃ¡ndo se abre una aplicaciÃ³n restringida, con el fin de aplicar sus lÃ­mites de tiempo y lÃ­mites digitales. Todos los datos se procesan localmente en su dispositivo; no se recopila ni exporta ningÃºn dato. El seguimiento en segundo plano es Ãºnicamente para ejecutar las reglas de bloqueo que elija.</string>
     <string name="notification_channel_service">Servicio de ProtecciÃ³n de Limitra</string>
     <string name="notification_channel_service_desc">Funciona para mantener activa la protecciÃ³n y aplicar localmente los lÃ­mites que establezca. Sus datos permanecen completamente en su dispositivo.</string>
@@ -527,4 +527,5 @@
     <string name="profile_notifications_title">Notificaciones</string>
     <string name="profile_notifications_desc">Mostrar advertencias de lÃ­mite y notificaciones de estado.</string>
 </resources>
+
 

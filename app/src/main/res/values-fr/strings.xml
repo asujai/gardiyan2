@@ -7,7 +7,7 @@
     <string name="perm_accessibility_reenable_desc">Lâ€™autorisation est indiquÃ©e comme activÃ©e, mais le service de suivi est inactif. DÃ©sactivez puis rÃ©activez lâ€™accessibilitÃ©.</string>
     <string name="accessibility_reenable_warning">Lâ€™autorisation dâ€™accessibilitÃ© semble activÃ©e, mais Limitra ne peut pas confirmer que le service de suivi fonctionne. DÃ©sactivez puis rÃ©activez lâ€™accessibilitÃ© Limitra.</string>
     <string name="accessibility_reenable_dialog_desc">Lâ€™autorisation dâ€™accessibilitÃ© Limitra semble activÃ©e, mais le signal dâ€™activitÃ© du service est absent ou obsolÃ¨te. Dans les paramÃ¨tres Android, dÃ©sactivez lâ€™autorisation dâ€™accessibilitÃ© Limitra, puis rÃ©activez-la afin que le suivi du temps puisse redÃ©marrer.</string>
-    <string name="app_name">Limitra AppBlock</string>
+    <string name="app_name">Limitra: AppBlock</string>
     <string name="accessibility_service_description">Limitra utilise cette autorisation uniquement pour dÃ©tecter l\'ouverture d\'une application restreinte, afin d\'appliquer vos limites de temps et vos barriÃ¨res numÃ©riques. Toutes les donnÃ©es sont traitÃ©es localement sur votre appareil ; aucune donnÃ©e n\'est collectÃ©e ou exportÃ©e. Le suivi en arriÃ¨re-plan sert uniquement Ã  exÃ©cuter les rÃ¨gles de blocage de votre choix.</string>
     <string name="notification_channel_service">Service de Protection de Limitra</string>
     <string name="notification_channel_service_desc">Fonctionne pour maintenir la protection active et appliquer localement les limites que vous dÃ©finissez. Vos donnÃ©es restent entiÃ¨rement sur votre appareil.</string>
@@ -527,4 +527,5 @@
     <string name="profile_notifications_title">Notifications</string>
     <string name="profile_notifications_desc">Afficher les avertissements de limite et les notifications d\'Ã©tat.</string>
 </resources>
+
 
