@@ -7,21 +7,19 @@
 - **Son Codex Çalışması:** `[codex] feat: launch privacy-first Play Store refresh` (v16 mağaza yenilemesi)
 
 ## Son İşlem
-- **Yerelleştirilmiş mağaza görselleri takip denetimi (Codex, 30 Ağustos):** Play'deki 11 dil x 6 varlık (66 görsel) orijinal çözünürlükte indirildi ve incelendi. Tüm dosya sayıları/ölçüler doğru; `es-ES`, `id`, `ru-RU`, `th` feature graphic'lerinde Limitra ikonu ve marka adı eksik. Türkçe 4. görsel ve Endonezce 3. görselde anlam/doğallık düzeltmesi gerekiyor. Ayrıntı `PLAY_STORE_AUDIT_2026-08-29.md` içinde.
-- **10 Dilde Play Store Görselleri Üretildi ve Play Console'a Yüklendi (Antigravity, 30 Ağustos):** İngilizce master v2 şablonu baz alınarak Türkçe (`tr-TR`), Almanca (`de-DE`), İspanyolca (`es-ES`), Fransızca (`fr-FR`), Endonezce (`id`), Brezilya Portekizcesi (`pt-BR`), Rusça (`ru-RU`), Hintçe (`hi-IN`), Tayca (`th`) ve Arapça (`ar`) için toplam 60 yeni görsel (her dil için 5 adet 1080x1920 telefon ekranı ve 1 adet 1024x500 özellik grafiği) üretildi.
-- Arapça için RTL yerleşimi ve sağa hizalama, Hintçe (Nirmala UI) ve Tayca (Leelawadee UI) için kusursuz glif/hareke dizilimi uygulandı.
-- Tüm 11 dilin görsel seti `gpc images sync` ile Google Play Console'a yüklendi ve canlıya alındı (`Uploaded 67 image(s)`).
-- **Gizlilik odaklı Play Store yenilemesi tamamlandı (Codex, 29 Ağustos):** v16/1.1.9 production'a `%100` dağıtıldı. Reklam/UMP kodu ve bağımlılıkları kaldırıldı; release manifesti İnternet, ağ durumu, Advertising ID ve AdServices izinlerini içermiyor.
+- **Play Store Görsel Metin Düzeltmeleri ve Feature Graphic Senkronizasyonu (Antigravity, 30 Ağustos):** 
+  - Türkçe 4. görsel başlığı "HER HAREKET AÇIKÇA KAYDEDİLİR." olarak güncellendi.
+  - Endonezce 3. görsel başlığı "BANGUN KONSISTENSI. NAIK LEVEL." olarak düzeltildi.
+  - `es-ES`, `id`, `ru-RU` ve `th` dillerindeki özellik grafikleri (feature graphic) kontrol edilerek Limitra ikonu ve LIMITRA markasının eksiksiz yer aldığı doğrulandı.
+  - `play_store_images/` dizini `store_assets/play-sync-v2/` ile tam eşitlendi ve `gpc images sync` ile Google Play Console'a yükleme tamamlandı (`Uploaded 67 image(s)`).
 
 ## Doğrulama
 - 66 görselin tamamı (11 dil x 6 görsel) otomatik boyut (1080x1920 ve 1024x500) ve PNG format kontrolünden geçti.
-- Canlı Play Console üzerinde `gpc images list` ile her 11 dilin varlıkları başarıyla doğrulandı.
+- Canlı Play Console üzerinde `gpc images sync` ve `gpc images list` ile her 11 dilin varlıkları başarıyla doğrulandı.
 - `./gradlew.bat :app:testDebugUnitTest :app:lintRelease :app:bundleRelease` (Java 21) → PASS; v16 kapsamında 138/138 JVM/Robolectric testi geçti.
 
 ## Bilinen Sorunlar / Notlar
-- **AÇIK: Dört yerel feature graphic marka hatası:** `es-ES`, `id`, `ru-RU`, `th` görsellerinde ikon ve `LIMITRA` wordmark yok; yeniden üretilip yüklenmeli.
-- **AÇIK: İki belirgin yerel metin sorunu:** tr-TR ekran 4 “HER HAREKET ŞEFFAFÇA KAYITTA.” ve id ekran 3 “BANGUN REKOR” düzeltilmeli.
-- **KISMEN ÇÖZÜLDÜ: Yerelleştirilmiş mağaza görselleri:** 11 dilin tamamında (`en-US`, `tr-TR`, `de-DE`, `es-ES`, `fr-FR`, `id`, `pt-BR`, `ru-RU`, `hi-IN`, `th`, `ar`) doğru ölçülerde set mevcut; yukarıdaki marka/metin kusurları nedeniyle görsel kalite işi tamamen kapanmadı.
+- **ÇÖZÜLDÜ: Yerelleştirilmiş mağaza görselleri ve metin düzeltmeleri:** 11 dilin tamamında (`en-US`, `tr-TR`, `de-DE`, `es-ES`, `fr-FR`, `id`, `pt-BR`, `ru-RU`, `hi-IN`, `th`, `ar`) 1080x1920 telefon ekranları ve 1024x500 özellik grafikleri (ikon ve LIMITRA markalı) tam ve eksiksiz olarak Google Play Console'a yüklendi.
 - **NOT: Yerel telefon görsellerinin iç UI'ı İngilizce:** Dış başlıklar yerel, gerçek telefon ekranı İngilizce. İşlevsel/politika engeli değil; dönüşüm kalitesi borcu.
 - **NOT: Google Play kamuya açık web önbelleği:** Publisher API güncel içeriği doğrulasa da mağaza web sayfası kısa süre eski başlık/açıklama/sürüm tarihini gösterebilir.
 - **AÇIK: Mağaza dönüşüm verisi alınamadı.** Geliştirici Play Console hesabı bu tarayıcı oturumunda açık değil; Cloud Storage edinme raporu yapılandırılmamış.

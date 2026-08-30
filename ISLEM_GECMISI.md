@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-08-30 19:10] - Play Store Görsel Metin Düzeltmeleri ve Feature Graphic Senkronizasyonu
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` store_assets/**, play_store_images/**, tools/generate_all_store_locales.py, SON_DURUM.md, ISLEM_GECMISI.md; `[YÜKLENDİ]` Google Play Console 11 dil alanı (67 görsel)
+* **Yapılan İşlem:** (1) Türkçe 4. ekran görüntüsü başlığı kullanıcının talebi doğrultusunda "HER HAREKET AÇIKÇA KAYDEDİLİR." olarak güncellendi. (2) Endonezce 3. ekran görüntüsü başlığı "BANGUN KONSISTENSI. NAIK LEVEL." olarak düzeltildi. (3) `es-ES`, `id`, `ru-RU` ve `th` dillerindeki özellik grafikleri (feature graphic) kontrol edilerek Limitra ikonu ve LIMITRA markasının eksiksiz yer aldığı doğrulandı. (4) `play_store_images/` dizini `store_assets/play-sync-v2/` ile tam eşitlendi ve `gpc images sync` ile Google Play Console'a yükleme tamamlandı.
+* **Doğrulama:** 66 görselin tamamı boyut ve içerik denetiminden geçti. `gpc images sync` başarıyla tamamlandı (`Uploaded 67 image(s)`, exit code 0).
+* **Bilinen Sorunlar:** Yok.
+* **Sonraki Öneri:** Yok.
+
 ## [2026-08-30 18:57] - 11 Dilde Yeni Play Store Görsellerinin Takip Denetimi
 
 * **Model:** Codex

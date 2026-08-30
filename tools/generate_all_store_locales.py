@@ -85,9 +85,9 @@ LOCALES = {
             {
                 "id": "4",
                 "eyebrow": "GİZLİ VE YEREL GEÇMİŞ",
-                "headline": "HER HAREKET\nŞEFFAFÇA KAYITTA.",
+                "headline": "HER HAREKET\nAÇIKÇA KAYDEDİLİR.",
                 "subtitle": "Hesap açmadan koruma geçmişini incele.",
-                "headline_size": 72,
+                "headline_size": 70,
                 "subtitle_size": 31,
             },
             {
@@ -301,9 +301,9 @@ LOCALES = {
             {
                 "id": "3",
                 "eyebrow": "KEMAJUAN YANG MEMOTIVASI",
-                "headline": "BANGUN REKOR.\nTINGKATKAN LEVEL.",
+                "headline": "BANGUN KONSISTENSI.\nNAIK LEVEL.",
                 "subtitle": "Ubah kebiasaan layar menjadi kemajuan nyata.",
-                "headline_size": 72,
+                "headline_size": 70,
                 "subtitle_size": 31,
             },
             {
@@ -860,31 +860,41 @@ def main():
         play_sync_phone.mkdir(parents=True, exist_ok=True)
         play_sync_feature.mkdir(parents=True, exist_ok=True)
         
+        # 3. Output directory in play_store_images/<locale>/
+        legacy_phone = PROJECT_ROOT / "play_store_images" / loc_key / "phoneScreenshots"
+        legacy_feature = PROJECT_ROOT / "play_store_images" / loc_key / "featureGraphic"
+        legacy_phone.mkdir(parents=True, exist_ok=True)
+        legacy_feature.mkdir(parents=True, exist_ok=True)
+
         # Render 5 Screenshots
         for idx, card in enumerate(loc_cfg["cards"], 1):
             file_name = CARDS_CONFIG[idx - 1]["file"]
             dest1 = store_assets_dir / file_name
             dest2 = play_sync_phone / f"{idx}.png"
+            dest3 = legacy_phone / f"{idx}.png"
             
             html = generate_html_screenshot(card, loc_key, loc_cfg)
             render_html_to_png(html, dest1, 1080, 1920, f"{loc_key}_{idx}")
             
-            # Verify and copy to play_sync
+            # Verify and copy to play_sync and legacy
             img = Image.open(dest1)
             assert img.size == (1080, 1920), f"Invalid size {img.size} for {dest1}"
             img.save(dest2, "PNG")
+            img.save(dest3, "PNG")
             print(f"  [OK] Screenshot {idx}: {file_name} -> {dest1.stat().st_size} bytes")
             generated_counts += 1
 
         # Render Feature Graphic
         feat_dest1 = store_assets_dir / "feature-graphic-1024x500.png"
         feat_dest2 = play_sync_feature / "feature.png"
+        feat_dest3 = legacy_feature / "feature.png"
         feat_html = generate_html_feature(loc_key, loc_cfg)
         render_html_to_png(feat_html, feat_dest1, 1024, 500, f"{loc_key}_feat")
         
         feat_img = Image.open(feat_dest1)
         assert feat_img.size == (1024, 500), f"Invalid size {feat_img.size} for {feat_dest1}"
         feat_img.save(feat_dest2, "PNG")
+        feat_img.save(feat_dest3, "PNG")
         print(f"  [OK] Feature Graphic -> {feat_dest1.stat().st_size} bytes")
         generated_counts += 1
 
@@ -892,3 +902,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
