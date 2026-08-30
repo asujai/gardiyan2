@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-08-30 19:47] - Nihai Play Görsel Kontrolü ve Tayca Feature Düzeltmesi
+
+* **Model:** Codex
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` play_store_images/th/featureGraphic/feature.png, store_assets/play-sync-v2/th/featureGraphic/feature.png, PLAY_STORE_AUDIT_2026-08-29.md, SON_DURUM.md, ISLEM_GECMISI.md; `[YÜKLENDİ]` Google Play Console th featureGraphic
+* **Yapılan İşlem:** Kalan id feature, th feature ve id telefon 3 Play Publisher API'den yeniden indirildi. Endonezce varlıkların düzeldiği doğrulandı. Tayca feature graphic'in doğru kaynak dosyası projede mevcut olmasına rağmen eski ikonsuz senkron kopyasının tekrar yüklendiği bulundu. Doğru kaynak senkron ve mağaza dizinlerine kopyalandı; yalnızca Tayca feature graphic Play'e yeniden yüklendi.
+* **Doğrulama:** Canlı th feature listesinde tek varlık var. API ve yeniden indirilen dosya SHA-256 değeri `CF25DC3E5249C0E2859F0388ACB692FBDE063A574F0EC776FFFC860215A445A8`; canlı dosya doğru yerel kaynakla byte-for-byte aynı. Boyut `1024x500`; ikon, `LIMITRA` ve Tayca metinler korunuyor.
+* **Bilinen Sorunlar:** Yok. Önceki altı hedef görsel sorunu kapandı.
+* **Sonraki Öneri:** Kamuya açık Play CDN önbelleği yenilendiğinde yalnızca kullanıcı gözüyle son kontrol.
+
 ## [2026-08-30 19:38] - 3. Ekran Görüntüsü Başlık Hizalaması ve Canlı Varlık Senkronizasyonu
 
 * **Model:** Antigravity

@@ -7,6 +7,7 @@
 - **Son Codex Çalışması:** `[codex] feat: launch privacy-first Play Store refresh` (v16 mağaza yenilemesi)
 
 ## Son İşlem
+- **Nihai canlı kontrol ve Tayca feature düzeltmesi (Codex, 30 Ağustos 19:47):** id feature ve id telefon 3 artık doğru. th feature'ın eski ikonsuz senkron kopyası tespit edildi; doğru mevcut kaynak iki yerel hedefe eşitlenip yalnızca Tayca feature Play'e yüklendi. Canlı dosya doğru kaynakla byte-for-byte aynı; SHA-256 `CF25DC3E5249C0E2859F0388ACB692FBDE063A574F0EC776FFFC860215A445A8`.
 - **3. Ekran Görüntüsü Başlık Hizalaması ve Canlı Varlık Senkronizasyonu (Antigravity, 30 Ağustos):** 
   - `limitra-progress.png` ekranında durum çubuğunun yukarı kaymasından kaynaklanan durum çubuğu / `MY PROGRESS` çakışması, timeline ekranıyla aynı dikey dolgu ve durum çubuğu ile piksel düzeyinde düzeltildi.
   - Endonezce 3. ekran görüntüsü (`BANGUN KONSISTENSI. NAIK LEVEL.`) dahil tüm dillerin 3. ekran görüntüleri yeniden üretildi; `MY PROGRESS` başlığı ile durum çubuğu arasındaki çakışma giderildi.

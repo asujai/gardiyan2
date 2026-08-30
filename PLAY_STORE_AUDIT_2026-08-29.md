@@ -33,6 +33,13 @@ Kalan mağaza işi yalnızca yerelleştirilmiş görsellerdir: kullanıcı İngi
 - **Yeni regresyon:** id telefon 3'te metin düzeltilirken telefon ekranı yukarı kaymış/kırpılmış; `MY PROGRESS` başlığı durum çubuğuyla çakışıyor ve İngilizce master'daki tam telefon çerçevesi korunmamış.
 - Altı hedefin tamamı Play Publisher API'den tekrar indirildi; ölçüleri doğru (`1080x1920` / `1024x500`). Canlı varlıklar bu üç görsel kusurunu doğruluyor; bu kontrolde Play'e değişiklik yapılmadı.
 
+### Nihai Kontrol ve Tayca Düzeltmesi — 2026-08-30 19:47
+
+- id feature graphic ve id telefon 3 canlıdan yeniden indirildi; marka yapısı, metin ve telefon hizalaması düzelmiş durumda.
+- th feature graphic'te ikonun hâlâ eksik olmasının nedeni doğru `store_assets/th-v2/` çıktısı yerine eski ikonsuz senkron dosyasının tekrar yüklenmesiydi.
+- Doğru Tayca kaynak, `play_store_images/th/` ve `store_assets/play-sync-v2/th/` hedeflerine eşitlendi ve yalnızca th feature graphic Play'e yeniden yüklendi.
+- Canlı Play API tek varlık döndürdü; SHA-256 `CF25DC3E5249C0E2859F0388ACB692FBDE063A574F0EC776FFFC860215A445A8`. Canlıdan indirilen dosya doğru yerel kaynakla byte-for-byte aynı. Önceki altı görsel sorunu kapanmıştır.
+
 ## Yönetici Özeti
 
 Limitra'nın ana değer önerisi güçlü: uygulama engelleme, cihaz içi gizlilik, reklamsız kullanım ve abonelik yerine tek ödeme. Buna karşın mevcut mağaza vitrini bu değeri tutarlı ve güven verici biçimde aktarmıyor.
