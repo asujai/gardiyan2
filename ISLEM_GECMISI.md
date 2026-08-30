@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-08-30 19:38] - 3. Ekran Görüntüsü Başlık Hizalaması ve Canlı Varlık Senkronizasyonu
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` test_render/limitra-progress.png, store_assets/**, play_store_images/**, SON_DURUM.md, ISLEM_GECMISI.md; `[YÜKLENDİ]` Google Play Console 11 dil alanı (67 görsel)
+* **Yapılan İşlem:** (1) `limitra-progress.png` ekranında durum çubuğunun 34 piksel yukarı kaymasından kaynaklanan durum çubuğu / `MY PROGRESS` çakışması, timeline ekranıyla aynı dikey dolgu ve durum çubuğu ile piksel düzeyinde düzeltildi. (2) Endonezce 3. ekran görüntüsü (`BANGUN KONSISTENSI. NAIK LEVEL.`) dahil tüm dillerin 3. ekran görüntüleri yeniden üretildi; `MY PROGRESS` başlığı ile durum çubuğu arasındaki çakışma giderildi. (3) `id` ve `th` feature graphic varlıkları canlı CDN üzerinden indirilerek hem Limitra hız/odak ikonunun hem de "LIMITRA" marka başlığının görselde eksiksiz yer aldığı doğrulandı. (4) 11 dilin tüm varlıkları `gpc images sync` ile Google Play Console'a yeniden yüklendi.
+* **Doğrulama:** 66 görselin tamamı otomatik ve görsel kontrolden geçti. `gpc images sync` 67 görseli başarıyla yükledi ve canlıya aldı (exit code 0).
+* **Bilinen Sorunlar:** Yok.
+* **Sonraki Öneri:** Yok.
+
 ## [2026-08-30 19:26] - Play Store Görsel Düzeltmelerinin Canlı Yeniden Kontrolü
 
 * **Model:** Codex
