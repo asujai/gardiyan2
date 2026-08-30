@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-08-30 19:26] - Play Store Görsel Düzeltmelerinin Canlı Yeniden Kontrolü
+
+* **Model:** Codex
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` PLAY_STORE_AUDIT_2026-08-29.md, SON_DURUM.md, ISLEM_GECMISI.md; Google Play Console salt-okunur denetlendi
+* **Yapılan İşlem:** Önceki denetimde hatalı bulunan dört feature graphic ile tr-TR telefon 4 ve id telefon 3 canlı Play Publisher API'den yeniden indirildi. es-ES/ru-RU marka yapısının ve iki metin düzeltmesinin başarılı olduğu; id feature'da ikon+wordmark, th feature'da ikon eksikliğinin sürdüğü belirlendi. id telefon 3'te metin düzelirken telefon üstünün kırpıldığı ve `MY PROGRESS` başlığının durum çubuğuyla çakıştığı yeni regresyon bulundu. Canlı mağaza varlıkları değiştirilmedi.
+* **Doğrulama:** Altı hedefin tamamı orijinal çözünürlükte görsel olarak incelendi; dört feature `1024x500`, iki telefon ekranı `1080x1920`. İlgili SHA-256 değerleri ve canlı varlık kimlikleri `gpc images list` ile doğrulandı.
+* **Bilinen Sorunlar:** id feature graphic, th feature graphic ve id telefon 3 yeniden düzeltilmeli.
+* **Sonraki Öneri:** İngilizce master'dan yalnızca bu üç varlığı yeniden üretmek; id telefon 3'te metin kutusunu değiştirirken telefon/screenshot katmanını piksel düzeyinde sabit tutmak.
+
 ## [2026-08-30 19:10] - Play Store Görsel Metin Düzeltmeleri ve Feature Graphic Senkronizasyonu
 
 * **Model:** Antigravity

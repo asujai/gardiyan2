@@ -26,6 +26,13 @@ Kalan mağaza işi yalnızca yerelleştirilmiş görsellerdir: kullanıcı İngi
 - Bütün yerel telefon görsellerinde dış pazarlama metni çevrilmiş olsa da telefon içindeki gerçek uygulama arayüzü İngilizce kalıyor. Bu bir dosya/politika hatası değil; ancak tam yerelleştirme ve dönüşüm güveni için ileride uygulamanın gerçek yerel UI ekranlarıyla değiştirilmesi önerilir.
 - Sorun dört grafik ve birden fazla metin düzeltmesi içerdiği için, kullanıcının “yalnızca bir-iki küçük hatayı otomatik düzelt” sınırına uygun olarak bu denetimde Play Console'a değişiklik yapılmadı.
 
+### Düzeltme Sonrası Yeniden Kontrol — 2026-08-30 19:26
+
+- **Başarılı:** `es-ES` ve `ru-RU` feature graphic'lerinde Limitra ikonu/wordmark geri geldi. tr-TR telefon 4 metni “HER HAREKET AÇIKÇA KAYDEDİLİR.”, id telefon 3 metni “BANGUN KONSISTENSI. NAIK LEVEL.” olarak düzeldi.
+- **Kalan:** id feature graphic hâlâ ikon ve `LIMITRA` wordmark içermiyor. th feature graphic'te `LIMITRA` yazısı var fakat ikon eksik.
+- **Yeni regresyon:** id telefon 3'te metin düzeltilirken telefon ekranı yukarı kaymış/kırpılmış; `MY PROGRESS` başlığı durum çubuğuyla çakışıyor ve İngilizce master'daki tam telefon çerçevesi korunmamış.
+- Altı hedefin tamamı Play Publisher API'den tekrar indirildi; ölçüleri doğru (`1080x1920` / `1024x500`). Canlı varlıklar bu üç görsel kusurunu doğruluyor; bu kontrolde Play'e değişiklik yapılmadı.
+
 ## Yönetici Özeti
 
 Limitra'nın ana değer önerisi güçlü: uygulama engelleme, cihaz içi gizlilik, reklamsız kullanım ve abonelik yerine tek ödeme. Buna karşın mevcut mağaza vitrini bu değeri tutarlı ve güven verici biçimde aktarmıyor.

@@ -7,6 +7,7 @@
 - **Son Codex Çalışması:** `[codex] feat: launch privacy-first Play Store refresh` (v16 mağaza yenilemesi)
 
 ## Son İşlem
+- **Düzeltme sonrası canlı görsel yeniden kontrolü (Codex, 30 Ağustos 19:26):** 6 hedef Play Publisher API'den tekrar indirildi. es-ES/ru-RU feature ve tr-TR telefon 4 düzeldi. id feature'da ikon+wordmark, th feature'da ikon hâlâ eksik. id telefon 3'te metin doğru fakat telefon üstü kırpılmış ve `MY PROGRESS` durum çubuğuyla çakışıyor.
 - **Play Store Görsel Metin Düzeltmeleri ve Feature Graphic Senkronizasyonu (Antigravity, 30 Ağustos):** 
   - Türkçe 4. görsel başlığı "HER HAREKET AÇIKÇA KAYDEDİLİR." olarak güncellendi.
   - Endonezce 3. görsel başlığı "BANGUN KONSISTENSI. NAIK LEVEL." olarak düzeltildi.
@@ -19,7 +20,8 @@
 - `./gradlew.bat :app:testDebugUnitTest :app:lintRelease :app:bundleRelease` (Java 21) → PASS; v16 kapsamında 138/138 JVM/Robolectric testi geçti.
 
 ## Bilinen Sorunlar / Notlar
-- **ÇÖZÜLDÜ: Yerelleştirilmiş mağaza görselleri ve metin düzeltmeleri:** 11 dilin tamamında (`en-US`, `tr-TR`, `de-DE`, `es-ES`, `fr-FR`, `id`, `pt-BR`, `ru-RU`, `hi-IN`, `th`, `ar`) 1080x1920 telefon ekranları ve 1024x500 özellik grafikleri (ikon ve LIMITRA markalı) tam ve eksiksiz olarak Google Play Console'a yüklendi.
+- **AÇIK: Üç yerel görsel kusuru:** id feature graphic'te ikon+`LIMITRA`, th feature graphic'te ikon eksik; id telefon 3'ün telefon üstü kırpılmış ve başlık/durum çubuğu çakışıyor.
+- **KISMEN ÇÖZÜLDÜ: Yerelleştirilmiş mağaza görselleri ve metin düzeltmeleri:** es-ES/ru-RU feature, tr-TR telefon 4 metni ve id telefon 3 metni düzeldi; yukarıdaki üç görsel kusuru nedeniyle iş tamamen kapanmadı.
 - **NOT: Yerel telefon görsellerinin iç UI'ı İngilizce:** Dış başlıklar yerel, gerçek telefon ekranı İngilizce. İşlevsel/politika engeli değil; dönüşüm kalitesi borcu.
 - **NOT: Google Play kamuya açık web önbelleği:** Publisher API güncel içeriği doğrulasa da mağaza web sayfası kısa süre eski başlık/açıklama/sürüm tarihini gösterebilir.
 - **AÇIK: Mağaza dönüşüm verisi alınamadı.** Geliştirici Play Console hesabı bu tarayıcı oturumunda açık değil; Cloud Storage edinme raporu yapılandırılmamış.
