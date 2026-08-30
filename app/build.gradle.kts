@@ -23,8 +23,8 @@ android {
     applicationId = "com.gardiyan.app"
     minSdk = 24
     targetSdk = 36
-    versionCode = 13
-    versionName = "1.1.6"
+    versionCode = 16
+    versionName = "1.1.9"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

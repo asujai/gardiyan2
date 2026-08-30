@@ -1,4 +1,4 @@
-﻿Limitra AppBlock: Digital Detox & Smart Screen Time Blocker
+Limitra AppBlock: Digital Detox & Smart Screen Time Blocker
 
 Tired of recurring monthly subscriptions? Enjoy lifetime ownership with a single purchase. 100% offline, private, and distraction-free.
 
@@ -12,9 +12,11 @@ WHY CHOOSE LIMITRA APPBLOCK?
 • On-Device Analytics: Monitor where your time goes with clear daily and weekly usage charts.
 • Gamification & Streaks: Build discipline, keep your focus streaks alive, and level up from Rookie to Master.
 
-PERMISSIONS & COMPLIANCE:
-Limitra AppBlock requires two essential permissions to operate:
-1. Accessibility Service API: Used solely to detect when a restricted app is launched and trigger the lock overlay. We NEVER read, collect, store, or transmit private messages, passwords, or personal data.
-2. Display Over Other Apps (Overlay): Required to display the protective lock shield when your daily limit expires.
+PERMISSIONS & TRANSPARENCY:
+Limitra explains every permission before sending you to Android settings:
+1. Usage Access: Used only to calculate how long apps are used and whether a limit has been reached.
+2. Accessibility Service API: Used only to detect when a restricted app is opened and enforce your chosen block. We NEVER read, collect, store, or transmit private messages, passwords, or personal data.
+3. Display Over Other Apps (Overlay): Used to show the protective blocking screen when needed.
+4. Notifications and battery optimization exemption: Keep protection reliable in the background; notification permission is optional where Android allows it.
 
 Reclaim your focus and conquer screen addiction with Limitra AppBlock!

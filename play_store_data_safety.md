@@ -1,77 +1,56 @@
 # Google Play Console Data Safety Guide / Veri Güvenliği Rehberi
 
-This guide is prepared based on the analysis of Room Database entities in the Gardiyan application. It provides exact answers and configurations for the **Google Play Console Data Safety Form**.
+This guide provides accurate, policy-compliant instructions for the **Google Play Console Data Safety Form** and **Advertising ID Declaration** for Limitra.
 
-Bu kılavuz, Gardiyan uygulamasındaki Room Veritabanı tablolarının (Entity) analizine dayanarak hazırlanmıştır. **Google Play Console Veri Güvenliği Formu** için kesin yanıtları ve yapılandırma yönergelerini içerir.
+Bu kılavuz, Limitra için **Google Play Console Veri Güvenliği Formu** ve **Reklam Kimliği Beyanı** için politika uyumlu ve doğru yanıtları sağlar.
 
 ---
 
-## 1. Database Analysis (Veritabanı Tablo Analizi)
+## 1. Current Build Status (Mevcut Derleme Durumu: Çevrimdışı ve Reklamsız)
 
-The application stores all user and usage data locally on the device using five main Room entities:
-Uygulama, tüm kullanıcı ve kullanım verilerini cihaz üzerinde yerel olarak beş ana Room tablosunda saklar:
+* **Build Configuration / Derleme Yapılandırması:** No advertising or analytics SDK; no `INTERNET`, `ACCESS_NETWORK_STATE`, Advertising ID, or AdServices permission in the merged release manifest.
+* **Core Limitra Data / Çekirdek Uygulama Verisi:** 100% on-device (Room Database). No remote servers, cloud telemetry, advertising, or trackers; data does not leave the user's device.
+* **Play Console Data Safety Selection:**
+  * "Does your app collect or share any of the required user data types?" -> **NO / HAYIR**
+  * Core on-device processing does not constitute data collection under Google Play policies.
+  * "Does your app use Advertising ID?" -> **NO / HAYIR** (Advertising ID and Android AdServices permissions are explicitly removed from the merged manifest; see Section 3).
+
+---
+
+## 2. Limitra Core Database & On-Device Data Analysis (Yerel Tablo Analizi)
+
+Limitra processes all detox and digital wellness data strictly on the local device across five Room entities:
 
 1. **UserSessionEntity (`user_sessions`):**
-   * *Data stored / Saklanan veri:* Local profile username, user level (Rookie, Master), streak info, consecutive success days, active target app details, and local custom shame message/image path.
-   * *Purpose / Amaç:* Local profile configuration and gamification.
+   * *Data stored / Saklanan veri:* Local profile username, user level, streak info, consecutive success days, active target app details, and local shame message/image path.
+   * *Scope / Kapsam:* Device-local profile only. No remote accounts, passwords, or cloud sync.
 2. **RestrictedAppEntity (`restricted_apps`):**
-   * *Data stored / Saklanan veri:* Package name and name of restricted apps, usage limits, remaining seconds, fail status, and active days.
-   * *Purpose / Amaç:* App blocking functionality.
+   * *Data stored / Saklanan veri:* Package names of restricted apps, daily usage limits, remaining seconds, violation status, and active days.
+   * *Purpose / Amaç:* Local app blocking and boundary enforcement.
 3. **ActiveUsageSessionEntity (`active_usage_session`):**
-   * *Data stored / Saklanan veri:* App package name, entry time, and last seen time for screen time tracking.
-   * *Purpose / Amaç:* Local screen time tracking and limit calculation.
+   * *Data stored / Saklanan veri:* App package name, session start time, and last seen timestamp for usage calculation.
+   * *Purpose / Amaç:* Local screen time tracking and limit enforcement.
 4. **StatusLogEntity (`status_logs`):**
-   * *Data stored / Saklanan veri:* Logs of events (e.g., FAILURE, SUCCESS, LEVEL_UP, LIMIT_CHANGED) with timestamps and descriptions.
-   * *Purpose / Amaç:* Displaying history and logs to the user locally.
+   * *Data stored / Saklanan veri:* Event history (e.g. RESTRICTION_ADDED, LIMIT_CHANGED, SUCCESS, VIOLATION, DATA_CLEARED).
+   * *Purpose / Amaç:* Local timeline display for the user.
 5. **FriendEntity (`friends_list`):**
-   * *Data stored / Saklanan veri:* Relational schema structure for future v2 social feature (friend name, level, sync times).
-   * *Note / Not:* Not active in the MVP UI. Even if used in v2, it does not collect telemetry.
+   * *Data stored / Saklanan veri:* Relational schema structure for future local features. Dormant in MVP UI.
 
 ---
 
-## 2. Play Console Data Safety Questionnaire Answers (Form Yanıtları)
+## 3. Advertising ID & Network Contract (Reklam Kimliği ve Ağ Sözleşmesi)
 
-### Section A: Data Collection and Security (Veri Toplama ve Güvenlik)
-
-1. **Does your app collect or share any of the required user data types? / Uygulamanız gerekli kullanıcı verisi türlerinden herhangi birini topluyor mu veya paylaşıyor mu?**
-   * **Answer / Yanıt:** **NO / HAYIR**
-   * *Reasoning / Gerekçe:* All data is processed and stored strictly on the local device. The application does not collect data on a server, nor does it share any data with third parties.
-   * *Important Play Store Policy Note / Önemli Not:* Under Play Console guidelines, data that is processed solely on the device locally (on-device processing) does not need to be declared as "Collected" in the Data Safety form, provided it never leaves the device. Therefore, you can safely select **No**.
-
-2. **Is all of the user data collected by your app encrypted in transit? / Uygulamanız tarafından toplanan tüm kullanıcı verileri aktarım sırasında şifreleniyor mu?**
-   * **Answer / Yanıt:** **Not Applicable / Geçersiz** (Since no data is transmitted or collected off-device / Cihaz dışına veri aktarılmadığı için).
-
-3. **Do you provide a way for users to request that their data be deleted? / Kullanıcılara verilerinin silinmesini talep etme yöntemi sunuyor musunuz?**
-   * **Answer / Yanıt:** **YES / EVET**
-   * *How is it handled? / Nasıl sağlanıyor?:* Users can delete all their data at any time in two ways:
-     1. In-app: By using the "Clear All Data" button in settings (which triggers the `clearAllUserData` function in ViewModel, wiping the database).
-     2. Android System: By going to Android Settings > Apps > Gardiyan > Storage > "Clear Data / Storage". This completely and permanently deletes the local SQLite/Room database.
+* **Advertising ID declaration / Reklam Kimliği beyanı:** Select **NO / HAYIR**.
+* The source manifest uses `tools:node="remove"` for Google Advertising ID, Android AdServices, Internet, and network-state permissions. The final merged release manifest must be checked before every release.
+* `OfflinePrivacyContractTest` prevents advertising dependencies and network runtime switches from being reintroduced unnoticed.
+* Any future decision to add networking, analytics, advertising, accounts, or cloud sync requires a new privacy review and updated Privacy Policy, Data Safety form, store text, screenshots, and user disclosures **before** that build is published.
 
 ---
 
-## 3. Detailed Data Declarations (If Google requests explicit listing)
-*(Eğer Google beyan edilmesini isterse seçilecek veri kategorileri)*
+## 4. User Data Deletion & Clear My Data Compliance (Veri Silme Uyumluluğu)
 
-If you choose to declare local data processing voluntarily to be ultra-transparent, use the following declarations:
-*(Eğer ultra-şeffaf olmak amacıyla yerel verileri beyan etmeyi seçerseniz, aşağıdaki tanımları kullanın):*
-
-### Data Type: App Activity (Uygulama Etkinliği)
-* **Specific Data / Alt Veri Türü:** App interactions (Uygulama etkileşimleri)
-* **Collected / Toplanıyor mu?:** Yes (Processed locally on-device / Evet, yerel olarak cihazda işlenir)
-* **Shared / Paylaşılıyor mu?:** No (Asla paylaşılmaz)
-* **Ephemeral / Geçici mi?:** No (Stored in Room DB / Hayır, Room DB'de saklanır)
-* **Purpose / Amaç:** App functionality, screen time limits (Uygulama işlevselliği, ekran süresi sınırları)
-
-### Data Type: Personal Info (Kişisel Bilgiler)
-* **Specific Data / Alt Veri Türü:** User name or Nickname (Kullanıcı adı veya Takma ad)
-* **Collected / Toplanıyor mu?:** Yes (Processed locally on-device / Evet, yerel olarak cihazda işlenir)
-* **Shared / Paylaşılıyor mu?:** No (Asla paylaşılmaz)
-* **Ephemeral / Geçici mi?:** No (Stored in Room DB / Hayır, Room DB'de saklanır)
-* **Purpose / Amaç:** Account management, personalization (Hesap yönetimi, kişiselleştirme)
-
-### Data Type: Diagnostics (Teşhis ve Analizler)
-* **Specific Data / Alt Veri Türü:** Crash logs / Diagnostics (Çökme günlükleri / Teşhis verileri)
-* **Collected / Toplanıyor mu?:** Yes (Processed locally on-device / Evet, yerel olarak cihazda işlenir)
-* **Shared / Paylaşılıyor mu?:** No (Asla paylaşılmaz)
-* **Ephemeral / Geçici mi?:** No (Stored in Room DB / Hayır, Room DB'de saklanır)
-* **Purpose / Amaç:** App functionality, debugging (Uygulama işlevselliği, hata ayıklama)
+* **In-App Deletion:** The user can tap **"Clear My Data"** in Profile > Settings at any time. This invokes `GuardianViewModel.clearAllUserData()`, completely wiping:
+  * All Room database tables (`restricted_apps`, `active_usage_session`, `status_logs`, `user_sessions`, `friends_list`)
+  * All local SharedPreferences: `gardiyan_settings`, `gardiyan_eval_prefs`, `gardiyan_notifications`, `gardiyan_theme_prefs`, and `gardiyan_secure_reset_prefs`.
+  * Does not alter or revoke system-level Android permissions granted by the user.
+* **System-Level Deletion:** The user can clear app storage via Android Settings > Apps > Limitra > Storage > Clear Data.

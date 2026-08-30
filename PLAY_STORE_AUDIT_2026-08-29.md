@@ -3,7 +3,19 @@
 **Tarih:** 2026-08-29  
 **Paket:** `com.gardiyan.app`  
 **Kapsam:** Canlı mağaza metinleri, 11 dil, görseller, kamuya açık Google Play sayfası, arama görünürlüğü ve rakip vitrini.  
-**Değişiklik durumu:** Google Play Console'da hiçbir içerik değiştirilmedi.
+**Değişiklik durumu:** Denetim bulgularının ana düzeltmeleri 2026-08-29 tarihinde production'a uygulandı; aşağıdaki ilk bölüm güncel sonucu özetler, sonraki bölümler değişiklik öncesi kanıtı korur.
+
+## Uygulanan Düzeltmeler — 2026-08-29
+
+- `versionCode 16 / 1.1.9` production kanalına %100 dağıtımla yüklendi ve `completed` durumu API'den doğrulandı.
+- Google Mobile Ads ve UMP bağımlılıkları/kodu tamamen kaldırıldı. Release manifestinde `INTERNET`, `ACCESS_NETWORK_STATE`, Google Advertising ID ve Android AdServices izinleri bulunmadığı doğrulandı.
+- Seçilen modern Limitra odak/zaman ikonu Play ikonu, klasik/yuvarlak Android launcher ikonları, adaptive/monochrome ikon ve uygulama içi marka görseline uygulandı.
+- 11 dilde başlık yerel “uygulama engelleyici” arama terimleriyle güncellendi; tam açıklamalarda tek satın alma, aboneliksiz kullanım, cihaz içi işleme ve gerçek izin gereksinimleri netleştirildi.
+- 33 metadata TXT dosyasındaki UTF-8 BOM kaldırıldı. Canlı 11 listing API'den yeniden okunup yerel dosyalarla karakter karakter eşleştirildi; tüm canlı başlıklar `U+004C` (`L`) ile başlıyor.
+- İngilizce mağaza seti gerçek v16 arayüzünden üretildi: 5 adet `1080x1920` ekran görüntüsü, `1024x500` feature graphic ve `512x512` ikon. Yüklenen dosyaların SHA-256 değerleri Play API ile birebir eşleşiyor.
+- Doğrulama: `138/138` JVM/Robolectric testi geçti; release lint ve AAB üretimi başarılı; ikon lint uyarıları giderildi. AAB SHA-256: `DF5596090819BA79E85062B4C776D7D12936B7A35301E4E4E8284ACEBFA3AE43`.
+
+Kalan mağaza işi yalnızca yerelleştirilmiş görsellerdir: kullanıcı İngilizce şablonların diğer dil sürümlerini hazırlayacak. `ar`, `de-DE`, `es-ES`, `fr-FR`, `id`, `pt-BR`, `ru-RU` ve `tr-TR` için eski görseller şimdilik korunuyor; `hi-IN` ve `th` hâlâ İngilizce varsayılan sete düşüyor. Kamuya açık Play web önbelleği kısa süre eski başlık/metni gösterebilir; Publisher API güncel veriyi doğrulamıştır.
 
 ## Yönetici Özeti
 

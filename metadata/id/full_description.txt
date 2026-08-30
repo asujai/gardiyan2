@@ -1,6 +1,8 @@
-﻿Limitra: Detoks Digital & Pemblokir Aplikasi Pintar
+Limitra: Detoks Digital & Pemblokir Aplikasi Pintar
 
 Apakah Anda menghabiskan terlalu banyak waktu di media sosial atau game? Limitra membantu Anda mengontrol waktu layar dan meningkatkan fokus serta produktivitas harian.
+
+Sekali beli, akses selamanya—tanpa langganan. Sepenuhnya offline, tanpa iklan atau pelacakan.
 
 FITUR UTAMA:
 • Pemblokir Aplikasi Pintar: Tetapkan batas harian untuk aplikasi tertentu. Saat batas habis, akses langsung dikunci.
@@ -11,3 +13,4 @@ FITUR UTAMA:
 IZIN DAN KEBIJAKAN:
 1. Accessibility Service API: Digunakan hanya untuk mendeteksi pembukaan aplikasi yang dibatasi dan menampilkan layar kunci. Kami TIDAK PERNAH membaca, mengumpulkan, atau mengirimkan data pribadi.
 2. Tampilkan di atas aplikasi lain: Diperlukan untuk menampilkan overlay kunci saat batas waktu harian Anda tercapai.
+3. Akses penggunaan: Hanya digunakan untuk menghitung durasi penggunaan aplikasi dan pencapaian batas Anda secara lokal.

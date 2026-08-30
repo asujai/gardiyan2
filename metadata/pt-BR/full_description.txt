@@ -1,6 +1,8 @@
-﻿Limitra: Detox Digital e Bloqueador de Aplicativos
+Limitra: Detox Digital e Bloqueador de Aplicativos
 
 Você perde horas nas redes sociais ou em jogos no celular? O Limitra é o seu assistente de produtividade para recuperar o controle do seu tempo e criar hábitos digitais saudáveis.
+
+Compra única, sem assinatura. Funciona 100% offline, sem anúncios nem rastreamento.
 
 RECURSOS PRINCIPAIS:
 • Bloqueador Inteligente: Defina limites diários para aplicativos específicos. Ao atingir o limite, o app é bloqueado imediatamente.
@@ -11,3 +13,4 @@ RECURSOS PRINCIPAIS:
 PERMISSÕES E TRANSPARÊNCIA:
 1. API de Serviço de Acessibilidade: Utilizada exclusivamente para detectar a abertura de aplicativos restritos e acionar a tela de bloqueio. NUNCA lemos, coletamos ou enviamos mensagens privadas, senhas ou dados pessoais.
 2. Sobrepor a outros apps: Necessário para exibir a tela de bloqueio quando seu limite for atingido.
+3. Acesso ao uso: Utilizado apenas para calcular localmente o tempo de uso dos apps e quando seus limites são atingidos.

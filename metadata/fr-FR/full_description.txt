@@ -1,6 +1,8 @@
-﻿Limitra: Détox Numérique et Bloqueur d'Applications
+Limitra: Détox Numérique et Bloqueur d'Applications
 
 Passez-vous trop de temps sur les réseaux sociaux ou les jeux mobiles ? Limitra est votre allié bien-être numérique pour reprendre le contrôle de votre temps et maximiser votre productivité.
+
+Un achat unique, sans abonnement. Fonctionne hors ligne, sans publicité ni suivi.
 
 FONCTIONNALITÉS CLÉS:
 • Bloqueur d'applications intelligent: Définissez des limites quotidiennes pour vos applications. Une fois la limite atteinte, l'accès est bloqué instantanément.
@@ -11,3 +13,4 @@ FONCTIONNALITÉS CLÉS:
 AUTORISATIONS ET TRANSPARENCE:
 1. API du service d'accessibilité: Utilisée uniquement pour détecter le lancement d'applications restreintes et afficher l'écran de verrouillage. Aucun message privé, mot de passe ou donnée personnelle n'est lu, collecté ou transmis.
 2. Affichage par-dessus d'autres applications: Nécessaire pour afficher le panneau de verrouillage lorsque la limite est atteinte.
+3. Accès aux données d'utilisation: Sert uniquement à calculer localement le temps passé dans les apps et l'atteinte de vos limites.

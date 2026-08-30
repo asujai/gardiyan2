@@ -43,8 +43,6 @@ import com.gardiyan.app.R
 import com.gardiyan.app.BuildConfig
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import com.gardiyan.app.ads.AdsConfig
-import com.gardiyan.app.ads.AdsCoordinator
 import com.gardiyan.app.data.local.entity.UserSessionEntity
 import com.gardiyan.app.data.timeline.parseRestrictionLogDetails
 import com.gardiyan.app.ui.theme.*
@@ -76,7 +74,6 @@ fun ProfileScreen(
     val session by viewModel.userSession.collectAsState()
     val logs by viewModel.allLogs.collectAsState()
     val restrictedApps by viewModel.restrictedApps.collectAsState()
-    val isPrivacyOptionsRequired by AdsCoordinator.isPrivacyOptionsRequired.collectAsState()
 
     var filterDate by remember { mutableStateOf(TimelineDateFilter.ALL_TIME) }
     var filterType by remember { mutableStateOf(TimelineTypeFilter.ALL) }
@@ -1629,18 +1626,6 @@ fun ProfileScreen(
                             }
                         }
                     )
-                    if (AdsConfig.isAdsEnabled && isPrivacyOptionsRequired) {
-                        HorizontalDivider(color = BorderGray.copy(alpha = 0.7f))
-                        SettingsRow(
-                            title = stringResource(R.string.profile_privacy_choices),
-                            icon = Icons.Default.Lock,
-                            onClick = {
-                                (context as? android.app.Activity)?.let {
-                                    AdsCoordinator.showPrivacyOptionsForm(it)
-                                }
-                            }
-                        )
-                    }
                     HorizontalDivider(color = BorderGray.copy(alpha = 0.7f))
                     SettingsRow(
                         title = stringResource(R.string.profile_about_title),
