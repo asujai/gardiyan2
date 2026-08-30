@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-08-30 18:57] - 11 Dilde Yeni Play Store Görsellerinin Takip Denetimi
+
+* **Model:** Codex
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` PLAY_STORE_AUDIT_2026-08-29.md, SON_DURUM.md, ISLEM_GECMISI.md; Google Play Console salt-okunur denetlendi
+* **Yapılan İşlem:** Play Publisher API'deki 11 dilin her birinden 5 telefon görseli ve 1 feature graphic orijinal çözünürlükte alınarak sayı, ölçü, tasarım, marka bütünlüğü, RTL ve metin doğallığı açısından incelendi. es-ES, id, ru-RU ve th feature graphic'lerinde Limitra ikonu/wordmark'ın kaybolduğu; tr-TR ekran 4 ve id ekran 3 metinlerinin doğal/anlamsal düzeltme gerektirdiği belirlendi. Hata sayısı kullanıcının otomatik küçük düzeltme sınırını aştığından canlı görseller değiştirilmedi.
+* **Doğrulama:** 66/66 görsel mevcut; 55 telefon görseli `1080x1920`, 11 feature graphic `1024x500`. 11 dil için temas sayfalarıyla manuel görsel denetim yapıldı.
+* **Bilinen Sorunlar:** Dört feature graphic yeniden üretilmeli; iki belirgin pazarlama metni düzeltilmeli. Tüm yerel telefon görsellerinde uygulama içi UI İngilizce kalıyor.
+* **Sonraki Öneri:** Yalnızca dört hatalı feature graphic'i İngilizce master'a sadık kalarak yeniden üretmek; tr-TR ekran 4 ve id ekran 3 metnini düzeltmek; yükleme sonrası Codex ile tekrar doğrulamak.
+
 ## [2026-08-30 18:10] - 10 Dilde Play Store Görsellerinin Üretilmesi ve Play Console'a Yüklenmesi
 
 * **Model:** Antigravity
@@ -131,5 +140,3 @@ u-RU, 	h) için arama optimizasyonlu (ASO) başlıklar, kısa açıklamalar ve e
 * **Doğrulama:** `gpc doctor`, `gpc tracks list`, `gpc listings list`, `gpc bundles list` komutlarıyla Google Play Developer API erişimi başarıyla test edildi. Canlıdaki Production v14 ve mağaza bilgileri çekildi.
 * **Bilinen Sorunlar:** Reporting API (vitals/crash) için Google Cloud üzerinde ilgili API'nin tek tıkla açılması önerildi.
 * **Sonraki Öneri:** Yeni sürüm dağıtımı veya mağaza metinleri güncellemeleri doğrudan `gpc` ile yürütülebilir.
-
-

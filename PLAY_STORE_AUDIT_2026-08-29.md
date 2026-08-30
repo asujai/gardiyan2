@@ -17,6 +17,15 @@
 
 Kalan mağaza işi yalnızca yerelleştirilmiş görsellerdir: kullanıcı İngilizce şablonların diğer dil sürümlerini hazırlayacak. `ar`, `de-DE`, `es-ES`, `fr-FR`, `id`, `pt-BR`, `ru-RU` ve `tr-TR` için eski görseller şimdilik korunuyor; `hi-IN` ve `th` hâlâ İngilizce varsayılan sete düşüyor. Kamuya açık Play web önbelleği kısa süre eski başlık/metni gösterebilir; Publisher API güncel veriyi doğrulamıştır.
 
+## Yerelleştirilmiş Görsel Takip Denetimi — 2026-08-30
+
+- Play Publisher API üzerinden 11 dilin her birinde 5 telefon ekranı ve 1 feature graphic bulundu: toplam 66 görsel. Orijinal dosyaların tamamı indirildi; telefon görselleri `1080x1920`, feature graphic'ler `1024x500` ve dosya sayıları eksiksiz.
+- **Yayın öncesi düzeltilmesi gereken dört feature graphic:** `es-ES`, `id`, `ru-RU` ve `th` grafiklerinde İngilizce ana şablondaki Limitra ikonu ve `LIMITRA` marka adı tamamen kaybolmuş; sol yarı büyük ölçüde boş kalmış.
+- **Metin kalitesi:** Türkçe 4. görseldeki “HER HAREKET ŞEFFAFÇA KAYITTA.” doğal Türkçe değil; “HER HAREKET AÇIKÇA KAYDEDİLİR.” önerilir. Endonezce 3. görseldeki “BANGUN REKOR” streak anlamını doğru vermiyor; doğal bir “seri/streak” karşılığıyla değiştirilmelidir.
+- Arapça feature graphic RTL için yeniden düzenlenmiş ve okunaklı; ikon/marka korunmuş. Diğer altı yerel feature graphic ana marka yapısını koruyor.
+- Bütün yerel telefon görsellerinde dış pazarlama metni çevrilmiş olsa da telefon içindeki gerçek uygulama arayüzü İngilizce kalıyor. Bu bir dosya/politika hatası değil; ancak tam yerelleştirme ve dönüşüm güveni için ileride uygulamanın gerçek yerel UI ekranlarıyla değiştirilmesi önerilir.
+- Sorun dört grafik ve birden fazla metin düzeltmesi içerdiği için, kullanıcının “yalnızca bir-iki küçük hatayı otomatik düzelt” sınırına uygun olarak bu denetimde Play Console'a değişiklik yapılmadı.
+
 ## Yönetici Özeti
 
 Limitra'nın ana değer önerisi güçlü: uygulama engelleme, cihaz içi gizlilik, reklamsız kullanım ve abonelik yerine tek ödeme. Buna karşın mevcut mağaza vitrini bu değeri tutarlı ve güven verici biçimde aktarmıyor.
