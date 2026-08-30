@@ -58,3 +58,15 @@ testsprite_tests/raw_report.md
 *service_account*.json
 *service-account*.json
 play-service-account.json
+
+# Google Ads ve API Hassas Dosyalari
+google-ads.yaml
+google-ads-*.yaml
+*google-ads*.yaml
+tools/ads/config/google-ads.yaml
+tools/ads/credentials/
+*.secret.json
+client_secret*.json
+credentials*.json
+scratch/
+

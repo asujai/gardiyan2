@@ -7,46 +7,18 @@
 - **Son Codex Çalışması:** `[codex] feat: launch privacy-first Play Store refresh` (v16 mağaza yenilemesi)
 
 ## Son İşlem
+- **10 Dilde Play Store Görselleri Üretildi ve Play Console'a Yüklendi (Antigravity, 30 Ağustos):** İngilizce master v2 şablonu baz alınarak Türkçe (`tr-TR`), Almanca (`de-DE`), İspanyolca (`es-ES`), Fransızca (`fr-FR`), Endonezce (`id`), Brezilya Portekizcesi (`pt-BR`), Rusça (`ru-RU`), Hintçe (`hi-IN`), Tayca (`th`) ve Arapça (`ar`) için toplam 60 yeni görsel (her dil için 5 adet 1080x1920 telefon ekranı ve 1 adet 1024x500 özellik grafiği) üretildi.
+- Arapça için RTL yerleşimi ve sağa hizalama, Hintçe (Nirmala UI) ve Tayca (Leelawadee UI) için kusursuz glif/hareke dizilimi uygulandı.
+- Tüm 11 dilin görsel seti `gpc images sync` ile Google Play Console'a yüklendi ve canlıya alındı (`Uploaded 67 image(s)`).
 - **Gizlilik odaklı Play Store yenilemesi tamamlandı (Codex, 29 Ağustos):** v16/1.1.9 production'a `%100` dağıtıldı. Reklam/UMP kodu ve bağımlılıkları kaldırıldı; release manifesti İnternet, ağ durumu, Advertising ID ve AdServices izinlerini içermiyor.
-- **Mağaza vitrini yenilendi:** Seçilen turkuaz/yeşil odak-zaman ikonu launcher/adaptive/monochrome/Play varlıklarına uygulandı. Gerçek v16 arayüzünden 5 İngilizce `1080x1920` ekran görüntüsü ve `1024x500` feature graphic üretildi ve Play'e yüklendi.
-- **11 dilde ASO ve açıklama düzeltildi:** Yerel uygulama-engelleyici arama terimleri, tek ödeme, aboneliksiz kullanım, reklamsızlık, çevrimdışı çalışma ve izin şeffaflığı eklendi. 33 metadata dosyasındaki BOM kaldırıldı; canlı Publisher API içeriği yerel dosyalarla karakter karakter eşleşti.
-- **Ayrıntılı sonuç ve değişiklik öncesi kanıt:** `PLAY_STORE_AUDIT_2026-08-29.md`.
-- **Google Play mağaza vitrini denetlendi (Codex, 29 Ağustos):** 11 dil metni, 54 görsel, canlı TR/US sayfası, arama görünürlüğü ve rakipler incelendi. Ayrıntılı rapor: `PLAY_STORE_AUDIT_2026-08-29.md`.
-- **Kritik mağaza bulguları:** Görseller yalnızca 9 dilde (hi-IN ve th eksik); tüm telefon görselleri 768x1376 ve Play'in 1080x1920 öneri eşiğinin altında; ikon ile yeşil mağaza kimliği uyumsuz; güncel olmayan/temsili UI, “DOWNLOAD NOW” CTA'sı ve Google Play rozetleri var; canlı listing alanlarının başında görünmez U+FEFF/BOM bulunuyor.
-- **Dönüşüm durumu:** Kamuya açık sayfa 10+ indirme ve görünür puan/yorum olmadan kurulum öncesi ücretli (TR ₺29,99 / US $0.49). İncelenen `app blocker` ve `uygulama engelleyici` ilk arama sonuç grubunda görünmedi.
-- **Google Ads Otomasyon Altyapısı Kuruldu:** `tools/ads/` altında Google Ads Uygulama Kampanyalarını (UAC) otomatik planlayan, kural denetimi yapan, API üzerinden oluşturan ve metrik raporlayan araç seti tamamlandı.
-- **GitHub Gizlilik ve Güvenlik Taraması Yapıldı:** Deponun `asujai/gardiyan2` adresinde `public` olduğu tespit edildi; `.gitignore`'a tüm Google Ads/API anahtarı ve secret şablonları eklendi. Depoda daha önceden commit edilmiş herhangi bir hassas anahtar bulunmadığı doğrulandı.
-- **Version Code 15 (v1.1.8) AAB dosyası Google Play Console Production kanalına yüklendi ve yayınlandı.**
-- Hiçbir kaynak koduna veya uygulama içeriğine dokunulmadı.
-- Güncelleme notu olarak "Hata düzeltmeleri ve görsel iyileştirmeler yapıldı." eklendi.
-- Production kanalı %100 rollout ile sürüm 15'e güncellendi.
-- **Version Code 15 / 1.1.8 yayın öncesi doğrulandı ve imzalı AAB üretildi.** Java 21 ile Robolectric dahil 142 JVM testi geçti; release lint ve bundle görevleri başarıyla tamamlandı. AAB imza sertifikası eski v12 yayın AAB'siyle aynı.
-- Marka değişikliğinden sonra eski `Limitra` adını bekleyen bir Robolectric testi `Limitra: AppBlock` olarak düzeltildi.
-- **Disiplin zinciri eklendi.** Ardışık başarılı günler ince yeşil halkayla bağlanıyor; ihlal veya boş gün zinciri görünür biçimde koparıyor. Hem 21 kutuluk özet hem 100 kutuluk detay ekranında. Cihazda görsel olarak doğrulandı.
-- **UsageStats başlangıç çizgisi hatası düzeltildi.** Kısıtlama kurulurken UsageStats 0 döndüğünde günün eski kullanımı yeni limite yazılıyordu; artık 0 "bilinmiyor" sayılıyor.
-- **Süre akışı tespiti:** Sayacın hatalı görünmesinin sebebi erişilebilirlik servisinin KAPALI olmasıydı (APK kurulumu servisi devre dışı bırakıyor). O durumda yalnızca gecikmeli UsageStats yedek motoru çalışıyor. Sayac mantığında hata yok.
-- **11 dilde bozulan karakter kodlaması onarıldı.** `c28d3a1` (21 Ağustos) commit'i `strings.xml` dosyalarını Windows-1254 okuyup UTF-8 yazmış, tüm özel karakterler çift kodlanmıştı. Sadece bozuk dizileri hedefleyen onarıcı ile 11 dosya düzeltildi; tekrarı için `AGENTS.md`'ye zorunlu UTF-8 kuralı eklendi.
-- **Kilit ekranı yapışkan hale getirildi.** Kullanıcı alttan yukarı çekip uygulamayı arka plana atmayı yarıda bıraktığında kilit kalkıyor ve geri dönüşte gelmiyordu; kısıtlama tamamen atlatılabiliyordu.
-- Artık ön plan değişimi kilidi kaldırmıyor. Tek çıkış yolu kilit ekranındaki **"Ana sayfaya dön"** butonu (ve meşru yollar: Limitra'nın açılması, kısıtlamanın silinmesi, günlük hakkın yeniden doğması).
-- Ayrıca geri dönüş açığı kapatıldı: süresi dolmuş uygulama canlı pencereyle teyit edildiğinde, olayın kaynağı ne olursa olsun yeniden kilitleniyor.
 
 ## Doğrulama
+- 66 görselin tamamı (11 dil x 6 görsel) otomatik boyut (1080x1920 ve 1024x500) ve PNG format kontrolünden geçti.
+- Canlı Play Console üzerinde `gpc images list` ile her 11 dilin varlıkları başarıyla doğrulandı.
 - `./gradlew.bat :app:testDebugUnitTest :app:lintRelease :app:bundleRelease` (Java 21) → PASS; v16 kapsamında 138/138 JVM/Robolectric testi geçti.
-- Release merged manifest → `INTERNET`, `ACCESS_NETWORK_STATE`, `AD_ID` ve AdServices izinleri yok.
-- AAB: `.build-outputs/Limitra-AppBlock-1.1.9-v16-release.aab` (5.341.890 bayt), SHA-256 `DF5596090819BA79E85062B4C776D7D12936B7A35301E4E4E8284ACEBFA3AE43`; JAR imzası geçerli.
-- Play Publisher API → production v16 `completed`; 11 listing yerel metadata ile, 7 İngilizce görsel yerel dosya hash'leriyle birebir eşleşiyor.
-- `./gradlew.bat :app:testDebugUnitTest :app:lintRelease :app:bundleRelease` (Java 21) → PASS
-- JVM/Robolectric: 142/142 test PASS, 0 atlandı.
-- AAB: `.build-outputs/Limitra-AppBlock-1.1.8-v15-release.aab` (6.019.051 bayt), SHA-256 `0F63EC4BD0FD79D48515084AF8983BE1D762BA07D2864B4FC6DC9584498650AB`.
-- AAB JAR imzası geçerli; yükleme sertifikası SHA-256 parmak izi eski v12 AAB ile aynı.
-- `./gradlew.bat :app:assembleDebug` → PASS
-- `./gradlew.bat :app:lintDebug` → PASS
-- `./gradlew.bat :app:testDebugUnitTest` → JVM testlerinin tamamı PASS (108 test). Yeni `OverlayDismissPolicyTest` 8/8 PASS.
-- Release lint raporu: görev PASS; 21 eski `MissingTranslation` kaydı ve 198 uyarı mevcut.
-- **Cihaz üzerinde gerçek kullanım testi kullanıcıya bırakıldı.**
 
 ## Bilinen Sorunlar / Notlar
-- **AÇIK: Yerelleştirilmiş mağaza görselleri:** İngilizce yeni şablon hazır ve canlıdır. `ar`, `de-DE`, `es-ES`, `fr-FR`, `id`, `pt-BR`, `ru-RU`, `tr-TR` eski seti kullanıyor; `hi-IN` ve `th` İngilizce varsayılan sete düşüyor. Kullanıcı yeni İngilizce tasarımın metinlerini değiştirerek yerel sürümleri hazırlayacak.
+- **ÇÖZÜLDÜ: Yerelleştirilmiş mağaza görselleri:** 11 dilin tamamında (`en-US`, `tr-TR`, `de-DE`, `es-ES`, `fr-FR`, `id`, `pt-BR`, `ru-RU`, `hi-IN`, `th`, `ar`) 1080x1920 çözünürlükte güncel ve tutarlı görsel setleri canlıya yüklendi.
 - **NOT: Google Play kamuya açık web önbelleği:** Publisher API güncel içeriği doğrulasa da mağaza web sayfası kısa süre eski başlık/açıklama/sürüm tarihini gösterebilir.
 - **AÇIK: Mağaza dönüşüm verisi alınamadı.** Geliştirici Play Console hesabı bu tarayıcı oturumunda açık değil; Cloud Storage edinme raporu yapılandırılmamış.
 - **AÇIK: Her APK kurulumundan sonra erişilebilirlik izni kapanıyor.** Test öncesi elle açılmalı. Şu anki durum: KAPALI.

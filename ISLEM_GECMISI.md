@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-08-30 18:10] - 10 Dilde Play Store Görsellerinin Üretilmesi ve Play Console'a Yüklenmesi
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** `[YENİ]` store_assets/*-v2/**, store_assets/play-sync-v2/**, tools/generate_all_store_locales.py; `[GÜNCELLENDİ]` .gitignore, SON_DURUM.md, ISLEM_GECMISI.md; `[YÜKLENDİ]` Google Play Console 10 yerelleştirilmiş dil alanı (60 görsel)
+* **Yapılan İşlem:** (1) Limitra İngilizce v2 ana şablonu (1080x1920 telefon ekranları + 1024x500 özellik grafiği) referans alınarak Türkçe (`tr-TR`), Almanca (`de-DE`), İspanyolca (`es-ES`), Fransızca (`fr-FR`), Endonezce (`id`), Brezilya Portekizcesi (`pt-BR`), Rusça (`ru-RU`), Hintçe (`hi-IN`), Tayca (`th`) ve Arapça (`ar`) olmak üzere 10 dil için profesyonel pazarlama metinleri yerelleştirildi. (2) Tasarım, renkler, ikonlar, gerçek ekranlar ve düzen korunarak; Arapça için RTL düzeni ve sağa hizalama, Hintçe (Nirmala UI) ve Tayca (Leelawadee UI) için doğru glif/hareke dizilimi uygulandı. (3) Üretilen 60 yeni görsel + İngilizce ana varlıklar `gpc images sync` ile Google Play Console'a eksiksiz yüklendi ve yayınlandı.
+* **Doğrulama:** 66 görselin tamamı (11 dil x 6 görsel) otomatik boyut/format/sağlık testinden geçti. Görsel denetimi ile Arapça RTL, Hintçe ve Tayca harf birleşimleri doğrulandı. `gpc images list` ile canlı Play Console üzerinde tüm dillerin (özellikle daha önce eksik olan `hi-IN` ve `th` dahil) 5'er adet 1080x1920 ekran görüntüsü ve 1024x500 özellik grafiği başarıyla doğrulandı (Uploaded 67 image(s), exit code 0).
+* **Bilinen Sorunlar:** Yok. Tüm 11 dilde mağaza vitrini 1080x1920 güncel v2 şablonuna kavuştu.
+* **Sonraki Öneri:** Kamuya açık web mağaza sayfalarının CDN önbellekleri yenilendiğinde kullanıcı gözüyle farklı ülke sayfalarını incelemek.
+
 ## [2026-08-29 23:55] - Gizlilik Odaklı v16 ve Play Store Vitrini Yenilemesi
 
 * **Model:** Codex
