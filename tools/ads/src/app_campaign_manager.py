@@ -1,6 +1,9 @@
 import datetime
+import logging
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class TargetLocation:
@@ -23,6 +26,7 @@ class AppCampaignPlan:
     budget: CampaignBudgetPlan
     headlines: List[str]
     descriptions: List[str]
+    images: Optional[List[str]] = None
     id: Optional[str] = None
     app_id: str = "com.gardiyan.app"
     app_store: str = "GOOGLE_APP_STORE"
@@ -126,6 +130,9 @@ class AppCampaignManager:
         campaign.status = client.enums.CampaignStatusEnum.PAUSED
         campaign.advertising_channel_type = client.enums.AdvertisingChannelTypeEnum.MULTI_CHANNEL
         campaign.advertising_channel_sub_type = client.enums.AdvertisingChannelSubTypeEnum.APP_CAMPAIGN
+        campaign.contains_eu_political_advertising = (
+            client.enums.EuPoliticalAdvertisingStatusEnum.DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING
+        )
 
         # App Ayarları
         campaign.app_campaign_setting.app_id = plan.app_id
@@ -135,7 +142,7 @@ class AppCampaignManager:
             campaign.app_campaign_setting.bidding_strategy_goal_type = (
                 client.enums.AppCampaignBiddingStrategyGoalTypeEnum.OPTIMIZE_INSTALLS_TARGET_INSTALL_COST
             )
-            campaign.target_cpi_micros = int(plan.budget.target_cpi * 1_000_000)
+            campaign.target_cpa.target_cpa_micros = int(plan.budget.target_cpi * 1_000_000)
         else:
             campaign.app_campaign_setting.bidding_strategy_goal_type = (
                 client.enums.AppCampaignBiddingStrategyGoalTypeEnum.OPTIMIZE_INSTALLS_WITHOUT_TARGET_INSTALL_COST
@@ -152,7 +159,6 @@ class AppCampaignManager:
         ad_group.name = f"{plan.name} - Ad Group"
         ad_group.campaign = campaign_resource_name
         ad_group.status = client.enums.AdGroupStatusEnum.ENABLED
-        ad_group.type_ = client.enums.AdGroupTypeEnum.SEARCH_STANDARD
 
         ad_group_response = ad_group_service.mutate_ad_groups(
             customer_id=cid, operations=[ad_group_operation]
@@ -175,6 +181,32 @@ class AppCampaignManager:
             text_asset = client.get_type("AdTextAsset")
             text_asset.text = d
             app_ad.descriptions.append(text_asset)
+
+        # 4b. Görsel Varlıkları (Image Assets)
+        if plan.images:
+            from pathlib import Path
+            asset_service = client.get_service("AssetService")
+            for img_path_str in plan.images:
+                img_path = Path(img_path_str)
+                if not img_path.exists():
+                    logger.warning(f"Görsel bulunamadı: {img_path_str}")
+                    continue
+                with open(img_path, "rb") as img_file:
+                    img_data = img_file.read()
+
+                asset_op = client.get_type("AssetOperation")
+                asset = asset_op.create
+                asset.name = f"Limitra Creative - {img_path.name}"
+                asset.type_ = client.enums.AssetTypeEnum.IMAGE
+                asset.image_asset.data = img_data
+
+                asset_res = asset_service.mutate_assets(customer_id=cid, operations=[asset_op])
+                asset_resource_name = asset_res.results[0].resource_name
+                logger.info(f"Görsel yüklendi: {img_path.name} -> {asset_resource_name}")
+
+                ad_img = client.get_type("AdImageAsset")
+                ad_img.asset = asset_resource_name
+                app_ad.images.append(ad_img)
 
         ad_group_ad_service.mutate_ad_group_ads(
             customer_id=cid, operations=[ad_group_ad_operation]

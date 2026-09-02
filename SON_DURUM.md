@@ -7,6 +7,11 @@
 - **Son Codex Çalışması:** `[codex] feat: launch privacy-first Play Store refresh` (v16 mağaza yenilemesi)
 
 ## Son İşlem
+- **Google Ads UAC Kampanyası Canlıda Oluşturuldu ve Profesyonel Vektörel Kreatifler Yüklendi (Antigravity, 3 Eylül 02:30):**
+  - Google Ads API & OAuth2 entegrasyonu tamamlandı (MCC Developer Token, Masaüstü OAuth Client, 9334101297 hesabı).
+  - Kullanıcının ilettiği Kısıtlama Yönetimi ekranı (TikTok, Instagram, YouTube) ve Seneca sözlü kilit ekranı referans alınarak sıfırdan vektörel, pürüzsüz 3 format reklam afişi üretildi (1200x628, 1200x1200, 1080x1920).
+  - `app_campaign_manager.py` içine görsel asset yükleme, DSA political advertising ve target_cpa desteği entegre edildi.
+  - Canlı Google Ads hesabında 50.00 TL/gün bütçeli, 2.50 TL hedef CPI'lı `[TR] Limitra - Odaklanma ve Ekran Suresi UAC` kampanyası (ID: `24210168464`) tüm metin ve görsel varlıklarıyla PAUSED olarak oluşturuldu.
 - **Nihai canlı kontrol ve Tayca feature düzeltmesi (Codex, 30 Ağustos 19:47):** id feature ve id telefon 3 artık doğru. th feature'ın eski ikonsuz senkron kopyası tespit edildi; doğru mevcut kaynak iki yerel hedefe eşitlenip yalnızca Tayca feature Play'e yüklendi. Canlı dosya doğru kaynakla byte-for-byte aynı; SHA-256 `CF25DC3E5249C0E2859F0388ACB692FBDE063A574F0EC776FFFC860215A445A8`.
 - **3. Ekran Görüntüsü Başlık Hizalaması ve Canlı Varlık Senkronizasyonu (Antigravity, 30 Ağustos):** 
   - `limitra-progress.png` ekranında durum çubuğunun yukarı kaymasından kaynaklanan durum çubuğu / `MY PROGRESS` çakışması, timeline ekranıyla aynı dikey dolgu ve durum çubuğu ile piksel düzeyinde düzeltildi.
@@ -15,6 +20,8 @@
   - 11 dilin tüm varlıkları `gpc images sync` ile Google Play Console'a yeniden yüklendi (`Uploaded 67 image(s)`).
 
 ## Doğrulama
+- Canlı Google Ads API üzerinden `campaign.id = 24210168464` doğrulandı: Durum `PAUSED`, Bütçe `50.0 TRY/gün`, Hedef `2.50 TRY/indirme`, Ad ID `823129248945` (5 başlık, 5 açıklama, 2 görsel varlığı).
+- Hesap bakiyesi doğrulandı: 700.00 TL toplam bütçe limiti, 19.68 TL geçmiş harcama, net 680.32 TL bakiye mevcut.
 - 66 görselin tamamı (11 dil x 6 görsel) otomatik boyut (1080x1920 ve 1024x500) ve PNG format kontrolünden geçti.
 - Canlı Play Console üzerinde `gpc images sync` ve `gpc images list` ile her 11 dilin varlıkları başarıyla doğrulandı.
 - `./gradlew.bat :app:testDebugUnitTest :app:lintRelease :app:bundleRelease` (Java 21) → PASS; v16 kapsamında 138/138 JVM/Robolectric testi geçti.

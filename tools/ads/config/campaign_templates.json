@@ -16,22 +16,26 @@
       ],
       "budget": {
         "daily_amount_currency": "TRY",
-        "daily_amount": 100.0,
+        "daily_amount": 50.0,
         "target_cpi": 2.5
       },
       "headlines": [
         "Limitra: AppBlock",
-        "Telefon Bağımlılığına Son",
-        "Uygulama ve Süre Sınırı",
-        "21 Gün Disiplin Zinciri",
-        "Odaklan ve Zamanını Koru"
+        "TikTok Bağımlılığına Son",
+        "Tavizsiz Ekran Kilidi",
+        "Her Gün İlham Veren Sözler",
+        "Aboneliksiz Tek Seferlik 29₺"
       ],
       "descriptions": [
         "Sosyal medyada boşa vakit kaybetmeyi bırakın. Limitra ile günlük süre sınırları koyun.",
-        "Uygulamaları kilitleyin, 21 günlük disiplin zinciriyle hedeflerinize odaklanın.",
-        "Ekran sürenizi kontrol altına alın. Kendi sınırlarınızı belirleyin ve disiplin kazanın.",
-        "İradeye değil sisteme güvenin. Belirlediğiniz süre dolduğunda uygulama anında kilitlenir.",
-        "Daha üretken bir gün için şimdi indirin. Uygulama kullanımınızı sınırlandırın."
+        "Süren bittiğinde ekran kilitlenir. Her gün zamanın değerini anlatan bilge sözle durdurur.",
+        "Pahalı aylık abonelikler yok. Tek seferlik 29 TL ile tüm özelliklere sınırsız sahip olun.",
+        "Tamamen gizlilik odaklı: Verileriniz telefonunuzda kalır, sunucuya hiçbir veri gitmez.",
+        "Ekran sürenizi yarıya indirin. 21 günlük disiplin zinciriyle hedeflerinize odaklanın."
+      ],
+      "images": [
+        "tools/ads/creatives/limitra_ads_landscape_1200x628.png",
+        "tools/ads/creatives/limitra_ads_square_1200x1200.png"
       ]
     },
     {

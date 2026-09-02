@@ -16,25 +16,34 @@ if sys.stdout.encoding != 'utf-8':
     except Exception:
         pass
 
+import argparse
+
 def generate_refresh_token():
     print("=" * 70)
     print("       GOOGLE ADS API - OAUTH2 YETKİLENDİRME YARDIMCISI")
     print("=" * 70)
-    print("\nBu araç, Google Cloud Console'dan aldığınız Client ID ve Client Secret")
-    print("bilgilerini kullanarak bir 'Refresh Token' üretmenizi sağlar.\n")
 
-    client_id = input("1. OAuth Client ID girin: ").strip()
+    parser = argparse.ArgumentParser(description="Google Ads OAuth2 Refresh Token Generator")
+    parser.add_argument("--client-id", help="OAuth Client ID")
+    parser.add_argument("--client-secret", help="OAuth Client Secret")
+    parser.add_argument("--developer-token", help="Google Ads Developer Token")
+    parser.add_argument("--customer-id", help="Target Google Ads Customer ID (10 digits)")
+    parser.add_argument("--login-customer-id", help="Manager (MCC) Customer ID (10 digits)")
+    args = parser.parse_args()
+
+    client_id = args.client_id or input("1. OAuth Client ID girin: ").strip()
     if not client_id:
         print("[!] Client ID boş bırakılamaz.")
         return
 
-    client_secret = input("2. OAuth Client Secret girin: ").strip()
+    client_secret = args.client_secret or input("2. OAuth Client Secret girin: ").strip()
     if not client_secret:
         print("[!] Client Secret boş bırakılamaz.")
         return
 
-    developer_token = input("3. Developer Token girin: ").strip()
-    customer_id = input("4. Google Ads Customer ID (10 haneli): ").strip().replace("-", "")
+    developer_token = args.developer_token or input("3. Developer Token girin: ").strip()
+    customer_id = (args.customer_id or input("4. Google Ads Customer ID (10 haneli): ")).strip().replace("-", "")
+    login_customer_id = (args.login_customer_id or "").strip().replace("-", "")
 
     try:
         from google_auth_oauthlib.flow import InstalledAppFlow
@@ -71,13 +80,14 @@ def generate_refresh_token():
 
         # Otomatik google-ads.yaml oluşturma
         target_path = Path(__file__).parent / "config" / "google-ads.yaml"
+        login_line = f'login_customer_id: "{login_customer_id}"\n' if login_customer_id else ""
         yaml_content = f"""# Google Ads API Yapılandırması (Otomatik Oluşturuldu)
 developer_token: "{developer_token}"
 client_id: "{client_id}"
 client_secret: "{client_secret}"
 refresh_token: "{refresh_token}"
 customer_id: "{customer_id}"
-use_proto_plus: True
+{login_line}use_proto_plus: True
 """
         with open(target_path, "w", encoding="utf-8") as f:
             f.write(yaml_content)

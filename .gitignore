@@ -15,6 +15,7 @@
 .cxx
 local.properties
 .env
+.venv/
 debug.keystore
 
 # Gecici dogrulama ve test dosyalari

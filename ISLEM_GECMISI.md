@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-03 02:30] - Google Ads UAC Kampanyası Canlıda Oluşturuldu ve Profesyonel Vektörel Kreatifler Yüklendi
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** `[YENİ]` tools/ads/creatives/limitra_ads_landscape_1200x628.png, tools/ads/creatives/limitra_ads_square_1200x1200.png, tools/ads/creatives/limitra_ads_portrait_1080x1920.png, tools/ads/config/google-ads.yaml; `[GÜNCELLENDİ]` tools/ads/src/app_campaign_manager.py, tools/ads/config/campaign_templates.json, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** (1) Google Ads API (OAuth2 Desktop Client, MCC Developer Token) entegrasyonu tamamlandı. (2) Limitra için güncel Türkiye satış fiyatı (29 ₺ tek seferlik), kullanıcının ilettiği Kısıtlama Yönetimi ekranı (TikTok, Instagram, YouTube süre sayaçları) ve Seneca kilit ekranı referans alınarak sıfırdan pürüzsüz vektörel reklam afişleri (1200x628, 1200x1200 ve 1080x1920) üretildi. (3) `app_campaign_manager.py` içine Google Ads AssetService görsel yükleme desteği, DSA `contains_eu_political_advertising` ve `target_cpa` uyumluluğu eklendi. (4) Canlı Google Ads hesabında (`9334101297`) 50 TL/gün bütçeli, 2.50 TL hedef CPI'lı `[TR] Limitra - Odaklanma ve Ekran Suresi UAC` kampanyası (ID: `24210168464`) tüm başlık, açıklama ve görsel varlıklarıyla PAUSED (güvenli duraklatılmış) olarak başarıyla oluşturuldu.
+* **Doğrulama:** Canlı Google Ads API üzerinden sorgulandı: Kampanya ID `24210168464`, Ad ID `823129248945`, 5 başlık, 5 açıklama ve 2 görsel varlığı (`416449916702`, `416628465345`) eksiksiz teyit edildi.
+* **Bilinen Sorunlar:** Yok. Kampanya canlıda hazır, kullanıcının onayıyla tek tıkla ENABLED yapılabilir.
+* **Sonraki Öneri:** Kampanyayı canlıya almak (`ads_cli.py status-set --campaign-id 24210168464 --status ENABLED`) ve ilk 24-48 saat harcama ve indirme metriklerini izlemek.
+
 ## [2026-08-30 19:47] - Nihai Play Görsel Kontrolü ve Tayca Feature Düzeltmesi
 
 * **Model:** Codex
