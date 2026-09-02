@@ -7,6 +7,9 @@
 - **Son Codex Çalışması:** `[codex] feat: launch privacy-first Play Store refresh` (v16 mağaza yenilemesi)
 
 ## Son İşlem
+- **Google Ads UAC Kampanyası Yayına Alındı (Antigravity, 3 Eylül 02:35):**
+  - Kullanıcı onayı alındı ve `ads_cli.py status-set --campaign-id 24210168464 --status ENABLED` komutu çalıştırıldı.
+  - `[TR] Limitra - Odaklanma ve Ekran Suresi UAC` kampanyası `ENABLED` ve `SERVING` durumuna geçti. Reklamlar kullanıcılara gösterilmeye başlandı.
 - **Google Ads UAC Kampanyası Canlıda Oluşturuldu ve Profesyonel Vektörel Kreatifler Yüklendi (Antigravity, 3 Eylül 02:30):**
   - Google Ads API & OAuth2 entegrasyonu tamamlandı (MCC Developer Token, Masaüstü OAuth Client, 9334101297 hesabı).
   - Kullanıcının ilettiği Kısıtlama Yönetimi ekranı (TikTok, Instagram, YouTube) ve Seneca sözlü kilit ekranı referans alınarak sıfırdan vektörel, pürüzsüz 3 format reklam afişi üretildi (1200x628, 1200x1200, 1080x1920).
@@ -20,7 +23,7 @@
   - 11 dilin tüm varlıkları `gpc images sync` ile Google Play Console'a yeniden yüklendi (`Uploaded 67 image(s)`).
 
 ## Doğrulama
-- Canlı Google Ads API üzerinden `campaign.id = 24210168464` doğrulandı: Durum `PAUSED`, Bütçe `50.0 TRY/gün`, Hedef `2.50 TRY/indirme`, Ad ID `823129248945` (5 başlık, 5 açıklama, 2 görsel varlığı).
+- Canlı Google Ads API üzerinden `campaign.id = 24210168464` doğrulandı: Durum `ENABLED`, Dağıtım `SERVING` (Yayında), Bütçe `50.0 TRY/gün`, Hedef `2.50 TRY/indirme`, Ad ID `823129248945` (5 başlık, 5 açıklama, 2 görsel varlığı).
 - Hesap bakiyesi doğrulandı: 700.00 TL toplam bütçe limiti, 19.68 TL geçmiş harcama, net 680.32 TL bakiye mevcut.
 - 66 görselin tamamı (11 dil x 6 görsel) otomatik boyut (1080x1920 ve 1024x500) ve PNG format kontrolünden geçti.
 - Canlı Play Console üzerinde `gpc images sync` ve `gpc images list` ile her 11 dilin varlıkları başarıyla doğrulandı.

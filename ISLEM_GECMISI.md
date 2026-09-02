@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-03 02:35] - Google Ads UAC Kampanyası Yayına Alındı (ENABLED / SERVING)
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` tools/ads/src/app_campaign_manager.py, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** (1) `app_campaign_manager.py` içinde FieldMask güncellemesi protobuf uyumlu hale getirildi. (2) Kullanıcı onayıyla `ads_cli.py status-set --campaign-id 24210168464 --status ENABLED` çalıştırıldı. (3) `[TR] Limitra - Odaklanma ve Ekran Suresi UAC` kampanyası başarıyla aktif (`ENABLED`) ve servis verir (`SERVING`) hale getirildi.
+* **Doğrulama:** Canlı Google Ads API üzerinden `campaign.id = 24210168464` doğrulandı: Durum `ENABLED`, Dağıtım Durumu `SERVING`, Günlük Bütçe `50.0 TRY`.
+* **Bilinen Sorunlar:** Yok. Kampanya yayında ve gösterim alıyor.
+* **Sonraki Öneri:** İlk 24 saat sonra `ads_cli.py report` komutu ile gösterim, tıklama ve yükleme sayılarını incelemek.
+
 ## [2026-09-03 02:30] - Google Ads UAC Kampanyası Canlıda Oluşturuldu ve Profesyonel Vektörel Kreatifler Yüklendi
 
 * **Model:** Antigravity

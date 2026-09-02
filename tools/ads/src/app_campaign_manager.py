@@ -261,9 +261,10 @@ class AppCampaignManager:
         else:
             raise ValueError(f"Geçersiz durum: {status}. ENABLED, PAUSED veya REMOVED olmalıdır.")
 
+        from google.protobuf import field_mask_pb2
         client.copy_from(
             campaign_operation.update_mask,
-            client.get_type("FieldMask")({"paths": ["status"]})
+            field_mask_pb2.FieldMask(paths=["status"])
         )
 
         campaign_service.mutate_campaigns(customer_id=cid, operations=[campaign_operation])
