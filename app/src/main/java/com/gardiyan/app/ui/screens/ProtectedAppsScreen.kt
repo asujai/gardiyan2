@@ -231,12 +231,16 @@ fun ProtectedAppsScreen(
                         RestrictionGroupCard(
                             group = group,
                             nowMillis = scheduleClockMillis,
-                            expanded = group.id in expandedGroupIds,
+                            expanded = group.apps.size > 1 && group.id in expandedGroupIds,
                             onToggle = {
-                                expandedGroupIds = if (group.id in expandedGroupIds) {
-                                    expandedGroupIds - group.id
+                                if (group.apps.size == 1) {
+                                    selectedAppForManagement = group.representative
                                 } else {
-                                    expandedGroupIds + group.id
+                                    expandedGroupIds = if (group.id in expandedGroupIds) {
+                                        expandedGroupIds - group.id
+                                    } else {
+                                        expandedGroupIds + group.id
+                                    }
                                 }
                             },
                             onAppClick = { app -> selectedAppForManagement = app }

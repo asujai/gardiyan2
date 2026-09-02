@@ -1,5 +1,6 @@
 package com.gardiyan.app.service
 
+import android.accessibilityservice.AccessibilityService
 import android.app.AlarmManager
 import android.app.KeyguardManager
 import android.app.Notification
@@ -57,8 +58,9 @@ import androidx.core.content.res.ResourcesCompat
  * 3. AppBlockAccessibilityService'ten gelen "showLockOverlay" komutuyla
  *    WindowManager.addView() kullanarak hedef uygulamanın ÜZERİNE lock overlay çizmek
  * 4. 10 saniyelik geri sayım → 0'a ulaştığında ANINDA 10'a reset → sonsuz döngü
- * 5. Kilit ekranından çıkış YOK; sadece Limitra MainActivity'den 5sn basılı
- *    tutarak iptal edilebilir
+ * 5. Kilit ekranı YAPIŞKANDIR: ön plan değişimi (ana ekrana çekme, uygulama
+ *    değiştirme) kilidi kaldırmaz. Tek çıkış yolları: kilit ekranındaki
+ *    "Ana sayfaya dön" butonu ve Limitra MainActivity'den 5sn basılı tutma.
  *
  * KRİTİK: Sayaç 0'a ulaştığında:
  * - isActive = false KULLANILMAZ
@@ -68,7 +70,7 @@ import androidx.core.content.res.ResourcesCompat
  *
  * İptal akışı:
  * - ViewModel.cancelAllWithFiveSecondHold() çağrılır
- * - hideLockOverlay() çağrılarak overlay kapatılır
+ * - forceHideLockOverlay() çağrılarak overlay kapatılır
  */
 class BlockOverlayService : Service() {
 
@@ -77,7 +79,14 @@ class BlockOverlayService : Service() {
         private const val ALARM_RESTART_REQUEST_CODE = 300
         private const val FALLBACK_PROTECTION_POLL_MS = 2_000L
         private const val FALLBACK_RECONCILE_INTERVAL_MS = 15_000L
-        private const val FALLBACK_FOREGROUND_LOOKBACK_MS = 6 * 60 * 60 * 1000L
+        private const val FALLBACK_FOREGROUND_LOOKBACK_MS = 10_000L
+
+        // Ana ekrana geçiş ile kilidin kaldırılması arasındaki gecikme.
+        // Kilitli uygulamanın bir an bile görünmesini engeller.
+        private const val RETURN_HOME_DISMISS_DELAY_MS = 250L
+
+        // Yapışkan kilit açıkken view'in pencereden düşüp düşmediğini denetleme aralığı.
+        private const val STICKY_OVERLAY_WATCHDOG_INTERVAL_MS = 1_000L
         const val CHANNEL_ID = "gardiyan_service_channel"
         const val NOTIF_ID = 101
 
@@ -101,6 +110,14 @@ class BlockOverlayService : Service() {
 
         @JvmStatic
         val isFallbackProtectionActive = AtomicBoolean(false)
+
+        /**
+         * Kilit ekranı yapışkan mı? true iken kilit YALNIZCA kullanıcının
+         * "Ana sayfaya dön" butonuna basmasıyla (veya forceHideLockOverlay ile)
+         * kalkar; ön plan değişimi kilidi kaldırmaz.
+         */
+        @JvmStatic
+        val requiresManualDismiss = AtomicBoolean(false)
 
         @Volatile
         private var serviceInstance: WeakReference<BlockOverlayService>? = null
@@ -128,6 +145,8 @@ class BlockOverlayService : Service() {
         @JvmStatic
         fun showLockOverlay(targetAppName: String, targetAppPackage: String) {
             Log.i(TAG, "showLockOverlay requested for $targetAppName")
+            // Kilit gösterildiği andan itibaren yapışkandır: ön plan değişimi kaldıramaz.
+            requiresManualDismiss.set(true)
             val instance = serviceInstance?.get()
             if (instance != null) {
                 instance.addLockOverlayView(targetAppName, targetAppPackage)
@@ -144,12 +163,39 @@ class BlockOverlayService : Service() {
         }
 
         /**
-         * A11y service hedef uygulamadan çıkışı tespit ettiğinde çağırır.
-         * Veya ViewModel 5sn basılı tutma sonrası iptal için çağırır.
+         * Ön plan değişiminden kaynaklanan "kilidi kaldır" isteği.
+         *
+         * Kilit ekranı yapışkan moddayken (requiresManualDismiss) bu istek YOK SAYILIR:
+         * kullanıcı alttan yukarı çekip ana ekrana veya başka bir uygulamaya geçse bile
+         * kilit ekranı ekranda kalmaya devam eder. Kilit yalnızca kilit ekranındaki
+         * "Ana sayfaya dön" butonu ya da diğer meşru yollar (bkz. forceHideLockOverlay)
+         * ile kalkar.
          */
         @JvmStatic
-        fun hideLockOverlay() {
-            Log.i(TAG, "hideLockOverlay requested")
+        fun requestHideLockOverlay(reason: String) {
+            if (OverlayDismissPolicy.shouldIgnoreSoftHide(requiresManualDismiss.get())) {
+                Log.d(TAG, "requestHideLockOverlay ignored (sticky lock active): $reason")
+                return
+            }
+            Log.i(TAG, "requestHideLockOverlay accepted: $reason")
+            pendingOverlayTarget = null
+            serviceInstance?.get()?.removeLockOverlayView()
+        }
+
+        /**
+         * Kilidi koşulsuz kaldırır ve yapışkan modu sıfırlar.
+         *
+         * Yalnızca meşru çıkış yolları için:
+         * 1. Kilit ekranındaki "Ana sayfaya dön" butonu
+         * 2. Limitra MainActivity'nin öne gelmesi (5sn basılı tutma yolu)
+         * 3. O gün için aktif kısıtlama kalmaması
+         * 4. Kısıtlamanın silinmesi / kullanıcı verilerinin temizlenmesi
+         * 5. Servisin yok edilmesi
+         */
+        @JvmStatic
+        fun forceHideLockOverlay(reason: String) {
+            Log.i(TAG, "forceHideLockOverlay: $reason")
+            requiresManualDismiss.set(false)
             pendingOverlayTarget = null
             serviceInstance?.get()?.removeLockOverlayView()
         }
@@ -182,6 +228,9 @@ class BlockOverlayService : Service() {
     private var lockOverlayView: View? = null
     private var cycleJob: Job? = null
     private var trackingHealthJob: Job? = null
+    private var stickyOverlayWatchdogJob: Job? = null
+    private val returnHomeInProgress = AtomicBoolean(false)
+    private var lastStickyTarget: Pair<String, String>? = null
     private var fallbackTrackedPackage: String? = null
     private var fallbackTrackedAppId: Long = -1L
 
@@ -196,6 +245,7 @@ class BlockOverlayService : Service() {
         createNotificationChannel()
         startForegroundCompat()
         startTrackingHealthWatchdog()
+        startStickyOverlayWatchdog()
         Log.i(TAG, "Service created (10s infinite loop lock)")
 
         pendingOverlayTarget?.let { (name, pkg) ->
@@ -220,6 +270,7 @@ class BlockOverlayService : Service() {
         Log.w(TAG, "Service destroyed")
         isServiceRunning.set(false)
         isFallbackProtectionActive.set(false)
+        requiresManualDismiss.set(false)
         AccessibilityHealthMonitor.recordFallbackProtectionState(applicationContext, false)
         serviceInstance = null
         appContextRef = null
@@ -230,6 +281,9 @@ class BlockOverlayService : Service() {
         cycleJob = null
         trackingHealthJob?.cancel()
         trackingHealthJob = null
+        stickyOverlayWatchdogJob?.cancel()
+        stickyOverlayWatchdogJob = null
+        lastStickyTarget = null
         removeLockOverlayView()
         serviceJob.cancel()
         super.onDestroy()
@@ -306,6 +360,32 @@ class BlockOverlayService : Service() {
                 enableVibration(false)
             }
             getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
+        }
+    }
+
+    /**
+     * Yapışkan kilit açıkken kilit view'i pencere yöneticisinden düşerse
+     * (konfigürasyon değişimi, WindowManager hatası vb.) yeniden ekler.
+     */
+    private fun startStickyOverlayWatchdog() {
+        stickyOverlayWatchdogJob?.cancel()
+        stickyOverlayWatchdogJob = serviceScope.launch {
+            while (isActive) {
+                try {
+                    if (requiresManualDismiss.get() && !isLockOverlayVisible.get()) {
+                        val target = lastStickyTarget
+                        if (target != null) {
+                            Log.w(TAG, "Sticky lock lost its window, re-adding for ${target.second}")
+                            mainHandler.post {
+                                addLockOverlayViewInternal(target.first, target.second)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Sticky overlay watchdog failed: ${e.message}")
+                }
+                delay(STICKY_OVERLAY_WATCHDOG_INTERVAL_MS)
+            }
         }
     }
 
@@ -401,6 +481,9 @@ class BlockOverlayService : Service() {
     ) {
         if (!isDeviceInteractiveAndUnlocked() || foregroundPackage.isNullOrBlank()) {
             closeFallbackTrackedSession(repository, "Yedek motor on plani dogrulayamadi")
+            if (isLockOverlayVisible.get()) {
+                requestHideLockOverlay("Yedek motor on plani dogrulayamadi")
+            }
             return
         }
 
@@ -412,7 +495,7 @@ class BlockOverlayService : Service() {
                 visibleOverlayPackage != null &&
                 visibleOverlayPackage != foregroundPackage
             ) {
-                hideLockOverlay()
+                requestHideLockOverlay("Yedek motor hedef uygulamadan cikis algiladi")
             }
             return
         }
@@ -454,7 +537,9 @@ class BlockOverlayService : Service() {
             }
             showLockOverlay(applicationContext, updatedApp.appName, updatedApp.packageName)
         } else if (isLockOverlayFor(updatedApp.packageName)) {
-            hideLockOverlay()
+            // Kilitli uygulamanın hakkı yeniden doğdu (günlük sıfırlama veya limit
+            // düzenlemesi): yapışkan kilidi burada koşulsuz kaldırmak gerekir.
+            forceHideLockOverlay("Yedek motor: ${updatedApp.appName} icin kullanim hakki yeniden dogdu")
         }
     }
 
@@ -486,31 +571,29 @@ class BlockOverlayService : Service() {
             val startTime = endTime - FALLBACK_FOREGROUND_LOOKBACK_MS
             val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
             val event = UsageEvents.Event()
-            var lastForegroundPackage: String? = null
+            val records = mutableListOf<UsageEventRecord>()
 
             while (usageEvents.hasNextEvent()) {
                 usageEvents.getNextEvent(event)
-                if (isUsageForegroundEvent(event.eventType)) {
-                    lastForegroundPackage = event.packageName
+                val pkg = event.packageName
+                if (!pkg.isNullOrBlank()) {
+                    records.add(
+                        UsageEventRecord(
+                            packageName = pkg,
+                            eventType = event.eventType,
+                            timestampMillis = event.timeStamp
+                        )
+                    )
                 }
             }
 
-            lastForegroundPackage
+            UsageStatsForegroundResolver.resolveForegroundPackage(records)
         } catch (e: SecurityException) {
             Log.w(TAG, "UsageStats permission missing for fallback protection: ${e.message}")
             null
         } catch (e: Exception) {
             Log.e(TAG, "Fallback foreground query failed: ${e.message}", e)
             null
-        }
-    }
-
-    private fun isUsageForegroundEvent(eventType: Int): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            eventType == UsageEvents.Event.ACTIVITY_RESUMED
-        } else {
-            @Suppress("DEPRECATION")
-            eventType == UsageEvents.Event.MOVE_TO_FOREGROUND
         }
     }
 
@@ -691,6 +774,9 @@ class BlockOverlayService : Service() {
             quoteAuthorText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#475569"))
             returnToHomeText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#475569"))
 
+            setupReturnHomeButton(overlayView, isDark)
+            setupOverlayInputGuards(overlayView)
+
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -708,11 +794,109 @@ class BlockOverlayService : Service() {
             lockOverlayView = overlayView
             visibleOverlayPackage = targetAppPackage
             isLockOverlayVisible.set(true)
+            lastStickyTarget = targetAppName to targetAppPackage
 
             Log.i(TAG, "Lock overlay added for $targetAppName")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to add lock overlay: ${e.message}", e)
         }
+    }
+
+    /**
+     * Kilit ekranının TEK meşru çıkış yolu olan "Ana sayfaya dön" butonunu hazırlar.
+     */
+    private fun setupReturnHomeButton(overlayView: View, isDark: Boolean) {
+        val button = overlayView.findViewById<TextView>(R.id.returnHomeButton) ?: return
+        val scale = resources.displayMetrics.density
+
+        button.background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            cornerRadius = 14f * scale
+            setColor(android.graphics.Color.parseColor(if (isDark) "#2EC4B6" else "#0D9488"))
+        }
+        button.setTextColor(android.graphics.Color.parseColor(if (isDark) "#04211E" else "#FFFFFF"))
+
+        button.setOnClickListener {
+            if (returnHomeInProgress.getAndSet(true)) return@setOnClickListener
+            val dismissedPackage = visibleOverlayPackage
+            Log.i(TAG, "Return-home button pressed for $dismissedPackage")
+            val wentHome = navigateToHomeScreen()
+
+            // Önce ana ekrana git, kilidi kısa bir gecikmeyle kaldır. Aksi hâlde
+            // kilitli uygulama bir kare boyunca görünür kalırdı.
+            mainHandler.postDelayed({
+                forceHideLockOverlay("Kullanici 'Ana sayfaya don' butonuna basti")
+                returnHomeInProgress.set(false)
+            }, RETURN_HOME_DISMISS_DELAY_MS)
+
+            serviceScope.launch {
+                try {
+                    val db = GuardianDatabase.getDatabase(applicationContext)
+                    val repository = GuardianRepository(applicationContext, db.guardianDao())
+                    repository.insertLog(
+                        eventType = "OVERLAY_DISMISSED_BY_USER",
+                        appName = dismissedPackage ?: "",
+                        details = "Kilit ekrani 'Ana sayfaya don' butonuyla kaldirildi. " +
+                            "Ana ekrana yonlendirme: ${if (wentHome) "basarili" else "basarisiz"}."
+                    )
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to log overlay dismissal: ${e.message}")
+                }
+            }
+        }
+    }
+
+    /**
+     * Kullanıcıyı ana ekrana gönderir.
+     *
+     * Öncelik erişilebilirlik servisindedir (arka plan activity başlatma
+     * kısıtlarından etkilenmez). Servis bağlı değilse HOME intent'ine düşer;
+     * SYSTEM_ALERT_WINDOW izni olduğu için bu yol da çalışır.
+     */
+    private fun navigateToHomeScreen(): Boolean {
+        try {
+            val a11y = AppBlockAccessibilityService.instance
+            if (a11y != null && a11y.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)) {
+                return true
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "GLOBAL_ACTION_HOME failed: ${e.message}")
+        }
+
+        return try {
+            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            startActivity(homeIntent)
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Home intent fallback failed: ${e.message}")
+            false
+        }
+    }
+
+    /**
+     * Kilit ekranının altındaki uygulamaya hiçbir girdinin sızmamasını sağlar
+     * ve BACK tuşunu tüketir. HOME/RECENTS tuşları platform gereği tüketilemez;
+     * o durumda yapışkan kilit devrede kalarak koruma sağlar.
+     */
+    private fun setupOverlayInputGuards(overlayView: View) {
+        val root = overlayView.findViewById<View>(R.id.rootLayout) ?: overlayView
+        root.isClickable = true
+        root.isFocusable = true
+        root.isFocusableInTouchMode = true
+        @Suppress("ClickableViewAccessibility")
+        root.setOnTouchListener { _, _ -> true }
+        root.setOnKeyListener { _, keyCode, _ ->
+            if (keyCode == android.view.KeyEvent.KEYCODE_BACK) {
+                Log.d(TAG, "BACK key consumed by lock overlay")
+                true
+            } else {
+                false
+            }
+        }
+        root.requestFocus()
     }
 
     /**
@@ -782,6 +966,11 @@ class BlockOverlayService : Service() {
     private fun removeLockOverlayViewInternal() {
         cycleJob?.cancel()
         cycleJob = null
+
+        // Yapışkan mod kapatıldıysa watchdog'un kilidi geri getirmesi istenmez.
+        if (!requiresManualDismiss.get()) {
+            lastStickyTarget = null
+        }
 
         val view = lockOverlayView
         val wm = windowManager
@@ -911,4 +1100,70 @@ object DefaultQuotes {
         R.string.quote_text_53 to R.string.quote_author_53,
         R.string.quote_text_54 to R.string.quote_author_54
     )
+}
+
+data class UsageEventRecord(
+    val packageName: String,
+    val eventType: Int,
+    val timestampMillis: Long
+)
+
+object UsageStatsForegroundResolver {
+    const val TYPE_ACTIVITY_RESUMED = 1
+    const val TYPE_ACTIVITY_PAUSED = 2
+    const val TYPE_ACTIVITY_STOPPED = 23
+    const val TYPE_MOVE_TO_FOREGROUND = 1
+    const val TYPE_MOVE_TO_BACKGROUND = 2
+
+    fun isResumeEvent(eventType: Int): Boolean {
+        return eventType == TYPE_ACTIVITY_RESUMED || eventType == TYPE_MOVE_TO_FOREGROUND
+    }
+
+    fun isPauseOrStopEvent(eventType: Int): Boolean {
+        return eventType == TYPE_ACTIVITY_PAUSED ||
+               eventType == TYPE_ACTIVITY_STOPPED ||
+               eventType == TYPE_MOVE_TO_BACKGROUND
+    }
+
+    fun resolveForegroundPackage(events: List<UsageEventRecord>): String? {
+        data class PackageLifecycleState(val isForeground: Boolean, val timestamp: Long)
+        val packageStates = mutableMapOf<String, PackageLifecycleState>()
+
+        for (event in events) {
+            val pkg = event.packageName
+            if (pkg.isBlank()) continue
+
+            if (isResumeEvent(event.eventType)) {
+                packageStates[pkg] = PackageLifecycleState(isForeground = true, timestamp = event.timestampMillis)
+            } else if (isPauseOrStopEvent(event.eventType)) {
+                packageStates[pkg] = PackageLifecycleState(isForeground = false, timestamp = event.timestampMillis)
+            }
+        }
+
+        return packageStates.entries
+            .filter { it.value.isForeground }
+            .maxByOrNull { it.value.timestamp }
+            ?.key
+    }
+}
+
+
+/**
+ * Kilit ekranının kaldırılma kurallarını taşıyan saf (Android'siz) politika nesnesi.
+ *
+ * Kural: kilit ekranı gösterildiği anda "yapışkan" olur. Ön plan değişiminden
+ * doğan yumuşak kaldırma istekleri (kullanıcının alttan yukarı çekip ana ekrana
+ * veya başka bir uygulamaya geçmesi dahil) yok sayılır. Kilit yalnızca meşru
+ * çıkış yollarıyla kalkar; bkz. [BlockOverlayService.forceHideLockOverlay].
+ */
+object OverlayDismissPolicy {
+
+    /** Ön plan kaynaklı yumuşak kaldırma isteği yok sayılmalı mı? */
+    fun shouldIgnoreSoftHide(requiresManualDismiss: Boolean): Boolean = requiresManualDismiss
+
+    /** Verilen istek kilidi gerçekten kaldırır mı? */
+    fun willDismiss(requiresManualDismiss: Boolean, isForced: Boolean): Boolean {
+        if (isForced) return true
+        return !shouldIgnoreSoftHide(requiresManualDismiss)
+    }
 }

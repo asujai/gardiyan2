@@ -9,6 +9,7 @@
     <string name="overlay_limit_over">Your limit for today is reached.</string>
     <string name="overlay_protected_by_gardiyan">Limitra keeps this app under protection.</string>
     <string name="overlay_return_to_home">Return to the home screen to continue.</string>
+    <string name="overlay_return_home_button">Return to home screen</string>
     <string name="overlay_explanation">This screen is shown to protect your set boundary.</string>
     <string name="perm_usage_access_title">Usage Access</string>
     <string name="perm_usage_access_desc">Required to locally calculate how much time you spend on selected apps and check limits.</string>
@@ -75,8 +76,8 @@
     <string name="protected_apps_save_btn">SAVE CHANGES</string>
     <string name="protected_apps_settings">PROTECTION SETTINGS</string>
     <string name="protected_apps_remove_btn">REMOVE RESTRICTION (HOLD 5m)</string>
-    <string name="protected_apps_removed">âœ“ REMOVED</string>
-    <string name="protected_apps_dont_release">DONT RELEASE Â· %1$ds</string>
+    <string name="protected_apps_removed">✓ REMOVED</string>
+    <string name="protected_apps_dont_release">DONT RELEASE · %1$ds</string>
     <string name="protected_apps_remove_instruction">Hold button for 5 minutes to remove this app\'s restriction.</string>
     <string name="setup_target_test_10s">Test (10s)</string>
     <string name="setup_target_15m">15 Min</string>
@@ -91,7 +92,7 @@
     <string name="protected_apps_time_left">%1$s left</string>
     <string name="protected_apps_usage_progress">%1$d%% remaining</string>
     <string name="setup_target_select_app_title">SELECT APP</string>
-    <string name="setup_target_select_app_placeholder">Select apps to protectâ€¦</string>
+    <string name="setup_target_select_app_placeholder">Select apps to protect…</string>
     <string name="setup_target_daily_limit">DAILY USAGE LIMIT</string>
     <string name="setup_target_custom_limit">Enter custom minute limit</string>
     <string name="setup_target_days">PROTECTION DAYS</string>
@@ -114,7 +115,7 @@
     <string name="setup_target_btn_test">START QUICK TEST (10s)</string>
     <string name="setup_target_btn_activate">ACTIVATE RESTRICTIONS</string>
     <string name="setup_target_btn_complete">COMPLETE &amp; OPEN PROTECTION</string>
-    <string name="setup_target_search_placeholder">Search app name or package nameâ€¦</string>
+    <string name="setup_target_search_placeholder">Search app name or package name…</string>
     <string name="setup_target_no_match">No Matching Apps</string>
     <string name="setup_target_no_match_desc">No installed app found matching \"%1$s\".</string>
     <string name="setup_target_confirm_selection">CONFIRM SELECTION (%1$d APPS)</string>
@@ -131,10 +132,10 @@
     <string name="profile_clear_confirm_desc">Restriction history, usage stats, and in-app preferences will be cleared. This action cannot be undone.</string>
     <string name="profile_clear_success">Data cleared.</string>
     <string name="profile_data_usage_privacy">Data Usage and Privacy</string>
-    <string name="profile_data_usage_desc1">â€¢ Limitra uses usage access to calculate how much time you spend on selected apps.\n\n</string>
-    <string name="profile_data_usage_desc2">â€¢ Selected app information is used to show the lock screen (via accessibility and overlay) when the time limit is reached.\n\n</string>
-    <string name="profile_data_usage_desc3">â€¢ All your data is stored and processed locally on your device. It is not sent to a server or shared externally.\n\n</string>
-    <string name="profile_data_usage_desc4">â€¢ You can clear your entire history at any time using the \'Clear My Data\' option.</string>
+    <string name="profile_data_usage_desc1">• Limitra uses usage access to calculate how much time you spend on selected apps.\n\n</string>
+    <string name="profile_data_usage_desc2">• Selected app information is used to show the lock screen (via accessibility and overlay) when the time limit is reached.\n\n</string>
+    <string name="profile_data_usage_desc3">• All your data is stored and processed locally on your device. It is not sent to a server or shared externally.\n\n</string>
+    <string name="profile_data_usage_desc4">• You can clear your entire history at any time using the \'Clear My Data\' option.</string>
     <string name="profile_app_name">App Name:</string>
     <string name="profile_version">Version (Version Name):</string>
     <string name="profile_version_code">Version Code:</string>
@@ -258,9 +259,9 @@
     <string name="no_records">No records</string>
     <string name="motivation_red_badge">Every obstacle is an opportunity to strengthen your will. Stay committed to shield repair!</string>
     <string name="motivation_violated">You fell today but don\'t give up. Tomorrow is a new day, gather your strength again.</string>
-    <string name="motivation_level_master">Congratulations Master! Your digital willpower is at the highest level. You inspire rookies. ğŸ‘‘</string>
-    <string name="motivation_level_disciplined">You\'re doing great! Your discipline is paying off. Almost a Master. ğŸ¥ˆ</string>
-    <string name="motivation_level_rookie">First step taken! As you meet daily goals, your protection will grow stronger. ğŸ›¡ï¸</string>
+    <string name="motivation_level_master">Congratulations Master! Your digital willpower is at the highest level. You inspire rookies. 👑</string>
+    <string name="motivation_level_disciplined">You\'re doing great! Your discipline is paying off. Almost a Master. 🥈</string>
+    <string name="motivation_level_rookie">First step taken! As you meet daily goals, your protection will grow stronger. 🛡️</string>
     <string name="redemption_progress_label">Shield Repair Progress</string>
     <string name="redemption_progress_text">Repair: %1$d/%2$d Days</string>
     <string name="rank_progress_label">Rank Progress</string>
@@ -331,8 +332,8 @@
     <string name="quote_author_6">William James</string>
     <string name="quote_text_7">Your soul is dyed by the color of your thoughts.</string>
     <string name="quote_author_7">Marcus Aurelius</string>
-    <string name="quote_text_8">Of all ridiculous things, the most ridiculous seems to me to be busyâ€”to be a man who is always busy with work and hustle.</string>
-    <string name="quote_author_8">SÃ¸ren Kierkegaard</string>
+    <string name="quote_text_8">Of all ridiculous things, the most ridiculous seems to me to be busy—to be a man who is always busy with work and hustle.</string>
+    <string name="quote_author_8">Søren Kierkegaard</string>
     <string name="quote_text_9">Nothing we have is ours; nature has only entrusted us with this slippery and volatile thing we call time.</string>
     <string name="quote_author_9">Seneca</string>
     <string name="quote_text_10">All sins are attempts to fill the voids within us.</string>
@@ -342,7 +343,7 @@
     <string name="quote_text_12">The value of your attention to any action should be in direct proportion to the importance of that action.</string>
     <string name="quote_author_12">Marcus Aurelius</string>
     <string name="quote_text_13">The unhappy man is always absent from himself; he can never exist within himself, he is always missing in the moment.</string>
-    <string name="quote_author_13">SÃ¸ren Kierkegaard</string>
+    <string name="quote_author_13">Søren Kierkegaard</string>
     <string name="quote_text_14">The life of the busy man is filled with everything but living.</string>
     <string name="quote_author_14">Seneca</string>
     <string name="quote_text_15">A man can be himself only so long as he is alone; if he does not love solitude, he will not love freedom; for it is only when he is alone that he is really free.</string>
@@ -379,7 +380,7 @@
     <string name="quote_author_30">Epictetus</string>
     <string name="quote_text_31">Addiction is the greatest producer of illusions; only those who can rid themselves of addictions can reach reality.</string>
     <string name="quote_author_31">Simone Weil</string>
-    <string name="quote_text_32">Concentrate every minute like a Romanâ€”on doing the job in front of you with perfect and simple dignity, affection, and justice; free yourself from all other distractions.</string>
+    <string name="quote_text_32">Concentrate every minute like a Roman—on doing the job in front of you with perfect and simple dignity, affection, and justice; free yourself from all other distractions.</string>
     <string name="quote_author_32">Marcus Aurelius</string>
     <string name="quote_text_33">People who labor all their lives but have no purpose to direct all their thoughts and impulses waste their time, even if they work hard.</string>
     <string name="quote_author_33">Marcus Aurelius</string>
@@ -409,10 +410,10 @@
     <string name="quote_author_45">Seneca</string>
     <string name="quote_text_46">Whenever you say, \'I will let it go today, I will pay attention tomorrow,\' know that you have said this: \'Today I will be shameless, impudent, and base; today I will be angry and a slave to others.\' See what evil you present to yourself!</string>
     <string name="quote_author_46">Epictetus</string>
-    <string name="quote_text_47">Look back and remember: How many people plundered your life without you even realizingâ€¦ When you see how little is left of your time, you will realize you are dying untimely.</string>
+    <string name="quote_text_47">Look back and remember: How many people plundered your life without you even realizing… When you see how little is left of your time, you will realize you are dying untimely.</string>
     <string name="quote_author_47">Seneca</string>
     <string name="quote_text_48">Losing oneself in the multiplicity of choices is the nature of aesthetic choice; whereas unless a person chooses himself absolutely, he only makes momentary and temporary decisions.</string>
-    <string name="quote_author_48">SÃ¸ren Kierkegaard</string>
+    <string name="quote_author_48">Søren Kierkegaard</string>
     <string name="quote_text_49">He who lives longest and he who will die soonest lose the same thing: Only the present moment. For you possess only it, and you cannot lose what you do not have.</string>
     <string name="quote_author_49">Marcus Aurelius</string>
     <string name="quote_text_50">It is terrifying to be left alone with oneself as both judge and executioner of the law one has set.</string>
@@ -426,7 +427,7 @@
     <string name="quote_text_54">The contest has begun; you are now at the Olympic Games, you have no option to delay any longer, and a single defeat can ruin all your progress.</string>
     <string name="quote_author_54">Epictetus</string>
 
-    <string name="notif_half_limit_message">Youâ€™ve used half of todayâ€™s limit for %1$s.</string>
+    <string name="notif_half_limit_message">You’ve used half of today’s limit for %1$s.</string>
     <string name="notif_five_minutes_message">Only 5 minutes remain today for %1$s.</string>
     <string name="profile_appearance">Appearance</string>
     <string name="discipline_summary_days_ago">Last 21 Days</string>
@@ -471,7 +472,7 @@
 
     <!-- Profile Screen Info -->
     <string name="profile_level_detail_title">Digital Level Details</string>
-    <string name="profile_level_detail_desc">Your Current Level: %1$s (Level %2$d)\n\nLevels and Requirements:\nâ€¢ Level 1: Rookie\nâ€¢ Level 2: Gaining Control (3 days uninterrupted success)\nâ€¢ Level 3: Focused (7 days uninterrupted success)\nâ€¢ Level 4: Balanced User (15 days uninterrupted success)\nâ€¢ Level 5: Digital Discipline (30 days uninterrupted success)\nâ€¢ Level 6: Full Control (60 days uninterrupted success)\n\nEach successful day without violating restrictions increases your streak and allows you to level up.</string>
+    <string name="profile_level_detail_desc">Your Current Level: %1$s (Level %2$d)\n\nLevels and Requirements:\n• Level 1: Rookie\n• Level 2: Gaining Control (3 days uninterrupted success)\n• Level 3: Focused (7 days uninterrupted success)\n• Level 4: Balanced User (15 days uninterrupted success)\n• Level 5: Digital Discipline (30 days uninterrupted success)\n• Level 6: Full Control (60 days uninterrupted success)\n\nEach successful day without violating restrictions increases your streak and allows you to level up.</string>
     <string name="profile_redemption_progress">Redemption Progress</string>
     <string name="profile_next_level_progress">Next Level Progress</string>
     <string name="profile_custom_quote_always">Custom Quote (Always)</string>

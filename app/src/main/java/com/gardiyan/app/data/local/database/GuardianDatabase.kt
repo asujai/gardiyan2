@@ -21,7 +21,7 @@ import com.gardiyan.app.data.local.entity.UserSessionEntity
         RestrictedAppEntity::class,
         ActiveUsageSessionEntity::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 abstract class GuardianDatabase : RoomDatabase() {
@@ -46,7 +46,8 @@ abstract class GuardianDatabase : RoomDatabase() {
                     MIGRATION_8_9,
                     MIGRATION_9_10,
                     MIGRATION_10_11,
-                    MIGRATION_11_12
+                    MIGRATION_11_12,
+                    MIGRATION_12_13
                 )
                 .build()
                 INSTANCE = instance
@@ -188,6 +189,17 @@ abstract class GuardianDatabase : RoomDatabase() {
                 )
                 db.execSQL("UPDATE restricted_apps SET restrictionGroupId = packageName WHERE restrictionGroupId = ''")
                 db.execSQL("UPDATE restricted_apps SET restrictionName = appName WHERE restrictionName = ''")
+            }
+        }
+
+        private val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                addColumnIfMissing(
+                    db,
+                    "status_logs",
+                    "packageName",
+                    "ALTER TABLE status_logs ADD COLUMN packageName TEXT NOT NULL DEFAULT ''"
+                )
             }
         }
 

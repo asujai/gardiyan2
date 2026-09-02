@@ -17,6 +17,7 @@ import com.gardiyan.app.data.local.entity.UserSessionEntity
 import com.gardiyan.app.data.model.AppUsageSummary
 import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.data.repository.GuardianRepository
+import com.gardiyan.app.data.timeline.encodeRestrictionLogDetails
 import com.gardiyan.app.service.AccessibilityHealthMonitor
 import com.gardiyan.app.service.AppBlockAccessibilityService
 import com.gardiyan.app.service.BlockOverlayService
@@ -53,6 +54,12 @@ internal data class RestrictionAssignment(
     val displayName: String
 )
 
+internal data class RestrictionLogSpec(
+    val appName: String,
+    val packageName: String,
+    val details: String
+)
+
 internal fun buildRestrictionAssignments(
     restrictionName: String,
     apps: List<Pair<String, String>>,
@@ -65,6 +72,24 @@ internal fun buildRestrictionAssignments(
             packageName = packageName,
             groupId = if (safeName.isEmpty()) packageName else namedGroupId,
             displayName = safeName.ifBlank { appName }
+        )
+    }
+}
+
+internal fun buildRestrictionLogSpecs(
+    restrictionName: String,
+    assignments: List<RestrictionAssignment>,
+    dailyLimitMinutes: Int
+): List<RestrictionLogSpec> {
+    val safeName = restrictionName.trim()
+    return assignments.map { assignment ->
+        RestrictionLogSpec(
+            appName = assignment.appName,
+            packageName = assignment.packageName,
+            details = encodeRestrictionLogDetails(
+                dailyLimitMinutes = dailyLimitMinutes,
+                restrictionName = safeName
+            )
         )
     }
 }
@@ -156,6 +181,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
             repository.insertLog(
                 eventType = "RESTRICTION_ADDED",
                 appName = appName,
+                packageName = packageName,
                 details = "$appName kısıtlama listesine eklendi: günde ${dailyLimitMinutes} dakika"
             )
             // Eski `targetAppPackage` alanı için de set et (geri uyumluluk)
@@ -178,6 +204,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
             repository.insertLog(
                 eventType = "QUICK_TEST_STARTED",
                 appName = appName,
+                packageName = packageName,
                 details = "$appName için hızlı test başlatıldı: ${testSeconds} saniye sonra kilit"
             )
             markSessionHavingRestrictions()
@@ -204,7 +231,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
                 
                 // Silinen uygulama şu an kilitliyse ekranı kapat
                 if (BlockOverlayService.isLockOverlayFor(app.packageName)) {
-                    BlockOverlayService.hideLockOverlay()
+                    BlockOverlayService.forceHideLockOverlay("Kisitlama silindi: ${app.packageName}")
                 }
 
                 if (shouldPenalize) {
@@ -244,7 +271,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
                     _isMonitoringActive.value = false
                 }
                 if (BlockOverlayService.isLockOverlayVisible.get()) {
-                    BlockOverlayService.hideLockOverlay()
+                    BlockOverlayService.forceHideLockOverlay("Aktif kisitlama kalmadi")
                 }
                 val session = repository.getSessionSync()
                 if (session != null && session.isActive) {
@@ -406,7 +433,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
             }
             // Overlay açıksa kapat
             if (BlockOverlayService.isLockOverlayVisible.get()) {
-                BlockOverlayService.hideLockOverlay()
+                BlockOverlayService.forceHideLockOverlay("Kullanici tum kisitlamalari iptal etti")
             }
         }
     }
@@ -423,6 +450,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
                 repository.clearAllRestrictedApps()
                 repository.clearActiveSessions()
                 repository.clearLogs()
+                repository.clearFriends()
                 val defaultSession = UserSessionEntity(
                     id = 1,
                     username = "LimitraUser",
@@ -441,7 +469,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
                     _isMonitoringActive.value = false
                 }
                 if (BlockOverlayService.isLockOverlayVisible.get()) {
-                    BlockOverlayService.hideLockOverlay()
+                    BlockOverlayService.forceHideLockOverlay("Tum kullanici verileri temizlendi")
                 }
 
                 // SharedPreferences temizliği
@@ -449,6 +477,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
                 context.getSharedPreferences("gardiyan_eval_prefs", Context.MODE_PRIVATE).edit().clear().apply()
                 context.getSharedPreferences("gardiyan_notifications", Context.MODE_PRIVATE).edit().clear().apply()
                 context.getSharedPreferences("gardiyan_theme_prefs", Context.MODE_PRIVATE).edit().clear().apply()
+                context.getSharedPreferences("gardiyan_secure_reset_prefs", Context.MODE_PRIVATE).edit().clear().apply()
 
                 onSuccess()
             } catch (e: Exception) {
@@ -526,11 +555,14 @@ class GuardianViewModel(context: Context) : ViewModel() {
                         activeEndMinutes = activeEndMinutes
                     )
                 }
-                repository.insertLog(
-                    eventType = "RESTRICTION_ADDED",
-                    appName = safeName.ifBlank { apps.first().first },
-                    details = "${safeName.ifBlank { apps.joinToString { it.first } }} kısıtlaması ${apps.size} uygulama için eklendi: günde $dailyLimitMinutes dakika"
-                )
+                buildRestrictionLogSpecs(safeName, assignments, dailyLimitMinutes).forEach { spec ->
+                    repository.insertLog(
+                        eventType = "RESTRICTION_ADDED",
+                        appName = spec.appName,
+                        packageName = spec.packageName,
+                        details = spec.details
+                    )
+                }
                 markSessionHavingRestrictions()
             }
             ensureMonitoringRunning()

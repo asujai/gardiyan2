@@ -8,6 +8,10 @@ import com.gardiyan.app.ui.theme.currentThemeMode
 import com.gardiyan.app.ui.theme.currentThemePalette
 import com.gardiyan.app.ui.theme.updateThemeMode
 import com.gardiyan.app.ui.theme.updateThemePalette
+import com.gardiyan.app.ui.theme.MutedGray
+import com.gardiyan.app.ui.theme.DashboardMuted
+import com.gardiyan.app.ui.theme.updateAppColors
+import androidx.compose.ui.graphics.Color
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -50,5 +54,13 @@ class ThemePreferenceTest {
 
         assertEquals(AppThemeMode.DARK, currentThemeMode.value)
         assertEquals(AppThemePalette.PREMIUM_DARK, currentThemePalette.value)
+    }
+
+    @Test
+    fun `premium dark uses accessible muted text instead of the old low contrast gray`() {
+        updateAppColors(isDark = true, palette = AppThemePalette.PREMIUM_DARK)
+
+        assertEquals(Color(0xFFA3A3A3), MutedGray)
+        assertEquals(Color(0xFFA3A3A3), DashboardMuted)
     }
 }

@@ -154,5 +154,23 @@
             android:textSize="11sp"
             android:letterSpacing="0.02" />
 
+        <!-- Tek çıkış yolu: kilit ekranı yalnızca bu butonla kalkar -->
+        <TextView
+            android:id="@+id/returnHomeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:minHeight="52dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="15dp"
+            android:text="@string/overlay_return_home_button"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.02" />
+
     </LinearLayout>
 </FrameLayout>

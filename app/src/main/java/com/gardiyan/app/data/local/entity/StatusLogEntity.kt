@@ -9,5 +9,6 @@ data class StatusLogEntity(
     val eventType: String, // "FAILURE", "SUCCESS", "REDEEMED", "LEVEL_UP", "TARGET_STARTED"
     val timestamp: Long = System.currentTimeMillis(),
     val appName: String = "",
+    val packageName: String = "",
     val details: String = ""
 )

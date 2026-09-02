@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // Limitra her zaman kilit ekranından çıkış ve kısıtlama yönetimi yolu olmalıdır.
-        BlockOverlayService.hideLockOverlay()
+        BlockOverlayService.forceHideLockOverlay("Limitra MainActivity onResume")
     }
 }
 
@@ -317,8 +317,8 @@ fun MainNavigationContent(
 private fun NavBarLabel(text: String) {
     Text(
         text = text,
-        fontSize = 11.sp,
-        lineHeight = 13.sp,
+        fontSize = 12.sp,
+        lineHeight = 14.sp,
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center,

@@ -8,8 +8,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 
 enum class AppThemeMode {
     SYSTEM, LIGHT, DARK
@@ -80,13 +78,11 @@ fun MyApplicationTheme(
         )
     }
 
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
-        )
-    }
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
 }
 
 fun updateThemeMode(context: Context, mode: AppThemeMode) {

@@ -1,0 +1,22 @@
+# Google Ads API Yapılandırma Şablonu (google-ads.yaml)
+# Bu dosyayı 'google-ads.yaml' olarak aynı dizine kopyalayıp kendi bilgilerinizi doldurun.
+# DİKKAT: 'google-ads.yaml' dosyası .gitignore ile korunmaktadır ve asla Git'e yüklenmemelidir.
+
+# Google Ads Geliştirici Token'ı (Google Ads Yönetici Hesabı -> Araçlar -> API Merkezi)
+developer_token: "BURAYA_DEVELOPER_TOKEN_YAZIN"
+
+# Google Cloud Console'dan alınan OAuth 2.0 Web/Masaüstü İstemci Kimlikleri
+client_id: "BURAYA_OAUTH_CLIENT_ID.apps.googleusercontent.com"
+client_secret: "BURAYA_OAUTH_CLIENT_SECRET"
+
+# Kullanıcı yetkilendirmesi sonrası alınan Refresh Token
+refresh_token: "BURAYA_REFRESH_TOKEN"
+
+# Reklam verilecek hedef Google Ads Müşteri Hesap ID'si (Tire olmadan 10 hane, örn: 1234567890)
+customer_id: "1234567890"
+
+# Eğer bir Yönetici (MCC) hesabı üzerinden bağlanıyorsanız Yönetici Hesap ID'si (opsiyonel)
+# login_customer_id: "0987654321"
+
+# API Ayarları
+use_proto_plus: True

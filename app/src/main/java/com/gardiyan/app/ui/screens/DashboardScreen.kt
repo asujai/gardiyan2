@@ -47,6 +47,8 @@ import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.data.model.DayStatus
 import com.gardiyan.app.data.model.DisciplineWindow
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
+import com.gardiyan.app.ui.components.DisciplineChain
+import com.gardiyan.app.ui.components.DisciplineChainLink
 import com.gardiyan.app.ui.components.DisciplineDayBox
 import com.gardiyan.app.ui.components.UsageRankingSection
 import com.gardiyan.app.ui.components.formatUsageDuration
@@ -307,7 +309,6 @@ private fun DisciplineSummary(
                 ) {
                     repeat(3) { rowIndex ->
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             repeat(7) { colIndex ->
@@ -316,6 +317,18 @@ private fun DisciplineSummary(
                                 // "Bugün" kutusu (todayCellIndex) hafif çerçeveyle vurgulanır.
                                 val cellIndex = rowIndex * 7 + colIndex
                                 val status = dayStatuses.getOrNull(cellIndex) ?: DayStatus.NONE
+
+                                // Ardışık başarılı günler halka ile bağlanır; kopuş
+                                // (ihlal veya boş gün) bağın yokluğuyla görünür olur.
+                                if (colIndex > 0) {
+                                    val previousStatus =
+                                        dayStatuses.getOrNull(cellIndex - 1) ?: DayStatus.NONE
+                                    DisciplineChainLink(
+                                        link = DisciplineChain.link(previousStatus, status),
+                                        modifier = Modifier.align(Alignment.CenterVertically)
+                                    )
+                                }
+
                                 val cellColor = when (status) {
                                     DayStatus.SUCCESS -> SuccessGreen
                                     DayStatus.FAILURE -> DangerRed

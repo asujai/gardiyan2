@@ -59,6 +59,29 @@ class GuardianRepository(
 
         fun todayKey(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
+        /**
+         * Kısıtlama ilk kurulurken UsageStats'tan okunan başlangıç çizgisini normalize eder.
+         *
+         * Başlangıç çizgisi "bu uygulama bugün kısıtlama konmadan ÖNCE ne kadar kullanıldı"
+         * demektir; yeni limitin eski kullanımla tüketilmemesi için tutulur.
+         *
+         * UsageStats günlük kovalarını gecikmeli yazar: ölçüm anında ön planda olan (veya
+         * yeni kapanmış) bir uygulama için 0 dönebilir, birkaç dakika sonra aynı gün için
+         * gerçek süreyi raporlar. 0'ı "hiç kullanılmamış" kabul etmek, o günün tüm eski
+         * kullanımını yeni limite yazar ve kullanıcı daha başlamadan kilitlenir.
+         *
+         * Bu yüzden 0 da [UNKNOWN_USAGE_STATS_BASELINE] sayılır; gerçek değer ilk
+         * uzlaştırmada olay tabanlı ölçümle (queryUsageEventsForegroundMillis) kurulur.
+         * Gerçekten hiç kullanılmamış bir uygulamada bu yol da 0'a yakın bir çizgi
+         * ürettiği için sonuç aynı kalır.
+         */
+        fun normalizeInitialUsageStatsBaseline(rawBaselineMillis: Long?): Long {
+            if (rawBaselineMillis == null || rawBaselineMillis <= 0L) {
+                return UNKNOWN_USAGE_STATS_BASELINE
+            }
+            return rawBaselineMillis
+        }
+
         fun todayDayLabel(): String {
             return when (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
                 Calendar.MONDAY -> "Pzt"
@@ -102,7 +125,8 @@ class GuardianRepository(
         eventType: String,
         appName: String,
         details: String,
-        customTimestamp: Long? = null
+        customTimestamp: Long? = null,
+        packageName: String = ""
     ) {
         val technicalTypes = setOf(
             "SESSION_STARTED",
@@ -123,6 +147,7 @@ class GuardianRepository(
             StatusLogEntity(
                 eventType = eventType,
                 appName = appName,
+                packageName = packageName,
                 details = details,
                 timestamp = customTimestamp ?: System.currentTimeMillis()
             )
@@ -135,6 +160,10 @@ class GuardianRepository(
 
     suspend fun clearActiveSessions() {
         guardianDao.clearActiveSessions()
+    }
+
+    suspend fun clearFriends() {
+        guardianDao.clearFriends()
     }
 
     suspend fun getActiveRestrictedAppsSync(): List<RestrictedAppEntity> {
@@ -182,7 +211,7 @@ class GuardianRepository(
             )
         } else {
             queryTodayUsageStatsMillis(packageName)
-        } ?: UNKNOWN_USAGE_STATS_BASELINE
+        }.let { normalizeInitialUsageStatsBaseline(it) }
         val usageStatsObserved = usageStatsBaseline.coerceAtLeast(0L)
         val usageStatsReconciledAt = now
         val existing = guardianDao.getRestrictedAppByPackageSync(packageName)
@@ -256,7 +285,7 @@ class GuardianRepository(
         }
         val safeTestSeconds = testSeconds.coerceIn(1, MAX_DAILY_LIMIT_MINUTES * 60)
         val dailyLimitMinutes = (safeTestSeconds + 59) / 60
-        val usageStatsBaseline = queryTodayUsageStatsMillis(packageName) ?: UNKNOWN_USAGE_STATS_BASELINE
+        val usageStatsBaseline = normalizeInitialUsageStatsBaseline(queryTodayUsageStatsMillis(packageName))
         val usageStatsObserved = usageStatsBaseline.coerceAtLeast(0L)
         val usageStatsReconciledAt = now
         return if (existing != null) {
@@ -318,7 +347,7 @@ class GuardianRepository(
     suspend fun resetRestrictedApp(id: Long) {
         val app = guardianDao.getRestrictedAppByIdSync(id) ?: return
         val now = timeProvider.currentTimeMillis()
-        val usageStatsBaseline = queryTodayUsageStatsMillis(app.packageName) ?: UNKNOWN_USAGE_STATS_BASELINE
+        val usageStatsBaseline = normalizeInitialUsageStatsBaseline(queryTodayUsageStatsMillis(app.packageName))
         val usageStatsObserved = usageStatsBaseline.coerceAtLeast(0L)
         guardianDao.updateRestrictedApp(
             app.copy(

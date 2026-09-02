@@ -5,8 +5,12 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.gardiyan.app.data.local.database.GuardianDatabase
+import com.gardiyan.app.data.local.entity.FriendEntity
 import com.gardiyan.app.data.repository.GuardianRepository
 import com.gardiyan.app.data.time.TimeProvider
+import com.gardiyan.app.viewmodel.buildRestrictionAssignments
+import com.gardiyan.app.viewmodel.buildRestrictionLogSpecs
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -22,7 +26,7 @@ import org.robolectric.shadows.ShadowUsageStatsManager
 import org.robolectric.shadows.ShadowUsageStatsManager.UsageStatsBuilder
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [36])
+@Config(sdk = [35])
 class GuardianRepositoryRegressionTest {
 
     private lateinit var database: GuardianDatabase
@@ -52,6 +56,40 @@ class GuardianRepositoryRegressionTest {
     @After
     fun tearDown() {
         database.close()
+    }
+
+    @Test
+    fun `bulk restriction logs persist every app name package and shared limit`() = runBlocking {
+        val assignments = buildRestrictionAssignments(
+            restrictionName = "Sosyal Medya",
+            apps = listOf(
+                "YouTube" to "com.google.android.youtube",
+                "Instagram" to "com.instagram.android",
+                "TikTok" to "com.zhiliaoapp.musically"
+            ),
+            namedGroupId = "social-group"
+        )
+        buildRestrictionLogSpecs("Sosyal Medya", assignments, 45).forEach { spec ->
+            repository.insertLog(
+                eventType = "RESTRICTION_ADDED",
+                appName = spec.appName,
+                details = spec.details,
+                packageName = spec.packageName
+            )
+        }
+
+        val logs = database.guardianDao().getAllLogsSync()
+
+        assertEquals(setOf("YouTube", "Instagram", "TikTok"), logs.map { it.appName }.toSet())
+        assertEquals(
+            setOf(
+                "com.google.android.youtube",
+                "com.instagram.android",
+                "com.zhiliaoapp.musically"
+            ),
+            logs.map { it.packageName }.toSet()
+        )
+        assertTrue(logs.all { "45" in it.details && "Sosyal Medya" in it.details })
     }
 
     @Test
@@ -1104,5 +1142,17 @@ class GuardianRepositoryRegressionTest {
         // Loglarda 3 adet SUCCESS_DAY olmalıdır
         val logs = database.guardianDao().getAllLogsSync()
         assertEquals(3, logs.count { it.eventType == "SUCCESS_DAY" })
+    }
+
+    @Test
+    fun `clearFriends deletes all local friend entries`() = runBlocking {
+        database.guardianDao().insertFriends(
+            listOf(FriendEntity(friendUserId = "friend_1", fullName = "Friend One"))
+        )
+        assertEquals(1, database.guardianDao().getAllFriends().first().size)
+
+        repository.clearFriends()
+
+        assertTrue(database.guardianDao().getAllFriends().first().isEmpty())
     }
 }

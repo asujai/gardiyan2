@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gardiyan.app.R
 import com.gardiyan.app.data.model.DayStatus
+import com.gardiyan.app.ui.components.DisciplineChain
+import com.gardiyan.app.ui.components.DisciplineChainLink
 import com.gardiyan.app.ui.components.DisciplineDayBox
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import java.util.Calendar
@@ -325,13 +327,23 @@ fun DisciplineDetailScreen(
                         ) {
                             repeat(10) { rowIndex ->
                                 Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     repeat(10) { colIndex ->
                                         val cellIndex = rowIndex * 10 + colIndex
                                         val status = seriesDayStatuses.getOrNull(cellIndex) ?: DayStatus.NONE
                                         val dayNum = startDayOfSeries + cellIndex
+
+                                        // Ardışık başarılı günleri bağlayan halka.
+                                        if (colIndex > 0) {
+                                            val previousStatus =
+                                                seriesDayStatuses.getOrNull(cellIndex - 1) ?: DayStatus.NONE
+                                            DisciplineChainLink(
+                                                link = DisciplineChain.link(previousStatus, status),
+                                                modifier = Modifier.align(Alignment.CenterVertically),
+                                                thickness = 2.dp
+                                            )
+                                        }
 
                                         val cellColor = when (status) {
                                             DayStatus.SUCCESS -> SuccessGreen

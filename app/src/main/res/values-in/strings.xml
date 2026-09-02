@@ -14,6 +14,7 @@
     <string name="overlay_limit_over">Batas harian Anda untuk hari ini telah tercapai.</string>
     <string name="overlay_protected_by_gardiyan">Limitra menjaga aplikasi ini tetap di bawah perlindungan.</string>
     <string name="overlay_return_to_home">Kembali ke layar utama untuk melanjutkan.</string>
+    <string name="overlay_return_home_button">Kembali ke layar utama</string>
     <string name="overlay_explanation">Layar ini ditampilkan untuk melindungi batas yang telah Anda tetapkan.</string>
     <string name="perm_usage_access_title">Akses Penggunaan</string>
     <string name="perm_usage_access_desc">Diperlukan untuk menghitung secara lokal berapa banyak waktu yang Anda habiskan di aplikasi yang dipilih dan memeriksa batas.</string>
@@ -80,8 +81,8 @@
     <string name="protected_apps_save_btn">SIMPAN PERUBAHAN</string>
     <string name="protected_apps_settings">PENGATURAN PERLINDUNGAN</string>
     <string name="protected_apps_remove_btn">HAPUS BATASAN (TAHAN 5m)</string>
-    <string name="protected_apps_removed">âœ“ DIHAPUS</string>
-    <string name="protected_apps_dont_release">JANGAN LEPAS Â· %1$ds</string>
+    <string name="protected_apps_removed">✓ DIHAPUS</string>
+    <string name="protected_apps_dont_release">JANGAN LEPAS · %1$ds</string>
     <string name="protected_apps_remove_instruction">Tahan tombol selama 5 menit untuk menghapus batasan aplikasi ini.</string>
     <string name="setup_target_test_10s">Uji (10s)</string>
     <string name="setup_target_15m">15 Menit</string>
@@ -90,7 +91,7 @@
     <string name="setup_target_2h">2 Jam</string>
     <string name="setup_target_add">TAMBAH BATASAN</string>
     <string name="setup_target_select_app_title">PILIH APLIKASI</string>
-    <string name="setup_target_select_app_placeholder">Pilih aplikasi untuk dilindungiâ€¦</string>
+    <string name="setup_target_select_app_placeholder">Pilih aplikasi untuk dilindungi…</string>
     <string name="setup_target_daily_limit">BATAS PENGGUNAAN HARIAN</string>
     <string name="setup_target_custom_limit">Masukkan batas menit khusus</string>
     <string name="setup_target_days">HARI PERLINDUNGAN</string>
@@ -102,7 +103,7 @@
     <string name="setup_target_btn_test">MULAI UJI CEPAT (10s)</string>
     <string name="setup_target_btn_activate">AKTIFKAN BATASAN</string>
     <string name="setup_target_btn_complete">SELESAIKAN PROSES &amp; AKTIFKAN PERLINDUNGAN</string>
-    <string name="setup_target_search_placeholder">Cari nama aplikasi atau nama paketâ€¦</string>
+    <string name="setup_target_search_placeholder">Cari nama aplikasi atau nama paket…</string>
     <string name="setup_target_no_match">Tidak Ada Aplikasi yang Cocok</string>
     <string name="setup_target_no_match_desc">Tidak ditemukan aplikasi terinstal yang cocok dengan \"%1$s\".</string>
     <string name="setup_target_confirm_selection">KONFIRMASI PILIHAN (%1$d APLIKASI)</string>
@@ -117,10 +118,10 @@
     <string name="profile_clear_confirm_desc">Riwayat batasan, statistik penggunaan, dan preferensi aplikasi akan dihapus. Tindakan ini tidak dapat dibatalkan.</string>
     <string name="profile_clear_success">Data berhasil dihapus.</string>
     <string name="profile_data_usage_privacy">Penggunaan Data dan Privasi</string>
-    <string name="profile_data_usage_desc1">â€¢ Limitra menggunakan akses penggunaan untuk menghitung berapa banyak waktu yang Anda habiskan di aplikasi yang dipilih.\n\n</string>
-    <string name="profile_data_usage_desc2">â€¢ Informasi aplikasi yang dipilih digunakan untuk menampilkan layar kunci (melalui aksesibilitas dan overlay) ketika batas waktu tercapai.\n\n</string>
-    <string name="profile_data_usage_desc3">â€¢ Semua data Anda disimpan dan diproses secara lokal di perangkat Anda. Data tidak dikirim ke server atau dibagikan secara eksternal.\n\n</string>
-    <string name="profile_data_usage_desc4">â€¢ Anda dapat menghapus seluruh riwayat Anda kapan saja menggunakan opsi \'Hapus Data Saya\'.</string>
+    <string name="profile_data_usage_desc1">• Limitra menggunakan akses penggunaan untuk menghitung berapa banyak waktu yang Anda habiskan di aplikasi yang dipilih.\n\n</string>
+    <string name="profile_data_usage_desc2">• Informasi aplikasi yang dipilih digunakan untuk menampilkan layar kunci (melalui aksesibilitas dan overlay) ketika batas waktu tercapai.\n\n</string>
+    <string name="profile_data_usage_desc3">• Semua data Anda disimpan dan diproses secara lokal di perangkat Anda. Data tidak dikirim ke server atau dibagikan secara eksternal.\n\n</string>
+    <string name="profile_data_usage_desc4">• Anda dapat menghapus seluruh riwayat Anda kapan saja menggunakan opsi \'Hapus Data Saya\'.</string>
     <string name="profile_app_name">Nama Aplikasi:</string>
     <string name="profile_version">Versi (Version Name):</string>
     <string name="profile_version_code">Kode Versi:</string>
@@ -234,9 +235,9 @@
     <string name="no_records">Tidak ada catatan</string>
     <string name="motivation_red_badge">Setiap rintangan adalah kesempatan untuk memperkuat tekad Anda. Tetap berkomitmen pada perbaikan perisai!</string>
     <string name="motivation_violated">Anda gagal hari ini tetapi jangan menyerah. Besok adalah hari baru, kumpulkan kekuatan Anda kembali.</string>
-    <string name="motivation_level_master">Selamat Master! Tekad digital Anda berada di tingkat tertinggi. Anda menginspirasi pemula. ğŸ‘‘</string>
-    <string name="motivation_level_disciplined">Hebat sekali! Disiplin Anda mulai membuahkan hasil. Hampir menjadi Master. ğŸ¥ˆ</string>
-    <string name="motivation_level_rookie">Langkah pertama telah diambil! Seiring Anda mencapai tujuan harian, perlindungan Anda akan semakin kuat. ğŸ›¡ï¸</string>
+    <string name="motivation_level_master">Selamat Master! Tekad digital Anda berada di tingkat tertinggi. Anda menginspirasi pemula. 👑</string>
+    <string name="motivation_level_disciplined">Hebat sekali! Disiplin Anda mulai membuahkan hasil. Hampir menjadi Master. 🥈</string>
+    <string name="motivation_level_rookie">Langkah pertama telah diambil! Seiring Anda mencapai tujuan harian, perlindungan Anda akan semakin kuat. 🛡️</string>
     <string name="redemption_progress_label">Kemajuan Perbaikan Perisai</string>
     <string name="redemption_progress_text">Perbaikan: %1$d/%2$d Hari</string>
     <string name="rank_progress_label">Kemajuan Rangk</string>
@@ -306,8 +307,8 @@
     <string name="quote_author_6">William James</string>
     <string name="quote_text_7">Your soul is dyed by the color of your thoughts.</string>
     <string name="quote_author_7">Marcus Aurelius</string>
-    <string name="quote_text_8">Of all ridiculous things, the most ridiculous seems to me to be busyâ€”to be a man who is always busy with work and hustle.</string>
-    <string name="quote_author_8">SÃ¸ren Kierkegaard</string>
+    <string name="quote_text_8">Of all ridiculous things, the most ridiculous seems to me to be busy—to be a man who is always busy with work and hustle.</string>
+    <string name="quote_author_8">Søren Kierkegaard</string>
     <string name="quote_text_9">Nothing we have is ours; nature has only entrusted us with this slippery and volatile thing we call time.</string>
     <string name="quote_author_9">Seneca</string>
     <string name="quote_text_10">All sins are attempts to fill the voids within us.</string>
@@ -317,7 +318,7 @@
     <string name="quote_text_12">The value of your attention to any action should be in direct proportion to the importance of that action.</string>
     <string name="quote_author_12">Marcus Aurelius</string>
     <string name="quote_text_13">The unhappy man is always absent from himself; he can never exist within himself, he is always missing in the moment.</string>
-    <string name="quote_author_13">SÃ¸ren Kierkegaard</string>
+    <string name="quote_author_13">Søren Kierkegaard</string>
     <string name="quote_text_14">The life of the busy man is filled with everything but living.</string>
     <string name="quote_author_14">Seneca</string>
     <string name="quote_text_15">A man can be himself only so long as he is alone; if he does not love solitude, he will not love freedom; for it is only when he is alone that he is really free.</string>
@@ -354,7 +355,7 @@
     <string name="quote_author_30">Epictetus</string>
     <string name="quote_text_31">Addiction is the greatest producer of illusions; only those who can rid themselves of addictions can reach reality.</string>
     <string name="quote_author_31">Simone Weil</string>
-    <string name="quote_text_32">Concentrate every minute like a Romanâ€”on doing the job in front of you with perfect and simple dignity, affection, and justice; free yourself from all other distractions.</string>
+    <string name="quote_text_32">Concentrate every minute like a Roman—on doing the job in front of you with perfect and simple dignity, affection, and justice; free yourself from all other distractions.</string>
     <string name="quote_author_32">Marcus Aurelius</string>
     <string name="quote_text_33">People who labor all their lives but have no purpose to direct all their thoughts and impulses waste their time, even if they work hard.</string>
     <string name="quote_author_33">Marcus Aurelius</string>
@@ -384,10 +385,10 @@
     <string name="quote_author_45">Seneca</string>
     <string name="quote_text_46">Whenever you say, \'I will let it go today, I will pay attention tomorrow,\' know that you have said this: \'Today I will be shameless, impudent, and base; today I will be angry and a slave to others.\' See what evil you present to yourself!</string>
     <string name="quote_author_46">Epictetus</string>
-    <string name="quote_text_47">Look back and remember: How many people plundered your life without you even realizingâ€¦ When you see how little is left of your time, you will realize you are dying untimely.</string>
+    <string name="quote_text_47">Look back and remember: How many people plundered your life without you even realizing… When you see how little is left of your time, you will realize you are dying untimely.</string>
     <string name="quote_author_47">Seneca</string>
     <string name="quote_text_48">Losing oneself in the multiplicity of choices is the nature of aesthetic choice; whereas unless a person chooses himself absolutely, he only makes momentary and temporary decisions.</string>
-    <string name="quote_author_48">SÃ¸ren Kierkegaard</string>
+    <string name="quote_author_48">Søren Kierkegaard</string>
     <string name="quote_text_49">He who lives longest and he who will die soonest lose the same thing: Only the present moment. For you possess only it, and you cannot lose what you do not have.</string>
     <string name="quote_author_49">Marcus Aurelius</string>
     <string name="quote_text_50">It is terrifying to be left alone with oneself as both judge and executioner of the law one has set.</string>
@@ -400,7 +401,7 @@
     <string name="quote_author_53">Martial</string>
     <string name="quote_text_54">The contest has begun; you are now at the Olympic Games, you have no option to delay any longer, and a single defeat can ruin all your progress.</string>
     <string name="quote_author_54">Epictetus</string>
-    <string name="notif_half_limit_message">Youâ€™ve used half of todayâ€™s limit for %1$s.</string>
+    <string name="notif_half_limit_message">You’ve used half of today’s limit for %1$s.</string>
     <string name="notif_five_minutes_message">Only 5 minutes remain today for %1$s.</string>
     <string name="profile_appearance">Tampilan</string>
     <string name="discipline_summary_days_ago">Last 21 Days</string>
@@ -442,7 +443,7 @@
 
     <!-- Profile Screen Info -->
     <string name="profile_level_detail_title">Rincian Tingkat Digital</string>
-    <string name="profile_level_detail_desc">Tingkat Anda Saat Ini: %1$s (Tingkat %2$d)\n\nTingkat dan Persyaratan:\nâ€¢ Tingkat 1: Pemula\nâ€¢ Tingkat 2: Memperoleh Kontrol (3 hari sukses tanpa terputus)\nâ€¢ Tingkat 3: Fokus (7 hari sukses tanpa terputus)\nâ€¢ Tingkat 4: Pengguna Seimbang (15 hari sukses tanpa terputus)\nâ€¢ Tingkat 5: Disiplin Digital (30 hari sukses tanpa terputus)\nâ€¢ Tingkat 6: Kontrol Penuh (60 hari sukses tanpa terputus)\n\nSetiap hari sukses tanpa melanggar batasan akan meningkatkan beruntun Anda dan memungkinkan Anda naik tingkat.</string>
+    <string name="profile_level_detail_desc">Tingkat Anda Saat Ini: %1$s (Tingkat %2$d)\n\nTingkat dan Persyaratan:\n• Tingkat 1: Pemula\n• Tingkat 2: Memperoleh Kontrol (3 hari sukses tanpa terputus)\n• Tingkat 3: Fokus (7 hari sukses tanpa terputus)\n• Tingkat 4: Pengguna Seimbang (15 hari sukses tanpa terputus)\n• Tingkat 5: Disiplin Digital (30 hari sukses tanpa terputus)\n• Tingkat 6: Kontrol Penuh (60 hari sukses tanpa terputus)\n\nSetiap hari sukses tanpa melanggar batasan akan meningkatkan beruntun Anda dan memungkinkan Anda naik tingkat.</string>
     <string name="profile_redemption_progress">Kemajuan Pemulihan Perisai</string>
     <string name="profile_next_level_progress">Kemajuan ke Tingkat Berikutnya</string>
     <string name="profile_custom_quote_always">Kutipan Kustom (Selalu)</string>

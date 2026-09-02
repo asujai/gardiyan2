@@ -175,7 +175,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     Log.i(TAG, "Restored active session from DB: ${openSession.packageName}")
 
                     queryCurrentForegroundPackage()?.let { foregroundPackage ->
-                        handleForegroundChange(foregroundPackage)
+                        handleForegroundChange(foregroundPackage, allowRestrictedEntry = false)
                     }
                 }
 
@@ -295,7 +295,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
             // A11y pencere değişim olayı geldiğinde geçici olarak hızlı polling'i tetikle
             fastPollTicksLeft = 12 // 3 saniye boyunca hızlı polling yap (12 * 250ms = 3000ms)
 
-            handleForegroundChange(foregroundPackage)
+            handleForegroundChange(foregroundPackage, allowRestrictedEntry = true)
         } catch (e: Exception) {
             Log.e(TAG, "Unhandled accessibility event error", e)
         }
@@ -360,7 +360,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                     // A scheduled window may end while the target stays open.
                                     // Re-run foreground handling so the session is closed and
                                     // no usage outside the configured window is charged.
-                                    handleForegroundChange(pkg)
+                                    handleForegroundChange(pkg, allowRestrictedEntry = false)
                                 } else {
                                     withContext(Dispatchers.IO) {
                                         repository.updateSessionLastSeen(pkg)
@@ -393,7 +393,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                             val exhaustedForegroundApp = exhaustedByUsageStats.firstOrNull {
                                 it.packageName == effectiveForeground
                             }
-                            if (exhaustedForegroundApp != null) {
+                            if (exhaustedForegroundApp != null && exhaustedForegroundApp.packageName == currentTrackedPackage) {
                                 enforceUsageStatsLimitIfNeeded(exhaustedForegroundApp, repository)
                             }
                         }
@@ -476,21 +476,21 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     // Yedek ön plan doğrulaması
                     val foregroundPkg = queryCurrentForegroundPackage()
                     if (foregroundPkg != null) {
-                        val scheduledTargetNeedsEntry =
-                            foregroundPkg != packageName &&
-                            currentTrackedPackage == null &&
-                            cachedRestrictedApps.any { app ->
-                                app.packageName == foregroundPkg && app.isScheduledAt(now)
-                            }
-
                         if (
                             foregroundPkg == packageName &&
                             BlockOverlayService.isLockOverlayVisible.get()
                         ) {
-                            handleLimitraForeground()
+                            // Bu dal eskiden kilidi koşulsuz kaldırıyordu. Yapışkan
+                            // kilitte bu bir atlatma yolu olurdu: kilit penceresi
+                            // odaklanabilir olduğu için UsageStats/aktif pencere
+                            // sorgusu Limitra'yı ön planda sanabiliyor.
+                            // Limitra'nın gerçekten açıldığı iki kesin yoldan anlaşılır:
+                            // MainActivity.onResume ve MainActivity sınıfını taşıyan
+                            // TYPE_WINDOW_STATE_CHANGED olayı. Burada yalnız kayıt tutulur.
+                            Log.d(TAG, "Own package reported foreground while lock overlay visible; ignoring")
                         } else if (
                             foregroundPkg != packageName &&
-                            (foregroundPkg != currentForegroundPackage || scheduledTargetNeedsEntry)
+                            foregroundPkg != currentForegroundPackage
                         ) {
                             if (foregroundPkg != currentForegroundPackage) {
                                 Log.w(TAG, "UsageStats fallback detected different package: $foregroundPkg (A11y had: $currentForegroundPackage)")
@@ -502,7 +502,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                     )
                                 }
                             }
-                            handleForegroundChange(foregroundPkg)
+                            handleForegroundChange(foregroundPkg, allowRestrictedEntry = false)
                         }
                     }
 
@@ -539,7 +539,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
         a11yScope.launch {
             queryCurrentForegroundPackage()?.let { foregroundPackage ->
-                handleForegroundChange(foregroundPackage)
+                handleForegroundChange(foregroundPackage, allowRestrictedEntry = false)
             }
         }
     }
@@ -552,7 +552,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
     /**
      * UsageStatsManager.queryEvents() ile son 5 saniye içindeki en son
-     * ACTIVITY_RESUMED event'ini bularak aktif foreground uygulamasını döndürür.
+     * aktivite olaylarını değerlendirerek aktif foreground uygulamasını döndürür.
      */
     private data class ForegroundEvent(
         val packageName: String,
@@ -568,25 +568,28 @@ class AppBlockAccessibilityService : AccessibilityService() {
             val startTime = endTime - lookbackMillis.coerceAtLeast(1000L)
 
             val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
-            var lastForegroundEvent: ForegroundEvent? = null
-
             val event = UsageEvents.Event()
+            val records = mutableListOf<UsageEventRecord>()
+
             while (usageEvents.hasNextEvent()) {
                 usageEvents.getNextEvent(event)
-                // MOVE_TO_FOREGROUND was deprecated in API 29 in favor of ACTIVITY_RESUMED
-                val isResumed = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    event.eventType == UsageEvents.Event.ACTIVITY_RESUMED
-                } else {
-                    @Suppress("DEPRECATION")
-                    event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND
-                }
-                
-                if (isResumed) {
-                    lastForegroundEvent = ForegroundEvent(event.packageName, event.timeStamp)
+                val pkg = event.packageName
+                if (!pkg.isNullOrBlank()) {
+                    records.add(
+                        UsageEventRecord(
+                            packageName = pkg,
+                            eventType = event.eventType,
+                            timestampMillis = event.timeStamp
+                        )
+                    )
                 }
             }
 
-            lastForegroundEvent
+            val foregroundPkg = UsageStatsForegroundResolver.resolveForegroundPackage(records)
+                ?: return null
+            val latestTimestamp = records.filter { it.packageName == foregroundPkg }.maxOfOrNull { it.timestampMillis }
+                ?: endTime
+            ForegroundEvent(foregroundPkg, latestTimestamp)
         } catch (e: SecurityException) {
             Log.w(TAG, "UsageStats permission not granted: ${e.message}")
             null
@@ -612,6 +615,20 @@ class AppBlockAccessibilityService : AccessibilityService() {
         return queryForegroundEvent(lookbackMillis)?.packageName
     }
 
+    /**
+     * Verilen paketin GERÇEKTEN şu an aktif pencerede olduğunu erişilebilirlik
+     * ağacından teyit eder. UsageStats bayat veri döndürebildiği için, kilit
+     * kararını a11y olayı dışında bir kaynak tetiklediğinde bu teyit kullanılır.
+     */
+    private fun isForegroundConfirmedByActiveWindow(packageName: String): Boolean {
+        return try {
+            rootInActiveWindow?.packageName?.toString() == packageName
+        } catch (e: Exception) {
+            Log.w(TAG, "isForegroundConfirmedByActiveWindow failed: ${e.message}")
+            false
+        }
+    }
+
     // ========================================================================
     // Foreground Change Handler
     // ========================================================================
@@ -620,7 +637,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
      * Ön plan uygulama değişikliği işleyicisi. Event-driven timer'ın kalbi.
      * Çoklu uygulama listesine göre çalışır.
      */
-    private fun handleForegroundChange(foregroundPackage: String) {
+    private fun handleForegroundChange(
+        foregroundPackage: String,
+        allowRestrictedEntry: Boolean = false
+    ) {
         if (foregroundPackage == packageName && BlockOverlayService.isLockOverlayVisible.get()) {
             Log.d(TAG, "handleForegroundChange: Ignored own package event because overlay is visible")
             return
@@ -642,12 +662,14 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     }
 
                     if (com.gardiyan.app.BuildConfig.DEBUG) {
-                        Log.d(TAG, "handleForegroundChange: foregroundPackage=$foregroundPackage, activeAppsCount=${activeApps.size}")
+                        Log.d(TAG, "handleForegroundChange: foregroundPackage=$foregroundPackage, allowRestrictedEntry=$allowRestrictedEntry, activeAppsCount=${activeApps.size}")
                     }
 
                     if (activeApps.isEmpty()) {
                         if (BlockOverlayService.isLockOverlayVisible.get()) {
-                            BlockOverlayService.hideLockOverlay()
+                            BlockOverlayService.forceHideLockOverlay(
+                                "Bugun icin aktif kisitlama kalmadi"
+                            )
                         }
                         withContext(Dispatchers.IO) {
                             repository.closeActiveSession("Bugün için aktif kısıtlama kalmadı")
@@ -674,14 +696,43 @@ class AppBlockAccessibilityService : AccessibilityService() {
                             handleExit(repository, activeApps)
                         }
                         if (BlockOverlayService.isLockOverlayVisible.get()) {
-                            Log.d(TAG, "Hiding lock overlay because foreground package is unrelated: $foregroundPackage")
-                            BlockOverlayService.hideLockOverlay()
+                            // Yapışkan kilit aktifse bu istek yok sayılır: kullanıcı ana
+                            // ekrana ya da başka bir uygulamaya geçse bile kilit kalır.
+                            Log.d(TAG, "Soft hide request because foreground package is unrelated: $foregroundPackage")
+                            BlockOverlayService.requestHideLockOverlay(
+                                "Ilgisiz on plan paketi: $foregroundPackage"
+                            )
                         }
                         return@withLock
                     }
 
+                    val isNewEntry = currentTrackedPackage != matchingApp.packageName
+                    val isExhausted = matchingApp.remainingSecondsToday <= 0 || matchingApp.isFailed
+                    if (isNewEntry && !allowRestrictedEntry) {
+                        // Süresi dolmuş bir uygulama ön plandaysa, olayın kaynağı ne
+                        // olursa olsun kilit gösterilmelidir. Aksi hâlde ana ekrana
+                        // çekme hareketi yarıda bırakıldığında (a11y pencere olayı
+                        // gelmediği için) kısıtlama tamamen atlatılabiliyordu.
+                        //
+                        // Yanlış pozitife karşı: UsageStats bayat veri verebileceği
+                        // için ön plan, canlı pencere ile teyit edilir.
+                        val confirmedByActiveWindow =
+                            isExhausted && isForegroundConfirmedByActiveWindow(matchingApp.packageName)
+                        if (!confirmedByActiveWindow) {
+                            Log.d(
+                                TAG,
+                                "handleForegroundChange: Restricted entry for ${matchingApp.packageName} blocked because allowRestrictedEntry=false"
+                            )
+                            return@withLock
+                        }
+                        Log.w(
+                            TAG,
+                            "handleForegroundChange: Re-locking exhausted ${matchingApp.packageName} (confirmed by active window)"
+                        )
+                    }
+
                     // Kısıtlı uygulamaya GİRİLDİ
-                    if (currentTrackedPackage != matchingApp.packageName) {
+                    if (isNewEntry) {
                         entryTimeMillis = System.currentTimeMillis()
                         currentTrackedPackage = matchingApp.packageName
                         currentTrackedAppId = matchingApp.id
@@ -704,7 +755,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         }
                     }
 
-                    if (matchingApp.remainingSecondsToday <= 0 || matchingApp.isFailed) {
+                    if (isExhausted) {
                         if (com.gardiyan.app.BuildConfig.DEBUG) {
                             Log.w(TAG, "Limit already reached or failed for: ${matchingApp.appName}. Triggering lock overlay.")
                         }
@@ -796,11 +847,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
         repository: GuardianRepository
     ) {
         if (result.remainingSecondsToday > 0) return
-        if (currentForegroundPackage != result.packageName) {
-            currentForegroundPackage = result.packageName
-        }
-        currentTrackedPackage = result.packageName
-        currentTrackedAppId = result.appId
+        if (currentTrackedPackage != result.packageName) return
         entryTimeMillis = 0L
         tickJob?.cancel()
         tickJob = null
@@ -813,11 +860,11 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 result.packageName
             )
             withContext(Dispatchers.IO) {
-                repository.closeActiveSession("UsageStats uzlaÅŸtÄ±rmasÄ± limiti doldurdu")
+                repository.closeActiveSession("UsageStats uzlaştırması limiti doldurdu")
                 repository.insertLog(
                     eventType = "OVERLAY_SHOWN",
                     appName = result.appName,
-                    details = "${result.appName} iÃ§in kilit ekranÄ± gÃ¶sterildi. GerekÃ§e: UsageStats uzlaÅŸtÄ±rmasÄ± ile gÃ¼nlÃ¼k kullanÄ±m limiti doldu."
+                    details = "${result.appName} için kilit ekranı gösterildi. Gerekçe: UsageStats uzlaştırması ile günlük kullanım limiti doldu."
                 )
             }
         }
@@ -829,7 +876,9 @@ class AppBlockAccessibilityService : AccessibilityService() {
                 currentForegroundPackage = packageName
                 tickJob?.cancel()
                 tickJob = null
-                BlockOverlayService.hideLockOverlay()
+                // Limitra, kilit ekranından çıkışın ve kısıtlama yönetiminin
+                // meşru yoludur; yapışkan kilit burada koşulsuz kaldırılır.
+                BlockOverlayService.forceHideLockOverlay("Limitra on plana geldi")
 
                 val db = GuardianDatabase.getDatabase(applicationContext)
                 val repository = GuardianRepository(applicationContext, db.guardianDao())
@@ -858,7 +907,9 @@ class AppBlockAccessibilityService : AccessibilityService() {
         val trackedApp = activeApps.firstOrNull { it.packageName == trackedPkg }
             ?: run {
                 if (BlockOverlayService.isLockOverlayVisible.get()) {
-                    BlockOverlayService.hideLockOverlay()
+                    BlockOverlayService.forceHideLockOverlay(
+                        "Izlenen uygulama artik bugun icin aktif degil"
+                    )
                 }
                 withContext(Dispatchers.IO) {
                     repository.closeActiveSession("İzlenen uygulama artık bugün için aktif değil")
@@ -873,8 +924,14 @@ class AppBlockAccessibilityService : AccessibilityService() {
         if (BlockOverlayService.isLockOverlayVisible.get() &&
             (trackedApp.remainingSecondsToday <= 0 || trackedApp.isFailed)
         ) {
-            Log.d(TAG, "Exited locked target ${trackedApp.appName}; hiding package-scoped overlay")
-            BlockOverlayService.hideLockOverlay()
+            // BUG DÜZELTMESİ: Eskiden kilitli hedeften çıkış kilidi kaldırıyordu.
+            // Kullanıcı ana ekrana çekme hareketini yarıda bırakıp uygulamaya
+            // dönünce kilit geri gelmiyor ve kısıtlama atlatılabiliyordu.
+            // Artık yapışkan kilit yalnızca butonla kalkar.
+            Log.d(TAG, "Exited locked target ${trackedApp.appName}; soft hide request")
+            BlockOverlayService.requestHideLockOverlay(
+                "Kilitli hedeften cikildi: ${trackedApp.packageName}"
+            )
             withContext(Dispatchers.IO) {
                 repository.closeActiveSession("Kilitli uygulamadan çıkıldı")
             }
@@ -887,7 +944,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
         }
 
         if (BlockOverlayService.isLockOverlayVisible.get()) {
-            BlockOverlayService.hideLockOverlay()
+            BlockOverlayService.requestHideLockOverlay("Uygulamadan cikildi: $trackedPkg")
         }
 
         clearTrackingState()
@@ -979,3 +1036,68 @@ class AppBlockAccessibilityService : AccessibilityService() {
         return String.format(Locale.US, "%04d-%02d-%02d", year, month, day)
     }
 }
+
+data class ForegroundEvaluationResult(
+    val nextTrackedPackage: String?,
+    val shouldStartSession: Boolean,
+    val shouldUpdateSession: Boolean,
+    val shouldCloseSession: Boolean,
+    val shouldShowLockOverlay: Boolean,
+    val shouldHideLockOverlay: Boolean,
+    val isRestrictedEntryAllowed: Boolean
+)
+
+object ForegroundPolicyEvaluator {
+    fun evaluate(
+        currentTrackedPackage: String?,
+        candidatePackage: String,
+        isCandidateRestrictedToday: Boolean,
+        isCandidateLimitExhaustedOrFailed: Boolean,
+        allowRestrictedEntry: Boolean,
+        isForegroundConfirmedByActiveWindow: Boolean = false
+    ): ForegroundEvaluationResult {
+        if (!isCandidateRestrictedToday) {
+            val hadTracked = currentTrackedPackage != null
+            return ForegroundEvaluationResult(
+                nextTrackedPackage = null,
+                shouldStartSession = false,
+                shouldUpdateSession = false,
+                shouldCloseSession = hadTracked,
+                shouldShowLockOverlay = false,
+                shouldHideLockOverlay = true,
+                isRestrictedEntryAllowed = false
+            )
+        }
+
+        val isSameAsTracked = currentTrackedPackage == candidatePackage
+        // Süresi dolmuş uygulama canlı pencereyle teyit edildiyse, giriş olayı
+        // "izinli" olmasa bile kilit yeniden gösterilir. Aksi hâlde ana ekrana
+        // çekme hareketi yarıda bırakıldığında kısıtlama atlatılabiliyordu.
+        val canRelockExhausted =
+            isCandidateLimitExhaustedOrFailed && isForegroundConfirmedByActiveWindow
+        if (!isSameAsTracked && !allowRestrictedEntry && !canRelockExhausted) {
+            val hadTracked = currentTrackedPackage != null
+            return ForegroundEvaluationResult(
+                nextTrackedPackage = null,
+                shouldStartSession = false,
+                shouldUpdateSession = false,
+                shouldCloseSession = hadTracked,
+                shouldShowLockOverlay = false,
+                shouldHideLockOverlay = false,
+                isRestrictedEntryAllowed = false
+            )
+        }
+
+        val isNewEntry = !isSameAsTracked
+        return ForegroundEvaluationResult(
+            nextTrackedPackage = candidatePackage,
+            shouldStartSession = isNewEntry,
+            shouldUpdateSession = !isNewEntry,
+            shouldCloseSession = false,
+            shouldShowLockOverlay = isCandidateLimitExhaustedOrFailed,
+            shouldHideLockOverlay = false,
+            isRestrictedEntryAllowed = true
+        )
+    }
+}
+

@@ -1,9 +1,11 @@
 package com.gardiyan.app
 
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
+import com.gardiyan.app.data.timeline.parseRestrictionLogDetails
 import com.gardiyan.app.viewmodel.shouldPenalizeRestrictionRemoval
 import com.gardiyan.app.viewmodel.withReducedDailyLimit
 import com.gardiyan.app.viewmodel.buildRestrictionAssignments
+import com.gardiyan.app.viewmodel.buildRestrictionLogSpecs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -33,6 +35,38 @@ class GuardianViewModelRulesTest {
 
         assertTrue(assignments.all { it.groupId == "shared-group" })
         assertTrue(assignments.all { it.displayName == "Gece Sosyal Medya" })
+    }
+
+    @Test
+    fun `bulk restriction creates one timeline log specification per app`() {
+        val assignments = buildRestrictionAssignments(
+            restrictionName = "Sosyal Medya",
+            apps = listOf(
+                "YouTube" to "com.google.android.youtube",
+                "Instagram" to "com.instagram.android",
+                "TikTok" to "com.zhiliaoapp.musically"
+            ),
+            namedGroupId = "social-group"
+        )
+
+        val logs = buildRestrictionLogSpecs(
+            restrictionName = "Sosyal Medya",
+            assignments = assignments,
+            dailyLimitMinutes = 45
+        )
+
+        assertEquals(listOf("YouTube", "Instagram", "TikTok"), logs.map { it.appName })
+        assertEquals(
+            listOf(
+                "com.google.android.youtube",
+                "com.instagram.android",
+                "com.zhiliaoapp.musically"
+            ),
+            logs.map { it.packageName }
+        )
+        val details = logs.map { parseRestrictionLogDetails(it.details) }
+        assertTrue(details.all { it?.dailyLimitMinutes == 45 })
+        assertTrue(details.all { it?.restrictionName == "Sosyal Medya" })
     }
 
     @Test

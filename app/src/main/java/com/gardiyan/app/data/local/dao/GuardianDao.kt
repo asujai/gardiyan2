@@ -44,6 +44,9 @@ interface GuardianDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFriends(friends: List<FriendEntity>)
 
+    @Query("DELETE FROM friends_list")
+    suspend fun clearFriends()
+
     // Restricted Apps (Multi-app support)
     @Query("SELECT * FROM restricted_apps ORDER BY appName ASC")
     fun getAllRestrictedApps(): Flow<List<RestrictedAppEntity>>

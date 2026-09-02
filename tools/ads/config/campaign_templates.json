@@ -1,0 +1,82 @@
+{
+  "app_id": "com.gardiyan.app",
+  "app_store": "GOOGLE_APP_STORE",
+  "templates": [
+    {
+      "id": "limitra_tr_focus_v1",
+      "name": "[TR] Limitra - Odaklanma ve Ekran Suresi UAC",
+      "language": "Turkish",
+      "language_code": "tr",
+      "language_constant_id": "1037",
+      "target_locations": [
+        {
+          "name": "Turkey",
+          "criterion_id": "2792"
+        }
+      ],
+      "budget": {
+        "daily_amount_currency": "TRY",
+        "daily_amount": 100.0,
+        "target_cpi": 2.5
+      },
+      "headlines": [
+        "Limitra: AppBlock",
+        "Telefon Bağımlılığına Son",
+        "Uygulama ve Süre Sınırı",
+        "21 Gün Disiplin Zinciri",
+        "Odaklan ve Zamanını Koru"
+      ],
+      "descriptions": [
+        "Sosyal medyada boşa vakit kaybetmeyi bırakın. Limitra ile günlük süre sınırları koyun.",
+        "Uygulamaları kilitleyin, 21 günlük disiplin zinciriyle hedeflerinize odaklanın.",
+        "Ekran sürenizi kontrol altına alın. Kendi sınırlarınızı belirleyin ve disiplin kazanın.",
+        "İradeye değil sisteme güvenin. Belirlediğiniz süre dolduğunda uygulama anında kilitlenir.",
+        "Daha üretken bir gün için şimdi indirin. Uygulama kullanımınızı sınırlandırın."
+      ]
+    },
+    {
+      "id": "limitra_en_global_v1",
+      "name": "[EN] Limitra - Screen Time & AppBlock UAC",
+      "language": "English",
+      "language_code": "en",
+      "language_constant_id": "1000",
+      "target_locations": [
+        {
+          "name": "United States",
+          "criterion_id": "2840"
+        },
+        {
+          "name": "United Kingdom",
+          "criterion_id": "2826"
+        },
+        {
+          "name": "Canada",
+          "criterion_id": "2124"
+        },
+        {
+          "name": "Germany",
+          "criterion_id": "2276"
+        }
+      ],
+      "budget": {
+        "daily_amount_currency": "USD",
+        "daily_amount": 10.0,
+        "target_cpi": 0.45
+      },
+      "headlines": [
+        "Limitra: AppBlock",
+        "Stop Phone Addiction",
+        "App Blocker & Screen Time",
+        "Build Daily Discipline",
+        "Lock Apps & Stay Focused"
+      ],
+      "descriptions": [
+        "Take back your time. Set daily app limits and block distracting apps effortlessly.",
+        "Build unbreakable focus with a 21-day discipline chain. Control your screen time now.",
+        "Stop mindless scrolling. Set daily boundaries and boost your daily productivity.",
+        "Reliable app blocker for study and work. Lock apps when your time limit is reached.",
+        "Gain control of your digital life. Download Limitra and build powerful daily habits."
+      ]
+    }
+  ]
+}
