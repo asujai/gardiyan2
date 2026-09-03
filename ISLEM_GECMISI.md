@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-03 03:25] - Google Ads Kampanyası Durduruldu, Bütçe/tCPI Düzeltildi ve 4 Format Kreatif Yüklendi
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** `[YENİ]` tools/ads/creatives/limitra_ads_portrait_1200x1500.png, tools/ads/creatives/limitra_ads_stoic_1200x1200.png; `[GÜNCELLENDİ]` tools/ads/config/campaign_templates.json, tools/ads/src/app_campaign_manager.py, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** (1) Kullanıcı talimatı ve stratejik büyüme analizi doğrultusunda kampanya derhal durduruldu (`PAUSED`). (2) Gerçekçi pazar verileri doğrultusunda hedef CPI (tCPI) 2.50 TRY'den 14.00 TRY'ye, günlük bütçe algoritmanın öğrenme eşiğini karşılaması için 50 TRY'den 150.00 TRY'ye yükseltildi. (3) Kreatif envanteri sığlığı giderildi: Google Ads UAC resmi dikey standardı olan 1200x1500 (4:5) ve Stoacı Kilit odaklı 1200x1200 afişler üretilerek toplam görsel envanteri 4 farklı formata çıkarıldı. (4) Canlı kampanya (ID: `24210252128`) bu 4 görsel varlığı (`416449916702`, `416628465345`, `416569390138`, `416642481174`) ile PAUSED olarak yapılandırıldı.
+* **Doğrulama:** Canlı Google Ads API'den sorgulandı: Kampanya ID `24210252128`, Durum `PAUSED`, Bütçe `150.0 TRY/gün`, tCPI `14.0 TRY`, Ad ID `823175390287`, 4 görsel varlığı bağlı.
+* **Bilinen Sorunlar:** Kampanya şu an duraklatılmış (PAUSED) durumdadır, bütçe harcamaz.
+* **Sonraki Öneri:** P1 kapsamında 15-30 sn'lik dikey ve yatay ekran kaydı videosu eklenmesi; kampanya hedefine (ilk çekirdek kitle/sosyal kanıt edinimi) karar verildiğinde sınırlı süreyle yayına alınması.
+
 ## [2026-09-03 02:35] - Google Ads UAC Kampanyası Yayına Alındı (ENABLED / SERVING)
 
 * **Model:** Antigravity

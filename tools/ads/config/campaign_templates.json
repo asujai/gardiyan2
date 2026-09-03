@@ -16,8 +16,8 @@
       ],
       "budget": {
         "daily_amount_currency": "TRY",
-        "daily_amount": 50.0,
-        "target_cpi": 2.5
+        "daily_amount": 150.0,
+        "target_cpi": 14.0
       },
       "headlines": [
         "Limitra: AppBlock",
@@ -35,7 +35,9 @@
       ],
       "images": [
         "tools/ads/creatives/limitra_ads_landscape_1200x628.png",
-        "tools/ads/creatives/limitra_ads_square_1200x1200.png"
+        "tools/ads/creatives/limitra_ads_square_1200x1200.png",
+        "tools/ads/creatives/limitra_ads_portrait_1200x1500.png",
+        "tools/ads/creatives/limitra_ads_stoic_1200x1200.png"
       ]
     },
     {
