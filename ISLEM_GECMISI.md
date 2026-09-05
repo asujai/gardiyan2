@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-05 17:25] - P0 Görsel Varlık Revizyonu ve P1 ASO Metin Mimarisi Canlıya Alındı
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** [GÜNCELLENDİ] metadata/tr-TR/short_description.txt, metadata/tr-TR/full_description.txt, metadata/en-US/short_description.txt, metadata/en-US/full_description.txt, tools/generate_all_store_locales.py, store_assets/**, play_store_images/**, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** (1) P0 kapsamında 3. ekran görüntüsündeki boş durum (Empty State) başarı serisi, seviye ve odak verileriyle dolduruldu (limitra-progress-tr.png ve limitra-progress-en.png). (2) 5. ekran görüntüsündeki kırmızı üçgenli izin ekranı kaldırılarak yerine Stoacı Kilit Ekranı (limitra-stoic-tr.png ve limitra-stoic-en.png, TikTok kilitli, Seneca alıntısı) entegre edildi. Tüm ekranlarda durum çubukları 09:41 ve standart ikonlarla temizlendi. (3) tools/generate_all_store_locales.py güncellenerek en-US dahil 11 dilin tüm varlıkları (66 adet) HTML/CSS Edge headless ile yeniden üretildi. (4) P1 kapsamında TR ve EN kısa açıklamalar (78 karakter) ve tam açıklamalar (~3,200 karakter) Google Play ASO standartlarına göre optimize edildi. (5) gpc listings sync ile 11 dilin mağaza metinleri, gpc images sync ile 67 görsel varlığı canlı Google Play Console'a yüklendi.
+* **Doğrulama:** gpc listings get --locale tr-TR ve en-US ile metinler canlıda doğrulandı; gpc images list ile tr-TR 3. ve 5. ekranların yerel SHA-256 değerleri canlı Play Store API değerleriyle birebir eşleşti (16393210d419b7e1... ve 934b9ef0e81f7a14...). 198 görsel dosyasının boyut ve format bütünlüğü (1080x1920 ve 1024x500) doğrulandı. UTF-8 mojibake kontrolü geçti (mojibake = 0).
+* **Bilinen Sorunlar:** Yok.
+* **Sonraki Öneri:** Kullanıcı ile P2 (Freemium + IAP modeli ve fiyatlandırma mimarisi) aşamasının planlanması.
+
 ## [2026-09-03 03:25] - Google Ads Kampanyası Durduruldu, Bütçe/tCPI Düzeltildi ve 4 Format Kreatif Yüklendi
 
 * **Model:** Antigravity

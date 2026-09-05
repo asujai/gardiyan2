@@ -22,35 +22,41 @@ CARDS_CONFIG = [
     {
         "id": "1",
         "file": "01-block-distractions.png",
-        "source": PROJECT_ROOT / "test_render" / "limitra-protected3.png",
     },
     {
         "id": "2",
         "file": "02-set-limits.png",
-        "source": PROJECT_ROOT / "test_render" / "limitra-add.png",
     },
     {
         "id": "3",
         "file": "03-build-a-streak.png",
-        "source": PROJECT_ROOT / "test_render" / "limitra-progress.png",
     },
     {
         "id": "4",
         "file": "04-private-history.png",
-        "source": PROJECT_ROOT / "test_render" / "limitra-timeline.png",
     },
     {
         "id": "5",
-        "file": "05-offline-private.png",
-        "source": PROJECT_ROOT / "test_render" / "limitra-permissions-1080.png",
+        "file": "05-stoic-lock.png",
+        "legacy_file": "05-offline-private.png",
     }
 ]
 
+SOURCE_IMAGES = {
+    "1": PROJECT_ROOT / "test_render" / "limitra-protected3.png",
+    "2": PROJECT_ROOT / "test_render" / "limitra-add.png",
+    "3_tr": PROJECT_ROOT / "test_render" / "limitra-progress-tr.png",
+    "3_en": PROJECT_ROOT / "test_render" / "limitra-progress-en.png",
+    "4": PROJECT_ROOT / "test_render" / "limitra-timeline.png",
+    "5_tr": PROJECT_ROOT / "test_render" / "limitra-stoic-tr.png",
+    "5_en": PROJECT_ROOT / "test_render" / "limitra-stoic-en.png",
+}
+
 # Read source phone screenshots as base64
 SOURCE_B64 = {}
-for card in CARDS_CONFIG:
-    with open(card["source"], "rb") as f:
-        SOURCE_B64[card["id"]] = "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
+for key, img_path in SOURCE_IMAGES.items():
+    with open(img_path, "rb") as f:
+        SOURCE_B64[key] = "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
 
 LOCALES = {
     "tr-TR": {
@@ -92,11 +98,11 @@ LOCALES = {
             },
             {
                 "id": "5",
-                "eyebrow": "TEK ÖDEME - ABONELİK YOK",
-                "headline": "VERİLERİN SENİNLE\nGÜVENDE KALSIN.",
-                "subtitle": "Reklamsız, takipçisiz ve internet izinsiz.",
-                "headline_size": 72,
-                "subtitle_size": 31,
+                "eyebrow": "STOACI KİLİT EKRANI",
+                "headline": "DÜRTÜSEL KULLANIMI\nBİLGECE DURDUR.",
+                "subtitle": "Süre dolduğunda tavizsiz kilit ve ilham veren alıntılar.",
+                "headline_size": 68,
+                "subtitle_size": 30,
             },
         ],
         "feature": {
@@ -104,6 +110,62 @@ LOCALES = {
             "headline": "Dikkat dağıtanları engelle.\nZamanın sana kalsın.",
             "meta": "TEK ÖDEME  |  ABONELİK YOK  |  %100 ÇEVRİMDIŞI",
             "subtitle": "Cihazında işlenen gizli ve güvenli uygulama engelleme.",
+            "headline_size": 34,
+            "meta_size": 18,
+            "subtitle_size": 18,
+        }
+    },
+    "en-US": {
+        "name": "English",
+        "is_rtl": False,
+        "font_family": "'Segoe UI', -apple-system, Roboto, sans-serif",
+        "cards": [
+            {
+                "id": "1",
+                "eyebrow": "STRICT APP BLOCKING",
+                "headline": "BLOCK DISTRACTIONS.\nKEEP YOUR TIME.",
+                "subtitle": "Daily limits that stop the endless scroll.",
+                "headline_size": 68,
+                "subtitle_size": 31,
+            },
+            {
+                "id": "2",
+                "eyebrow": "FLEXIBLE DAILY LIMITS",
+                "headline": "SET LIMITS\nYOUR WAY.",
+                "subtitle": "Choose apps, time limits and protection days.",
+                "headline_size": 74,
+                "subtitle_size": 31,
+            },
+            {
+                "id": "3",
+                "eyebrow": "PROGRESS THAT MOTIVATES",
+                "headline": "BUILD A STREAK.\nLEVEL UP.",
+                "subtitle": "Turn better screen habits into visible progress.",
+                "headline_size": 74,
+                "subtitle_size": 31,
+            },
+            {
+                "id": "4",
+                "eyebrow": "PRIVATE ON-DEVICE HISTORY",
+                "headline": "EVERY ACTION.\nCLEARLY TRACKED.",
+                "subtitle": "Review your protection history without an account.",
+                "headline_size": 70,
+                "subtitle_size": 31,
+            },
+            {
+                "id": "5",
+                "eyebrow": "STOIC LOCK SCREEN",
+                "headline": "BREAK THE IMPULSE.\nPAUSE WITH WISDOM.",
+                "subtitle": "Strict limits and timeless philosophy when your time is up.",
+                "headline_size": 66,
+                "subtitle_size": 30,
+            },
+        ],
+        "feature": {
+            "brand": "LIMITRA",
+            "headline": "Block distractions.\nKeep your time.",
+            "meta": "PAY ONCE  |  NO SUBSCRIPTIONS  |  100% OFFLINE",
+            "subtitle": "Private app blocking, processed on your device.",
             "headline_size": 34,
             "meta_size": 18,
             "subtitle_size": 18,
@@ -148,10 +210,10 @@ LOCALES = {
             },
             {
                 "id": "5",
-                "eyebrow": "EINMALZAHLUNG - KEIN ABO",
-                "headline": "DEINE DATEN\nBLEIBEN BEI DIR.",
-                "subtitle": "Keine Werbung, kein Tracking, keine Internetberechtigung.",
-                "headline_size": 72,
+                "eyebrow": "STOISCHER SPERRBILDSCHIRM",
+                "headline": "IMPULSE STOPPEN.\nINNEHALTEN MIT WEISHEIT.",
+                "subtitle": "Strikte Limits und zeitlose Philosophie bei Zeitablauf.",
+                "headline_size": 62,
                 "subtitle_size": 30,
             },
         ],
@@ -198,16 +260,16 @@ LOCALES = {
                 "id": "4",
                 "eyebrow": "HISTORIAL PRIVADO EN DISPOSITIVO",
                 "headline": "CADA ACCIÓN,\nBIEN REGISTRADA.",
-                "subtitle": "Revisa tu historial de protection sin crear cuenta.",
+                "subtitle": "Revisa tu historial de protección sin crear cuenta.",
                 "headline_size": 70,
                 "subtitle_size": 30,
             },
             {
                 "id": "5",
-                "eyebrow": "PAGO ÚNICO - SIN SUSCRIPCIONES",
-                "headline": "TUS DATOS SE\nQUEDAN CONTIGO.",
-                "subtitle": "Sin anuncios, sin rastreadores y sin permiso de Internet.",
-                "headline_size": 72,
+                "eyebrow": "PANTALLA DE BLOQUEO ESTOICA",
+                "headline": "FRENA EL IMPULSO.\nPAUSA CON SABIDURÍA.",
+                "subtitle": "Límites estrictos y filosofía atemporal al agotar tu tiempo.",
+                "headline_size": 64,
                 "subtitle_size": 30,
             },
         ],
@@ -260,11 +322,11 @@ LOCALES = {
             },
             {
                 "id": "5",
-                "eyebrow": "PAIEMENT UNIQUE - SANS ABONNEMENT",
-                "headline": "VOS DONNÉES\nVOUS APPARTIENNENT.",
-                "subtitle": "Sans pub, sans traceur et sans autorisation Internet.",
-                "headline_size": 64,
-                "subtitle_size": 30,
+                "eyebrow": "ÉCRAN DE BLOCAGE STOÏCIEN",
+                "headline": "BRISEZ L'IMPULSION.\nPAUSE PLEINE DE SAGESSE.",
+                "subtitle": "Limites strictes et philosophie intemporelle dès expiration du temps.",
+                "headline_size": 60,
+                "subtitle_size": 29,
             },
         ],
         "feature": {
@@ -316,11 +378,11 @@ LOCALES = {
             },
             {
                 "id": "5",
-                "eyebrow": "SEKALI BAYAR - TANPA LANGGANAN",
-                "headline": "DATA ANDA TETAP\nAMAN DI PERANGKAT.",
-                "subtitle": "Tanpa iklan, tanpa pelacak, tanpa izin Internet.",
-                "headline_size": 68,
-                "subtitle_size": 31,
+                "eyebrow": "LAYAR KUNCI STOIK",
+                "headline": "HENTIKAN IMPULS.\nJEDA DENGAN BIJAKSANA.",
+                "subtitle": "Batas ketat dan kutipan filosofis saat waktu Anda habis.",
+                "headline_size": 66,
+                "subtitle_size": 30,
             },
         ],
         "feature": {
@@ -372,10 +434,10 @@ LOCALES = {
             },
             {
                 "id": "5",
-                "eyebrow": "PAGAMENTO ÚNICO - SEM ASSINATURAS",
-                "headline": "SEUS DADOS\nFICAM COM VOCÊ.",
-                "subtitle": "Sem anúncios, sem rastreadores e sem permissão de Internet.",
-                "headline_size": 72,
+                "eyebrow": "TELA DE BLOQUEIO ESTÓICA",
+                "headline": "PARE O IMPULSO.\nREFLITA COM SABEDORIA.",
+                "subtitle": "Limites estritos e filosofia atemporal ao esgotar seu tempo.",
+                "headline_size": 66,
                 "subtitle_size": 30,
             },
         ],
@@ -428,10 +490,10 @@ LOCALES = {
             },
             {
                 "id": "5",
-                "eyebrow": "РАЗОВАЯ ПОКУПКА - БЕЗ ПОДПИСОК",
-                "headline": "ВАШИ ДАННЫЕ\nОСТАЮТСЯ У ВАС.",
-                "subtitle": "Без рекламы, без трекеров и без доступа в Интернет.",
-                "headline_size": 70,
+                "eyebrow": "СТОИЧЕСКИЙ ЭКРАН БЛОКИРОВКИ",
+                "headline": "ОСТАНОВИ ИМПУЛЬС.\nМУДРАЯ ПАУЗА.",
+                "subtitle": "Строгие лимиты и мудрые цитаты, когда время истекло.",
+                "headline_size": 64,
                 "subtitle_size": 30,
             },
         ],
@@ -484,10 +546,10 @@ LOCALES = {
             },
             {
                 "id": "5",
-                "eyebrow": "एक बार भुगतान - कोई सब्सक्रिप्शन नहीं",
-                "headline": "आपका डेटा\nआपके पास सुरक्षित।",
-                "subtitle": "कोई विज्ञापन नहीं, कोई ट्रैकर नहीं और कोई इंटरनेट अनुमति नहीं।",
-                "headline_size": 68,
+                "eyebrow": "स्टोइक लॉक स्क्रीन",
+                "headline": "आदत पर विराम लगाएं।\nसमझदारी से रुकें।",
+                "subtitle": "समय पूरा होने पर सख्त सीमाएं और प्रेरणादायक विचार।",
+                "headline_size": 62,
                 "subtitle_size": 29,
             },
         ],
@@ -540,11 +602,11 @@ LOCALES = {
             },
             {
                 "id": "5",
-                "eyebrow": "จ่ายครั้งเดียว - ไม่มีระบบสมาชิก",
-                "headline": "ข้อมูลของคุณ\nอยู่กับคุณเสมอ",
-                "subtitle": "ไม่มีโฆษณา ไม่มีการติดตาม และไม่ขอสิทธิ์อินเทอร์เน็ต",
-                "headline_size": 72,
-                "subtitle_size": 30,
+                "eyebrow": "หน้าจอล็อกแบบสโตอิก",
+                "headline": "หยุดการไถหน้าจอ\nพักอย่างมีสติ",
+                "subtitle": "ขีดจำกัดที่เข้มงวดและปรัชญาสร้างแรงบันดาลใจเมื่อหมดเวลา",
+                "headline_size": 66,
+                "subtitle_size": 29,
             },
         ],
         "feature": {
@@ -596,10 +658,10 @@ LOCALES = {
             },
             {
                 "id": "5",
-                "eyebrow": "دفع لمرة واحدة - بدون اشتراكات",
-                "headline": "بياناتك تظل\nفي أمان معك.",
-                "subtitle": "بدون إعلانات، بدون متتبعات، وبدون إذن إنترنت.",
-                "headline_size": 68,
+                "eyebrow": "شاشة قفل رِواقية",
+                "headline": "أوقف الاندفاع.\nتوقف بحكمة.",
+                "subtitle": "حدود صارمة واقتباسات فلسفية ملهمة عند انتهاء الوقت.",
+                "headline_size": 66,
                 "subtitle_size": 30,
             },
         ],
@@ -618,7 +680,16 @@ LOCALES = {
 def generate_html_screenshot(card, locale_key, locale_cfg):
     is_rtl = locale_cfg.get("is_rtl", False)
     font_fam = locale_cfg.get("font_family", "'Segoe UI', sans-serif")
-    source_b64 = SOURCE_B64[card["id"]]
+    
+    card_id = card["id"]
+    if card_id == "3":
+        src_key = "3_tr" if locale_key == "tr-TR" else "3_en"
+    elif card_id == "5":
+        src_key = "5_tr" if locale_key == "tr-TR" else "5_en"
+    else:
+        src_key = card_id
+    
+    source_b64 = SOURCE_B64[src_key]
     
     if is_rtl:
         header_style = "position: absolute; top: 48px; left: 58px; right: 58px; display: flex; flex-direction: row-reverse; align-items: center; justify-content: flex-start; gap: 18px;"
@@ -842,7 +913,7 @@ def render_html_to_png(html_str, output_png_path, width, height, temp_id="temp")
         raise RuntimeError(f"Edge render failed: {res.stderr}")
 
 def main():
-    print("Starting generation of 10 localized Play Store asset sets...")
+    print("Starting generation of localized Play Store asset sets for ALL 11 locales...")
     
     total_locales = len(LOCALES)
     generated_counts = 0
@@ -853,6 +924,11 @@ def main():
         # 1. Output directory in store_assets/<locale>-v2/
         store_assets_dir = PROJECT_ROOT / "store_assets" / f"{loc_key}-v2"
         store_assets_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Clean up obsolete 05-offline-private.png in store_assets if present
+        obsolete_file = store_assets_dir / "05-offline-private.png"
+        if obsolete_file.exists():
+            obsolete_file.unlink()
         
         # 2. Output directory in store_assets/play-sync-v2/<locale>/
         play_sync_phone = PROJECT_ROOT / "store_assets" / "play-sync-v2" / loc_key / "phoneScreenshots"
@@ -881,6 +957,12 @@ def main():
             assert img.size == (1080, 1920), f"Invalid size {img.size} for {dest1}"
             img.save(dest2, "PNG")
             img.save(dest3, "PNG")
+            
+            # Also keep legacy filename in store_assets/<locale>-v2 for backward compat
+            if "legacy_file" in CARDS_CONFIG[idx - 1]:
+                legacy_card_dest = store_assets_dir / CARDS_CONFIG[idx - 1]["legacy_file"]
+                img.save(legacy_card_dest, "PNG")
+                
             print(f"  [OK] Screenshot {idx}: {file_name} -> {dest1.stat().st_size} bytes")
             generated_counts += 1
 
@@ -902,4 +984,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -1,22 +1,47 @@
-Limitra AppBlock: Dijital Detoks ve Akıllı Uygulama Engelleyici
+Limitra: Odaklanma, Ekran Süresi ve Uygulama Engelleyici
 
-Aylık/yıllık aboneliklerden bıktınız mı? Tek seferlik ödemeyle sonsuza kadar sizin olan, tamamen çevrimdışı ve gizlilik odaklı bir odaklanma yardımcısı.
+Aylık ve yıllık aboneliklerden bıktınız mı? Tek seferlik ödemeyle ömür boyu sahip olacağınız, %100 çevrimdışı, gizlilik odaklı ve tavizsiz dijital detoks yardımcınız Limitra ile kontrolü yeniden elinize alın.
 
-Gününüzün büyük bir kısmını sosyal medyada kaydırarak veya oyunlarda zaman harcayarak mı geçiriyorsunuz? Limitra AppBlock, kontrolü tekrar elinize almanız ve üretkenliğinizi artırmanız için tasarlanmış güçlü bir dijital detoks aracıdır.
+Gününüzün saatlerini sosyal medyada sonsuz kaydırma yaparak, kısa videolar (Reels, Shorts, TikTok) izleyerek veya mobil oyunlarda farkında olmadan harcamaktan yoruldunuz mu? Limitra, ekran bağımlılığını kırmak, derin odak (Deep Work) geliştirmek ve üretkenliğinizi zirveye taşımak için özel olarak tasarlandı.
 
-NEDEN LIMITRA APPBLOCK?
-• Abonelik Yok: Tek seferlik ödemeyle ömür boyu tam erişim. Gizli ücret veya yenilenen abonelikler yoktur.
-• %100 Çevrimdışı ve Güvenli: Uzak sunucu yok, reklam yok, veri takibi yok. Tüm kullanım verileriniz sadece telefonunuzda saklanır.
-• Akıllı Uygulama Engelleme: Belirlediğiniz günlük süre dolduğu an dikkat dağıtıcı uygulamalar tavizsiz şekilde kilitlenir.
-• Gelişmiş Odaklanma Modu: Sosyal medya ve oyunları geçici olarak kilitleyerek işinize veya derslerinize odaklanın.
-• Detaylı Ekran Süresi Analizi: Zamanınızı nerede harcadığınızı cihaz içi grafiklerle takip edin.
-• Seviye & Rozet Sistemi: Odaklanma serinizi (Streak) koruyarak Çaylaklıktan Ustalığa seviye atlayın.
+🌟 NEDEN LIMITRA?
 
-İZİNLER VE ŞEFFAFLIK:
-Limitra, sizi Android ayarlarına yönlendirmeden önce her iznin neden gerektiğini açıklar:
-1. Kullanım Erişimi: Uygulamaların ne kadar kullanıldığını ve seçtiğiniz sınırın dolup dolmadığını yalnızca cihazda hesaplamak için kullanılır.
-2. Erişilebilirlik Hizmeti (Accessibility Service API): Yalnızca sınırlandırdığınız uygulamanın açıldığını algılayıp seçtiğiniz engeli uygulamak için kullanılır. Özel mesajlarınız, şifreleriniz veya kişisel verileriniz KESİNLİKLE okunmaz, kaydedilmez ve dışarıya aktarılmaz.
-3. Diğer Uygulamaların Üzerinde Görüntüleme (Overlay): Gerektiğinde koruyucu engelleme ekranını göstermek için kullanılır.
-4. Bildirim ve pil optimizasyonu muafiyeti: Korumanın arka planda güvenilir çalışmasını sağlar; Android'in izin verdiği cihazlarda bildirim izni isteğe bağlıdır.
+1. SIFIR ABONELİK – TEK ÖDEME, ÖMÜR BOYU ERİŞİM
+Limitra sizden asla her ay düzenli ücret talep etmez. Tek bir ödemeyle tüm özelliklere ömür boyu sınırsız erişirsiniz. Gizli ücret veya yenilenen abonelikler yoktur.
 
-Zamanınızın ve dikkatinizin kontrolünü Limitra AppBlock ile yeniden kazanın!
+2. %100 ÇEVRİMDİŞİ VE TAM GİZLİLİK
+Uzak sunucu yok, reklam yok, veri takibi yok! İnternet izni istemez. Tüm istatistikleriniz ve kilitleriniz yalnızca telefonunuzda güvenle saklanır.
+
+3. TAVİZSİZ AKILLI UYGULAMA ENGELLEYİCİ
+Instagram, TikTok, YouTube, X veya dikkat dağıtan oyunlar... Belirlediğiniz günlük süre dolduğu anda uygulama tavizsiz engellenir. Kolay geçilemeyen koruma ile dürtüsel açma alışkanlığını kırarsınız.
+
+4. STOACI KİLİT EKRANI (STOIC LOCK SCREEN)
+Süreniz dolduğunda karşınıza soğuk bir hata ekranı değil; Seneca, Marcus Aurelius ve Epiktetos gibi Stoacı düşünürlerin bilgece sözleri çıkar. Bu felsefi mola, dürtüsel açma isteğini durdurur ve dikkatinizi anın değerine çevirir.
+
+5. ALIŞKANLIK VE SERİ SİSTEMİ (STREAK & SEVİYELER)
+Günlük odak hedeflerinize uydukça zinciri kırmayın (Streak). Çaylak seviyesinden Stoacı ve Zen Ustası derecelerine yükselerek dijital iradenizi güçlendirin.
+
+6. CİHAZ İÇİ ŞEFFAF ZAMAN AKIŞI
+Hesap açmadan gün boyunca hangi saatlerde ne kadar koruma sağlandığını şeffaf bir zaman akışında inceleyin.
+
+🎯 KİMLER İÇİN İDEAL?
+• YKS, KPSS, ALES, TUS ve sınavlara hazırlanan, derse odaklanmak isteyen öğrenciler
+• Yazılımcı, tasarımcı ve derin odak (Deep Work) arayan profesyoneller
+• Sosyal medya ve video bağımlılığını azaltıp kendine vakit ayırmak isteyenler
+• Gece doomscrolling alışkanlığını bitirip kaliteli uyumak isteyenler
+
+🔒 İZİNLER VE ŞEFFAFLIK POLİTİKASI
+Limitra tam şeffaflık ilkesini benimser:
+• Kullanım Erişimi: Uygulamaların günlük kullanım süresini yerel olarak hesaplamak ve limiti tespit etmek için kullanılır.
+• Erişilebilirlik Hizmeti (Accessibility Service API): Sınır koyduğunuz uygulamanın açıldığını algılayıp koruyucu kilit ekranını göstermek için kullanılır. Özel mesajlarınız, şifreleriniz veya kişisel verileriniz KESİNLİKLE okunmaz, kaydedilmez ve paylaşılamaz.
+• Diğer Uygulamaların Üzerinde Görüntüleme: Limit dolduğunda koruma ekranını göstermek için kullanılır.
+• Pil Optimizasyonu Muafiyeti: Arka planda korumanın kesintisiz sürmesini sağlar.
+
+❓ SIKÇA SORULAN SORULAR
+• İnternetsiz çalışır mı?
+Evet, Limitra %100 çevrimdışıdır. İnternet olmadan tüm koruma aktif kalır.
+
+• Tekrar ödeme yapacak mıyım?
+Hayır. Tek seferlik satın alımla ömür boyu kullanırsınız.
+
+Zamanınız en değerli varlığınızdır. Kontrolü Limitra ile geri kazanın!
