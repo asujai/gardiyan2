@@ -7,6 +7,8 @@
 - **Son Çalışma:** `[antigravity] fix: eliminate mockup empty space E5, bump to v1.2.1 with Claude engine fix, and sync to Play Store`
 
 ## Son İşlem
+- **Mağaza Yarım İşler Listesi Çıkarıldı (Claude, 5 Eylül 20:35):** Antigravity'ye devredilmek üzere 7 maddelik liste `MAGAZA_YARIM_ISLER.md` dosyasına yazıldı: M1 alt boşluk (Kart 1/2 ~%25, Kart 4 ~%30), M2 boş 3 ekran görüntüsü slotu (8'den 5'i dolu), M3 tablet görselleri (7"/10" canlıda 0), M4 tanıtım videosu (11/11 yok), M5 dokuz dilde telefon içi arayüz, M6 feature graphic dikey denge, M7 ikon dizin tutarsızlığı. Her madde kabul kriteri ve dosya yollarıyla verildi. Canlı envanter: `phoneScreenshots: 5`, `sevenInch/tenInch: No images found`, `featureGraphic: 1`, `icon: 1`.
+
 - **E5 Alt Boşlukları Giderildi, Claude Motor Düzeltmeleri Dahil Edildi ve v1.2.1 Canlıya Alındı (Antigravity, 5 Eylül 20:45):**
   1. **E5 Mockup Alt Boşluklarının Kökten Giderilmesi:**
      - Kart 1 ("LİMİT TAKİBİ" / "LIMIT TRACKERS"): İçerik 8 tam uygulama kartı (Instagram, YouTube, TikTok, X, Reddit, Telegram, Netflix, Spotify), 3'lü özet istatistik şeridi ve alt gizlilik güvence kartı ile zenginleştirildi; y=1715px'e kadar doldurularak alt boşluk sıfırlandı.

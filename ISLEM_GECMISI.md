@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-05 20:35] - Mağaza Tarafı Yarım Kalan İşler Listesi Çıkarıldı
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[YENİ]` MAGAZA_YARIM_ISLER.md; `[GÜNCELLENDİ]` ISLEM_GECMISI.md, SON_DURUM.md
+* **Yapılan İşlem:** Kullanıcı isteği üzerine Play Store tarafında yarım kalan işler, Antigravity'ye devredilmek üzere kabul kriterleriyle birlikte listelendi. Canlı Play Console API ile varlık envanteri çıkarıldı: `gpc images list --locale tr-TR` ile tip bazında sayım yapıldı — `phoneScreenshots: 5`, `sevenInchScreenshots: 0` (No images found), `tenInchScreenshots: 0` (No images found), `featureGraphic: 1`, `icon: 1`. Yedi madde tanımlandı: M1 ekran görüntülerindeki alt boşluk (Kart 1 ve 2'de ~%25, Kart 4'te ~%30; `28a6bab` raporunda giderildiği söylenmişti), M2 boş 3 telefon ekran görüntüsü slotu (8 slottan 5'i dolu; aboneliksiz tek ödeme, çevrimdışı gizlilik ve zamanlanmış koruma içerikleri önerildi), M3 tablet ekran görüntüleri (7 inç ve 10 inç hiç yok, Play "tabletler için optimize edilmemiş" uyarısı basıyor), M4 tanıtım videosu (11/11 locale'de yok, 20-30 sn akış senaryosu yazıldı), M5 dokuz dilde telefon içi arayüz lokalizasyonu (öncelik sırası pazar bazlı verildi), M6 feature graphic dikey denge, M7 ikon dizin tutarsızlığı. Her madde için neden yarım kaldığı, yapılacak iş, kabul kriteri ve ilgili dosya yolları yazıldı. Ayrıca `AppBlockAccessibilityService.kt` dosyasının `d1acdc8` ile değiştiği ve mağaza işleri sırasında o dosyaya dokunulmaması gerektiği not edildi.
+* **Doğrulama:** Canlı Play Console varlık sayımı 8 görsel tipi için tek tek çalıştırıldı; tablet slotlarının boş olduğu `No images found for tr-TR/sevenInchScreenshots` ve `.../tenInchScreenshots` çıktılarıyla teyit edildi. Alt boşluk oranları tr-TR ekran görüntüleri 1, 2 ve 4 üzerinde piksel ölçümüyle çıkarıldı. Birim testler tekrar çalıştırıldı: 132 testten 125'i geçti, başarısız 7 test aynı Robolectric ortam hatası (Java 21 gerekiyor, sistemde 17).
+* **Bilinen Sorunlar:** Liste yalnız mağaza tarafını kapsar. Ürün tarafında açık kalanlar: H4 kök nedeni doğrulanmadı, erişilebilirlik servisi kararsızlığı (cihazda oturumlar ~10 sn'de ölüyordu) ve Robolectric testlerinin çalışmaması (7 test kör noktada).
+* **Sonraki Öneri:** Liste Antigravity'ye verilmeli. Paralel olarak ürün tarafında servis kararlılığı ve Java 21 test ortamı ele alınmalı.
+
 ## [2026-09-05 20:45] - E5 Alt Boşlukları Giderildi, Claude Motor Düzeltmeleri Dahil Edildi, v1.2.1 Canlıya Alındı
 
 * **Model:** Antigravity
