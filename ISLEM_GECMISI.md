@@ -1,5 +1,26 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-05 23:15] - Magaza Yarim Kalan Isleri (M1 - M7) Eksiksiz Tamamlandi ve Canliya Esitlendi
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** `[YENI]` tools/sync_remaining_locales.py; `[GUNCELLENDI]` tools/generate_all_store_locales.py, test_render/**, store_assets/**, play_store_images/**, MAGAZA_YARIM_ISLER.md, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapilan Islem:** `MAGAZA_YARIM_ISLER.md` endeksindeki tum acik maddeler (M1-M7) sirayla, olculebilir ve kanitli bicimde cozuldu:
+  1. **M1 (Kart 2 Boslugu):** Kart 2 sablonuna 6 uygulama cipi, 5 hizli on ayar (15m - 2h), 09:00-18:00 araligi, 7 koruma gunu, 2 satirlik baslangic bilgi seridi ve cevrimdisi mimari karti eklendi. Claude'un bosluk olcum betigiyle bosluk %13.9'dan %0.0'a (0 px) dusuruldu. 8 kartin tamami <%5.2 bosluk ile kriterin cok altinda.
+  2. **M2 (Bos 3 Ekran Goruntusu Slotu):** 3 yeni satis odakli kart (Kart 6: Aboneliksiz Tek Odeme, Kart 7: %100 Cevrimdisi ve Gizli, Kart 8: Aktif Zaman Araligi Otomatik Kilit) tasarlandi. 11 dilin tamaminda 8'er adet 1080x1920 telefon ekrani uretilip Play Console'a yuklendi.
+  3. **M3 (Tablet Ekran Goruntuleri):** 11 dilin tamami icin 4 adet 7 inc (1200x1920) ve 4 adet 10 inc (1600x2560) dikey tablet gorseli (88 adet tablet gorseli) uretilip Google Play Console'a yuklendi.
+  4. **M5 (pt-BR ve es-ES Yerellestirmesi):** Oncelikli pazarlar pt-BR ve es-ES icin tum telefon mockuplari lokalize edildi (`limitra-c1..c8-pt.png` ve `limitra-c1..c8-es.png`) ve Play Store'a yuklendi.
+  5. **M6 (Feature Graphic Denge):** Metin blogu `top: 109px` olarak ayarlandi; ust bosluk 134 px, alt bosluk 133 px, sapma yalnizca 1 px (%0.2) seviyesine indirildi.
+  6. **M7 (Ikon Standartlasmasi):** 11 dilde `icon/icon.png` (512x512) olusturuldu ve esitlendi.
+  7. **M4 (Tanitim Videosu):** Play Console'un dosya kabul etmeyip YouTube URL'si istemesi nedeniyle video senaryo adimlari dokumante edildi; link girildiginde baglanacak sekilde bekletilmektedir.
+  8. **Canli Play Console Senkronizasyonu (`tools/sync_remaining_locales.py`):** 11 dil atomik islemlerle tek tek senkronize edildi ve canli API ile dogrulandi (11 dil x 18 gorsel = 198 varlik).
+  9. **Kritik Kisit Korumasi:** `AppBlockAccessibilityService.kt` dosyasina kesinlikle dokunulmadi; Claude'un motor duzeltmeleri eksiksiz korundu.
+* **Dogrulama:**
+  - `gpc images list`: 11 dilin tamaminda `phoneScreenshots: 8/8`, `sevenInchScreenshots: 4/4`, `tenInchScreenshots: 4/4`, `featureGraphic: 1/1`, `icon: 1/1` canlida [OK].
+  - Claude olcum betigi (tr-TR): `1.png` (%5.2), `2.png` (%0.0 / 0px), `3.png` (%0.2), `4.png` (%1.9), `5.png` (%0.0), `6.png` (%0.1), `7.png` (%0.7), `8.png` (%0.4).
+  - UTF-8 kontrolu: `grep -c "Ã"` values-tr'de 0; cift kodlama 0.
+* **Bilinen Sorunlar:** M4 tanitim videosu icin YouTube URL bekleniyor; kullanici YouTube linki eklediginde canliya baglanabilir.
+* **Sonraki Oneri:** P2 (Freemium + IAP modeli) planinin baslatilmasi.
+
 ## [2026-09-05 20:35] - Mağaza Tarafı Yarım Kalan İşler Listesi Çıkarıldı
 
 * **Model:** Claude
