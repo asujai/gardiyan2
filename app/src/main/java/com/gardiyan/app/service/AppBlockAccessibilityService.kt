@@ -61,6 +61,12 @@ class AppBlockAccessibilityService : AccessibilityService() {
         private const val SUSPICIOUS_POLL_INTERVAL_MS = 250L
         private const val HEALTH_GRACE_MS = 15_000L
         private const val USAGE_STATS_RECONCILE_INTERVAL_MS = 60_000L
+
+        // Kullanıcı kısıtlı bir hedefteyken UsageStats uzlaştırması tek güvenilir
+        // yedek muhasebe olabilir: sistem erişilebilirlik servisini öldürdüğünde
+        // oturum sayımı kopar ve kalan süre yalnız uzlaştırmayla düşülür. 60 saniyelik
+        // aralık bu durumda kilidi bir dakikaya kadar geciktiriyordu.
+        private const val USAGE_STATS_RECONCILE_ACTIVE_INTERVAL_MS = 10_000L
         private const val LONG_FOREGROUND_LOOKBACK_MS = 6 * 60 * 60 * 1000L
 
         @Volatile
@@ -412,7 +418,17 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     val km = getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
                     val isLocked = km?.isKeyguardLocked ?: false
 
-                    if (now - lastUsageStatsReconcileTime > USAGE_STATS_RECONCILE_INTERVAL_MS) {
+                    val reconcileIntervalMs = if (
+                        currentForegroundPackage?.let { fg ->
+                            getCachedActiveRestrictedAppsForToday().any { it.packageName == fg }
+                        } == true
+                    ) {
+                        USAGE_STATS_RECONCILE_ACTIVE_INTERVAL_MS
+                    } else {
+                        USAGE_STATS_RECONCILE_INTERVAL_MS
+                    }
+
+                    if (now - lastUsageStatsReconcileTime > reconcileIntervalMs) {
                         lastUsageStatsReconcileTime = now
                         val reconciled = withContext(Dispatchers.IO) {
                             repository.reconcileRestrictedAppsWithUsageStats()
@@ -426,7 +442,11 @@ class AppBlockAccessibilityService : AccessibilityService() {
                             val exhaustedForegroundApp = exhaustedByUsageStats.firstOrNull {
                                 it.packageName == effectiveForeground
                             }
-                            if (exhaustedForegroundApp != null && exhaustedForegroundApp.packageName == currentTrackedPackage) {
+                            // İzleme durumu burada şart koşulmaz: servis öldürülüp
+                            // yeniden başladığında currentTrackedPackage null olur ve
+                            // eskiden kilit hiç gösterilmezdi. Teyit
+                            // enforceUsageStatsLimitIfNeeded içinde canlı pencereyle yapılır.
+                            if (exhaustedForegroundApp != null) {
                                 enforceUsageStatsLimitIfNeeded(exhaustedForegroundApp, repository)
                             }
                         }
@@ -927,7 +947,15 @@ class AppBlockAccessibilityService : AccessibilityService() {
         repository: GuardianRepository
     ) {
         if (result.remainingSecondsToday > 0) return
-        if (currentTrackedPackage != result.packageName) return
+        // İzleme koptuğunda (servis sistem tarafından öldürülüp yeniden başladığında)
+        // currentTrackedPackage null kalır. Eskiden bu durumda UsageStats limitin
+        // dolduğunu görse bile kilit gösterilmiyordu. Canlı pencere teyidi varsa
+        // izleme durumundan bağımsız olarak kilitlenir.
+        if (currentTrackedPackage != result.packageName &&
+            !isForegroundConfirmedByActiveWindow(result.packageName)
+        ) {
+            return
+        }
         entryTimeMillis = 0L
         tickJob?.cancel()
         tickJob = null
