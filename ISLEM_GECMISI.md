@@ -1,5 +1,18 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-05 20:45] - E5 Alt Boşlukları Giderildi, Claude Motor Düzeltmeleri Dahil Edildi, v1.2.1 Canlıya Alındı
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` app/build.gradle.kts, tools/generate_all_store_locales.py, test_render/**, store_assets/**, play_store_images/**, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Claude'un 2. tur denetim raporundaki (`PLAY_STORE_DENETIM_2_v1.2.0.md`) tüm bulgular çözüldü ve canlı sürüme yansıtıldı:
+  1. **E5 Alt Boşluklarının Kökten Giderilmesi:** Kart 1, Kart 2 ve Kart 4 mockup şablonları dikeyde yeniden tasarlandı. Kart 1'e 8 tam uygulama kartı, 3'lü istatistik şeridi ve alt gizlilik garantisi kartı eklendi. Kart 2'ye 4 hedef çip, 5 hızlı ön ayar çipi (15 dk - 2 sa), 09:00-18:00 saat aralığı, 7 gün seçimi, 2 koruma modu ve 4 maddelik yerel mimari güvence kartı yerleştirildi. Kart 4'e 3 güne yayılan 14 olay, haftalık özet şeridi ve şifreli yerel veritabanı rozeti eklendi. Tüm kartlarda alt gezinme çubuğu üstündeki boşluk sıfırlandı. 11 dil x 6 varlık (66 görsel) yeniden üretildi ve Play Console'a yüklendi.
+  2. **Claude'un Kilit Tetikleme ve Uzlaştırma Düzeltmelerinin Paketlenmesi:** Claude'un `d1acdc8` commit'inde geliştirdiği `allowRestrictedEntry` gevşetmesi, canlı pencere teyidiyle kilit kurma ve 10 saniyelik aktif UsageStats uzlaştırması release paketine dahil edildi.
+  3. **H4 Durumunun Dürüst Kaydı:** `SON_DURUM.md` dosyasında H4'ün gün normalizasyonu motorunun var olduğu ancak Brezilyalı kullanıcının kök sorununun OEM servis sonlandırması (Xiaomi HyperOS / agresif pil yöneticisi) olduğu açıkça dokümante edildi; erken "kökünden çözüldü" iddiası düzeltildi.
+  4. **Canlı Sürüm (v1.2.1 / Code 18):** `app/build.gradle.kts` `versionCode 18` / `versionName "1.2.1"` yapıldı. `./gradlew.bat :app:bundleRelease` ile imzalı release paketi derlendi (`BUILD SUCCESSFUL in 2m 3s`). `gpc bundles upload` ile Google Play Console Production kanalına %100 rollout ile başarıyla yüklendi ve `gpc tracks list` ile doğrulandı.
+* **Doğrulama:** `gpc tracks list` ile Production'da `version_codes: [18]`, `status: "completed"`, `rollout: 100` doğrulandı (SHA-256: `a7ba69315f4935e5c4161ced3472aa41c8cb8011ce4e75f08554f09286642206`). `gpc images sync` ile 67 görsel Play Console'a yüklendi (`Uploaded 67 image(s)`). UTF-8 bütünlüğü doğrulandı (`grep -c "Ã"` values-tr'de 0).
+* **Bilinen Sorunlar:** (1) H4: OEM erişilebilirlik servisi sonlandırması sistem seviyesindedir, kullanıcı tarafında otomatik başlatma ve pil kısıtlamasız çalışma ayarı gerektirir; kod seviyesinde 10 saniyelik uzlaştırma ile dayanıklılık artırılmıştır. (2) 11 dilde tanıtım videosu ve tablet görselleri henüz yoktur (opsiyonel).
+* **Sonraki Öneri:** Kullanıcı cihazında (HyperOS) erişilebilirlik izinlerinin açılıp v1.2.1 sürümünün Google Play'den güncellenerek test edilmesi.
+
 ## [2026-09-05 20:10] - v1.2.0 Paketinin Bağımsız Denetimi (2. Tur)
 
 * **Model:** Claude

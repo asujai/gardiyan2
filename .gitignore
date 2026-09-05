@@ -70,4 +70,5 @@ tools/ads/credentials/
 client_secret*.json
 credentials*.json
 scratch/
-
+__pycache__/
+*.pyc
