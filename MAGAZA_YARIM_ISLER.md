@@ -3,7 +3,8 @@
 **Tarih:** 2026-09-05
 **Hazırlayan:** Claude (Opus 5)
 **Hedef:** Antigravity
-**Mevcut sürüm:** v1.2.0 / versionCode 17, production %100
+**Mevcut sürüm:** v1.2.1 / versionCode 18, production %100
+**Güncelleme:** Bu liste yazılırken Antigravity paralel olarak `b0b7db4` commit'ini attı ve v1.2.1'i yayınladı. M1 yeniden ölçüldü ve büyük ölçüde kapandı, M6 da düzelmiş. Aşağıdaki durumlar **v1.2.1 sonrası taze ölçümdür**.
 **Ölçüm kaynağı:** Canlı Play Console API (`gpc`), yerel dosyalar, görsellerin gözle incelenmesi
 
 Bu liste yalnızca **mağaza (store listing) tarafını** kapsar. Uygulama kodu ve servis kararlılığı ayrı konudur.
@@ -14,49 +15,41 @@ Bu liste yalnızca **mağaza (store listing) tarafını** kapsar. Uygulama kodu 
 
 | # | İş | Öncelik | Neden yarım |
 |---|---|---|---|
-| M1 | Ekran görüntülerindeki alt boşluk | P1 | "Giderildi" denildi, ölçümde %25-30 boşluk duruyor |
+| M1 | Ekran görüntülerindeki alt boşluk | P3 | **Büyük ölçüde çözüldü.** Yalnız Kart 2'de %13.9 kaldı |
 | M2 | Boş 3 ekran görüntüsü slotu | P1 | 8 slot var, 5 dolu |
 | M3 | Tablet ekran görüntüleri | P2 | Canlıda 0 adet, hiç üretilmedi |
 | M4 | Tanıtım videosu | P2 | 11/11 locale'de yok |
 | M5 | 9 dilde telefon içi arayüz | P2 | Yalnız tr-TR lokalize edildi |
-| M6 | Feature graphic dikey denge | P3 | Metin bloğu üstte toplanmış |
+| M6 | Feature graphic dikey denge | P3 | **Neredeyse çözüldü.** 37 px sapma kaldı (üst 115, alt 152) |
 | M7 | İkon dizin tutarsızlığı | P3 | Yalnız `en-US/icon/` altında |
 
 **Canlı doğrulama (tr-TR):** `phoneScreenshots: 5`, `sevenInchScreenshots: 0`, `tenInchScreenshots: 0`, `featureGraphic: 1`, `icon: 1`.
 
 ---
 
-## M1 — Ekran görüntülerindeki alt boşluk (P1)
+## M1 — Ekran görüntülerindeki alt boşluk (P3 — büyük ölçüde çözüldü)
 
-### Neden yarım
-`28a6bab` raporunda *"Tüm kartlardaki alt boşluklar giderildi ve kart yoğunluğu dengelendi"* denildi. Boşluk azaldı ama gitmedi. tr-TR görsellerinde telefon çerçevesi içindeki ölçüm:
+### Durum
+`b0b7db4` / v1.2.1 ile düzeltildi. Kart 1 artık 8 uygulama, üst özet şeridi (Korumada / Kalan Süre / Tasarruf) ve filtre çipleriyle dolu; Kart 4 ise 14 olay kartı, üç günlük gruplama ve üst metrik şeridiyle tamamen doldurulmuş. Belirgin bir iyileşme.
 
-| Ekran | İçerik nerede bitiyor | Telefon çerçevesi nerede bitiyor | Boş alan |
-|---|---|---|---|
-| 1 (Limit Takibi) | ~1200 px (FAB 1715'te ayrı duruyor) | ~1870 px | **~%25** |
-| 2 (Kısıtlama Ekle) | ~1340 px | ~1870 px | **~%25** |
-| 4 (Zaman Akışı) | ~1240 px | ~1870 px | **~%30** |
+### Taze ölçüm (v1.2.1, tr-TR)
+Telefon çerçevesi içinde alttan başlayan tekdüze boş alan:
 
-Kart 4 en kötüsü: dört olay kartı ve gizlilik notundan sonra ekranın alt üçte biri tamamen boş beyaz.
+| Ekran | Boş alan | Durum |
+|---|---|---|
+| 1.png | ~100 px (%5.2) | ✅ kabul edilebilir |
+| 2.png | ~266 px (**%13.9**) | ⚠️ açık |
+| 3.png | ~4 px (%0.2) | ✅ |
+| 4.png | ~37 px (%1.9) | ✅ |
+| 5.png | 0 px (%0) | ✅ |
 
-### Yapılacak
-İki yoldan biri:
+### Kalan iş
+Yalnız **Kart 2 (Kısıtlama Ekle)**. "Korumayı Başlat" butonunun altında yaklaşık 266 piksel boş beyaz alan var. Diğer kartlarda uygulanan yoğunlaştırma bu karta uygulanmamış.
 
-**A. İçerik ekle (tercih edilen)**
-- Kart 1: 4. bir uygulama satırı ekle (örn. YouTube Shorts veya X, "KORUNUYOR" durumunda). Alt boşluk kapanır, ürün daha dolu görünür.
-- Kart 4: 2-3 olay kartı daha ekle (örn. "Seviye Atladı — Seviye 4 Stoacı", "Günlük Sıfırlama", "Başarı Serisi 18 Gün"). Zaman akışının gerçekten zengin bir geçmiş tuttuğu izlenimi güçlenir.
-- Kart 2: "Korumayı Başlat" butonunun altına küçük bir bilgi satırı ("Koruma anında devreye girer, yeniden başlatma gerekmez") ekle.
-
-**B. Çerçeveyi kırp**
-Telefon mockup'ının yüksekliğini içeriğe göre kısalt ve 1080x1920 tuval içinde dikeyde ortala.
+Öneri: butonun altına iki satırlık bir bilgi bloğu ekle — örneğin "Koruma anında devreye girer, yeniden başlatma gerekmez" ve "İstediğin zaman düzenle veya duraklat" — ya da uygulama çipi listesini 3'ten 5'e çıkar.
 
 ### Kabul kriteri
-Her tr-TR ekran görüntüsünde telefon çerçevesi içindeki boş alan **%10'un altında** olmalı. Ölçüm: içeriğin bittiği piksel ile çerçevenin bittiği piksel arasındaki fark / çerçeve yüksekliği.
-
-### Dosyalar
-`tools/generate_all_store_locales.py`, `scratch/generate_all_cards.py`, `play_store_images/*/phoneScreenshots/`
-
----
+Kart 2'de boş alan **%10'un altına** insin. Ölçüm betiği aşağıdaki bölümde.
 
 ## M2 — Boş 3 ekran görüntüsü slotu (P1)
 
@@ -163,18 +156,13 @@ Her dil için 5 ekranın telefon içi metinleri o dilde; gözle doğrulama.
 
 ---
 
-## M6 — Feature graphic dikey denge (P3)
+## M6 — Feature graphic dikey denge (P3 — neredeyse çözüldü)
 
-### Neden yarım
-1024x500 tuvalde metin bloğu üstte toplanmış, alt ~%25 boş. Logo solda dikeyde ortalı ama sağdaki metin grubu değil.
+### Taze ölçüm (v1.2.1, tr-TR)
+Sağdaki metin bloğunun üst boşluğu 115 px, alt boşluğu 152 px, sapma **37 px** (tuval yüksekliğinin ~%7'si). Önceki halinden belirgin şekilde iyi.
 
-### Yapılacak
-Sağdaki metin bloğunu (LIMITRA + başlık + meta satırı + alt başlık) dikeyde ortala. Gerekirse alt başlık satırının altına ince bir ayraç veya küçük bir rozet ("TEK ÖDEME") ekleyerek dengeyi kur.
-
-### Kabul kriteri
-Metin bloğunun üst ve alt boşluğu birbirine ±%5 içinde eşit.
-
----
+### Kalan iş
+İsteğe bağlı. Metin bloğunu 18-19 piksel aşağı kaydırmak dengeyi tam kurar. Görsel olarak fark edilir bir kusur değil; boş vakitte yapılabilir.
 
 ## M7 — İkon dizin tutarsızlığı (P3)
 
@@ -189,12 +177,35 @@ Dizin yapısı kendini açıklıyor; yeni gelen biri ikonun neden tek dilde durd
 
 ---
 
+## BOŞLUK ÖLÇÜM BETİĞİ
+
+M1 kabul kriterini doğrulamak için:
+
+```python
+from PIL import Image
+import glob
+for p in sorted(glob.glob('play_store_images/tr-TR/phoneScreenshots/*.png')):
+    im = Image.open(p).convert('RGB'); w, h = im.size; px = im.load()
+    x0, x1 = int(w*0.25), int(w*0.75)
+    blank = 0
+    for y in range(int(h*0.92), int(h*0.35), -1):
+        row = [px[x, y] for x in range(x0, x1, 20)]
+        mn = min(min(c) for c in row); mx = max(max(c) for c in row)
+        if mn > 235 and mx - mn < 12:
+            blank += 1
+        else:
+            break
+    print(f"{p}: {blank} px (%{100*blank/h:.1f})")
+```
+
+---
+
 ## SIRALAMA ÖNERİSİ
 
 Etki/emek oranına göre:
 
 1. **M2** (3 yeni ekran görüntüsü) — en yüksek dönüşüm etkisi, mevcut altyapıyla üretilebilir
-2. **M1** (alt boşluk) — M2 ile aynı üretim turunda halledilebilir
+2. **M1/Kart 2** (kalan %13.9 boşluk) — M2 ile aynı üretim turunda halledilebilir
 3. **M5/pt-BR ve es-ES** — mevcut pazarlarda doğrudan etki
 4. **M3** (tablet) — Play kalite rozetini açar
 5. **M4** (video) — en yüksek emek, en yüksek dönüşüm; ayrı bir üretim işi
