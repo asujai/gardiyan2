@@ -1,16 +1,47 @@
-Limitra: Détox Numérique et Bloqueur d'Applications
+Limitra : Temps d'Écran, Focus et Bloqueur d'Applications
 
-Passez-vous trop de temps sur les réseaux sociaux ou les jeux mobiles ? Limitra est votre allié bien-être numérique pour reprendre le contrôle de votre temps et maximiser votre productivité.
+Vous en avez assez des abonnements mensuels ou annuels récurrents ? Reprenez la maîtrise de votre vie numérique avec Limitra : un bloqueur d'applications 100 % hors ligne, axé sur la confidentialité, sans aucun abonnement et à vie.
 
-Un achat unique, sans abonnement. Fonctionne hors ligne, sans publicité ni suivi.
+Passez-vous des heures à faire défiler sans fin des vidéos courtes (Reels, TikTok, Shorts), à rafraîchir vos flux sociaux ou à vous disperser sur des jeux mobiles ? Limitra est spécialement conçu pour briser l'addiction au smartphone, cultiver le travail en profondeur (Deep Work) et libérer votre productivité.
 
-FONCTIONNALITÉS CLÉS:
-• Bloqueur d'applications intelligent: Définissez des limites quotidiennes pour vos applications. Une fois la limite atteinte, l'accès est bloqué instantanément.
-• Mode Concentration: Bloquez temporairement les distractions pour travailler ou étudier sereinement.
-• Statistiques locales: Suivez votre temps d'écran directement sur votre appareil avec des graphiques clairs.
-• 100% Hors-ligne et Privé: Aucun serveur distant, aucune publicité, aucun suivi. Vos données restent sur votre téléphone.
+🌟 POURQUOI CHOISIR LIMITRA ?
 
-AUTORISATIONS ET TRANSPARENCE:
-1. API du service d'accessibilité: Utilisée uniquement pour détecter le lancement d'applications restreintes et afficher l'écran de verrouillage. Aucun message privé, mot de passe ou donnée personnelle n'est lu, collecté ou transmis.
-2. Affichage par-dessus d'autres applications: Nécessaire pour afficher le panneau de verrouillage lorsque la limite est atteinte.
-3. Accès aux données d'utilisation: Sert uniquement à calculer localement le temps passé dans les apps et l'atteinte de vos limites.
+1. AUCUN ABONNEMENT – PAYEZ UNE SEULE FOIS, PROFITEZ-EN À VIE
+Contrairement à la majorité des applications qui verrouillent leurs fonctionnalités essentielles derrière des abonnements coûteux, Limitra vous offre un accès illimité à vie avec un paiement unique et transparent. Pas de renouvellement automatique, pas de frais cachés.
+
+2. 100 % HORS LIGNE & CONFIDENTIALITÉ TOTALE
+Aucun serveur externe, aucune publicité, aucun traqueur ! Limitra ne demande même pas la permission d'accès à Internet. Vos données d'utilisation, statistiques et blocages restent strictement confidentiels sur votre appareil.
+
+3. BLOQUEUR D'APPLICATIONS STRICT ET SANS COMPROMIS
+Reprenez le contrôle face à Instagram, TikTok, YouTube, X (Twitter), Reddit ou vos jeux favoris. Dès que votre limite quotidienne est atteinte, l'application est bloquée sans concession pour briser les impulsions automatiques.
+
+4. ÉCRAN DE BLOCAGE STOÏCIEN (STOIC LOCK SCREEN)
+Lorsque votre temps est écoulé, vous n'êtes pas confronté à un message d'erreur austère. Limitra affiche des pensées inspirantes de philosophes stoïciens renommés comme Sénèque, Marc Aurèle et Épictète. Cette pause réflexive interrompt les boucles de dopamine et recentre votre esprit sur le moment présent.
+
+5. SÉRIES DE FOCUS & PROGRESSION EN NIVEAUX (STREAKS)
+Transformez votre détox digitale en une expérience valorisante. Maintenez votre série quotidienne de concentration. Évoluez du statut de Débutant jusqu'à celui de Stoïcien et Maître Zen à mesure que votre autodiscipline grandit.
+
+6. CHRONOLOGIE PRIVÉE SUR L'APPAREIL
+Consultez l'historique de vos sessions protégées, des limites appliquées et du temps préservé dans une chronologie limpide — le tout sans compte utilisateur ni inscription requise.
+
+🎯 POUR QUI EST FAIT LIMITRA ?
+• Étudiants révisant des concours, le baccalauréat ou des examens universitaires nécessitant un travail sans distraction
+• Développeurs, créateurs et professionnels du savoir en quête de sessions intenses de Deep Work
+• Toute personne souhaitant réduire le scroll compulsif des réseaux sociaux pour retrouver du temps de qualité
+• Celles et ceux voulant stopper le doomscrolling nocturne pour retrouver un sommeil réparateur
+
+🔒 AUTORISATIONS & TRANSPARENCE
+Limitra s'engage pour une clarté absolue :
+• Accès aux données d'utilisation : Nécessaire exclusivement pour mesurer localement le temps d'écran des applications sélectionnées et faire respecter vos quotas.
+• API d'accessibilité (Accessibility Service) : Utilisée uniquement pour détecter le lancement d'une application restreinte et afficher l'écran de verrouillage protecteur. Limitra ne lit, n'enregistre et ne transmet JAMAIS vos messages privés, frappes au clavier ou mots de passe.
+• Affichage par-dessus d'autres applications : Requis pour afficher l'écran de verrouillage stoïcien sur l'application bloquée.
+• Exclusion de l'optimisation de batterie : Assure une protection fluide, fiable et continue tout au long de votre journée.
+
+❓ FOIRE AUX QUESTIONS (FAQ)
+• Limitra fonctionne-t-il sans connexion Internet ?
+Oui, Limitra est entièrement autonome et hors ligne.
+
+• Devrai-je payer à nouveau plus tard ?
+Non. Un achat unique vous garantit un accès complet et définitif.
+
+Votre temps est votre ressource la plus précieuse. Ne le laissez plus aux algorithmes : téléchargez Limitra et reprenez les rênes !

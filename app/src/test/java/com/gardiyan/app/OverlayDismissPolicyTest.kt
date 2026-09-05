@@ -95,7 +95,12 @@ class OverlayDismissPolicyTest {
     }
 
     @Test
-    fun `app with remaining time is not re-locked by active window confirmation`() {
+    fun `app with remaining time is re-tracked when active window confirms foreground`() {
+        // Regresyon: bu kural eskiden "süresi kalan hedef polling ile izlemeye
+        // alınmasın" şeklindeydi. Araya sistem arayüzü girip izleme koptuğunda
+        // oturum bir daha kurulamıyor, süre düşülmüyor ve sayaç kurulmadığı için
+        // kilit hiç gelmiyordu. Canlı pencere teyidi bayat UsageStats verisinden
+        // farklıdır; teyit varsa izleme yeniden kurulmalıdır.
         val eval = ForegroundPolicyEvaluator.evaluate(
             currentTrackedPackage = null,
             candidatePackage = "com.instagram.android",
@@ -105,10 +110,11 @@ class OverlayDismissPolicyTest {
             isForegroundConfirmedByActiveWindow = true
         )
 
-        assertFalse(
-            "Süresi kalan uygulama polling ile izlemeye alınmamalı",
+        assertTrue(
+            "Canlı pencere teyidi varsa izleme yeniden kurulmalı",
             eval.isRestrictedEntryAllowed
         )
+        assertTrue("Kopan oturum yeniden başlatılmalı", eval.shouldStartSession)
         assertFalse(eval.shouldShowLockOverlay)
     }
 

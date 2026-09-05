@@ -43,11 +43,14 @@ CARDS_CONFIG = [
 ]
 
 SOURCE_IMAGES = {
-    "1": PROJECT_ROOT / "test_render" / "limitra-protected3.png",
-    "2": PROJECT_ROOT / "test_render" / "limitra-add.png",
+    "1_tr": PROJECT_ROOT / "test_render" / "limitra-protected3-tr.png",
+    "1_en": PROJECT_ROOT / "test_render" / "limitra-protected3-en.png",
+    "2_tr": PROJECT_ROOT / "test_render" / "limitra-add-tr.png",
+    "2_en": PROJECT_ROOT / "test_render" / "limitra-add-en.png",
     "3_tr": PROJECT_ROOT / "test_render" / "limitra-progress-tr.png",
     "3_en": PROJECT_ROOT / "test_render" / "limitra-progress-en.png",
-    "4": PROJECT_ROOT / "test_render" / "limitra-timeline.png",
+    "4_tr": PROJECT_ROOT / "test_render" / "limitra-timeline-tr.png",
+    "4_en": PROJECT_ROOT / "test_render" / "limitra-timeline-en.png",
     "5_tr": PROJECT_ROOT / "test_render" / "limitra-stoic-tr.png",
     "5_en": PROJECT_ROOT / "test_render" / "limitra-stoic-en.png",
 }
@@ -682,12 +685,8 @@ def generate_html_screenshot(card, locale_key, locale_cfg):
     font_fam = locale_cfg.get("font_family", "'Segoe UI', sans-serif")
     
     card_id = card["id"]
-    if card_id == "3":
-        src_key = "3_tr" if locale_key == "tr-TR" else "3_en"
-    elif card_id == "5":
-        src_key = "5_tr" if locale_key == "tr-TR" else "5_en"
-    else:
-        src_key = card_id
+    suffix = "_tr" if locale_key == "tr-TR" else "_en"
+    src_key = f"{card_id}{suffix}"
     
     source_b64 = SOURCE_B64[src_key]
     

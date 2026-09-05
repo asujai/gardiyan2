@@ -1,16 +1,47 @@
-Limitra: Detox Digital e Bloqueador de Aplicativos
+Limitra: Tempo de Tela, Foco e Bloqueador de Aplicativos
 
-Você perde horas nas redes sociais ou em jogos no celular? O Limitra é o seu assistente de produtividade para recuperar o controle do seu tempo e criar hábitos digitais saudáveis.
+Cansado de pagar assinaturas mensais e anuais intermináveis? Retome o controle da sua vida digital com o Limitra — um bloqueador de aplicativos 100% offline, focado em privacidade, sem mensalidades e com acesso vitalício.
 
-Compra única, sem assinatura. Funciona 100% offline, sem anúncios nem rastreamento.
+Você passa horas deslizando o feed de vídeos curtos (Reels, TikTok, Shorts), redes sociais ou se perdendo em jogos no celular sem perceber? O Limitra foi projetado especificamente para quebrar o ciclo do vício em dopamina, estimular o foco profundo (Deep Work) e turbinar a sua produtividade diária.
 
-RECURSOS PRINCIPAIS:
-• Bloqueador Inteligente: Defina limites diários para aplicativos específicos. Ao atingir o limite, o app é bloqueado imediatamente.
-• Modo Foco Avançado: Bloqueie distrações temporariamente para estudar ou trabalhar com total concentração.
-• Estatísticas no Aparelho: Acompanhe seu tempo de tela com relatórios locais e intuitivos.
-• 100% Offline e Privado: Sem servidores remotos, sem anúncios e sem rastreamento. Seus dados ficam no seu celular.
+🌟 POR QUE ESCOLHER O LIMITRA?
 
-PERMISSÕES E TRANSPARÊNCIA:
-1. API de Serviço de Acessibilidade: Utilizada exclusivamente para detectar a abertura de aplicativos restritos e acionar a tela de bloqueio. NUNCA lemos, coletamos ou enviamos mensagens privadas, senhas ou dados pessoais.
-2. Sobrepor a outros apps: Necessário para exibir a tela de bloqueio quando seu limite for atingido.
-3. Acesso ao uso: Utilizado apenas para calcular localmente o tempo de uso dos apps e quando seus limites são atingidos.
+1. ZERO ASSINATURAS – PAGUE UMA VEZ, TENHA PARA SEMPRE
+Enquanto outros aplicativos prendem recursos básicos atrás de planos caros de cobrança recorrente, o Limitra oferece acesso ilimitado com uma compra única e justa. Sem renovações automáticas, sem surpresas na fatura.
+
+2. 100% OFFLINE E PRIVACIDADE ABSOLUTA
+Sem servidores remotos, sem anúncios e sem rastreadores! O Limitra sequer solicita permissão de Internet. Seus dados de uso, estatísticas e listas de bloqueio ficam armazenados estritamente na memória do seu aparelho.
+
+3. BLOQUEIO DE APLICATIVOS RIGOROSO E SEM FRESCURA
+Recupere sua concentração contra o vício em Instagram, TikTok, YouTube, X (Twitter), Reddit ou jogos. Assim que o tempo diário configurado expira, o app é bloqueado imediatamente, impedindo a navegação por impulso.
+
+4. TELA DE BLOQUEIO ESTOICA (STOIC LOCK SCREEN)
+Quando o seu tempo acaba, você não vê uma mensagem fria de bloqueio. O Limitra exibe pensamentos sábios de filósofos estoicos atemporais, como Sêneca, Marco Aurélio e Epicteto. Uma pausa reflexiva que interrompe a necessidade de estímulo rápido e devolve sua mente ao presente.
+
+5. SEQUÊNCIAS DE FOCO E NÍVEIS DE AVANÇO (STREAKS)
+Transforme o seu detox digital em uma conquista diária. Não quebre a sua sequência de foco (Streak). Evolua da patente de Iniciante até se tornar um Filósofo Estoico e Mestre Zen conforme consolida sua força de vontade digital.
+
+6. LINHA DO TEMPO PRIVADA NO APARELHO
+Acompanhe os bloqueios realizados, as metas cumpridas e as horas salvas em uma linha do tempo clara e organizada — tudo direto no seu celular, sem criar login ou conta.
+
+🎯 PARA QUEM É O LIMITRA?
+• Estudantes em preparação para o ENEM, vestibulares, concursos públicos ou provas da faculdade
+• Programadores, designers e profissionais que necessitam de sessões contínuas de Deep Work
+• Pessoas que desejam vencer o vício em redes sociais e recuperar horas úteis para seus projetos
+• Quem deseja eliminar o hábito do doomscrolling noturno e melhorar a qualidade do sono
+
+🔒 PERMISSÕES E POLÍTICA DE TRANSPARÊNCIA
+O Limitra segue um compromisso intransigente com a sua privacidade:
+• Acesso a Dados de Uso: Usado exclusivamente para calcular o tempo diário de uso dos aplicativos protegidos localmente e aplicar as restrições.
+• API do Serviço de Acessibilidade: Utilizado exclusivamente para identificar quando um aplicativo restrito é aberto e exibir a tela de proteção. O Limitra NUNCA lê, intercepta, grava ou compartilha mensagens privadas, senhas ou dados pessoais.
+• Sobrepor a outros apps: Permite que a tela estoica de bloqueio seja exibida sobre o aplicativo protegido.
+• Isenção de otimização de bateria: Assegura que o monitoramento funcione sem falhas em segundo plano.
+
+❓ PERGUNTAS FREQUENTES (FAQ)
+• O Limitra funciona sem conexão com a Internet?
+Sim! O Limitra é totalmente offline. Toda a proteção opera no próprio dispositivo.
+
+• Terei que pagar novamente algum dia?
+Não. A compra única garante acesso ilimitado e vitalício a todos os recursos.
+
+O seu tempo é o seu bem mais precioso. Não o desperdice em feeds infinitos. Baixe o Limitra e assuma o comando do seu foco!

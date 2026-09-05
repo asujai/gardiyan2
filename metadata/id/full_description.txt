@@ -1,16 +1,47 @@
-Limitra: Detoks Digital & Pemblokir Aplikasi Pintar
+Limitra: Waktu Layar, Fokus & Pemblokir Aplikasi Cerdas
 
-Apakah Anda menghabiskan terlalu banyak waktu di media sosial atau game? Limitra membantu Anda mengontrol waktu layar dan meningkatkan fokus serta produktivitas harian.
+Lelah dengan biaya langganan bulanan atau tahunan yang terus berulang? Rebut kembali kendali atas kehidupan digital Anda bersama Limitra — pemblokir aplikasi 100% offline, berfokus pada privasi, tanpa langganan, dan berlaku seumur hidup.
 
-Sekali beli, akses selamanya—tanpa langganan. Sepenuhnya offline, tanpa iklan atau pelacakan.
+Apakah Anda menghabiskan waktu berjam-jam tanpa sadar menggulir video pendek (Reels, TikTok, Shorts), media sosial, atau bermain game online? Limitra dirancang khusus untuk memutus kecanduan dopamin dari smartphone, membangun fokus mendalam (Deep Work), dan melipatgandakan produktivitas harian Anda.
 
-FITUR UTAMA:
-• Pemblokir Aplikasi Pintar: Tetapkan batas harian untuk aplikasi tertentu. Saat batas habis, akses langsung dikunci.
-• Mode Fokus Lanjutan: Blokir aplikasi yang mengganggu untuk belajar atau bekerja tanpa gangguan.
-• Statistik Penggunaan Lokal: Pantau waktu layar dengan grafik jelas langsung di perangkat Anda.
-• 100% Offline & Pribadi: Tanpa server eksternal, tanpa iklan, dan tanpa pelacak. Data Anda tetap berada di ponsel Anda.
+🌟 MENGAPA MEMILIH LIMITRA?
 
-IZIN DAN KEBIJAKAN:
-1. Accessibility Service API: Digunakan hanya untuk mendeteksi pembukaan aplikasi yang dibatasi dan menampilkan layar kunci. Kami TIDAK PERNAH membaca, mengumpulkan, atau mengirimkan data pribadi.
-2. Tampilkan di atas aplikasi lain: Diperlukan untuk menampilkan overlay kunci saat batas waktu harian Anda tercapai.
-3. Akses penggunaan: Hanya digunakan untuk menghitung durasi penggunaan aplikasi dan pencapaian batas Anda secara lokal.
+1. TANPA LANGGANAN – BAYAR SEKALI, MILIKI SELAMANYA
+Tidak seperti aplikasi lain yang mengunci fitur-fitur penting di balik sistem langganan yang mahal, Limitra memberikan akses penuh seumur hidup dengan satu kali pembayaran yang transparan. Tanpa perpanjangan otomatis dan tanpa biaya tersembunyi.
+
+2. 100% OFFLINE & PRIVASI TOTAL
+Tanpa server luar, tanpa iklan, dan tanpa pelacak! Limitra bahkan tidak memerlukan izin akses Internet. Semua statistik waktu layar dan pengaturan batas aplikasi tersimpan aman hanya di perangkat Anda sendiri.
+
+3. PEMBLOKIR APLIKASI KETAT & TANPA KOMPROMI
+Lindungi fokus Anda dari gangguan Instagram, TikTok, YouTube, X (Twitter), Reddit, atau game mobile. Begitu batas waktu harian Anda habis, akses aplikasi langsung diblokir secara tegas guna mencegah kebiasaan membuka secara impulsif.
+
+4. LAYAR KUNCI STOIK DENGAN KUTIPAN BIJAK (STOIC LOCK SCREEN)
+Saat batas waktu Anda habis, Anda tidak hanya melihat layar peringatan biasa. Limitra menampilkan kutipan bijak dari para filsuf Stoik terkemuka seperti Seneca, Marcus Aurelius, dan Epictetus. Jeda penuh kesadaran ini menghentikan impuls membuka layar dan mengembalikan perhatian Anda ke hal yang benar-benar penting.
+
+5. STREAK FOKUS & SISTEM LEVEL PROGRESIF
+Ubah proses detoks digital Anda menjadi pencapaian yang memuaskan. Pertahankan rantai fokus harian Anda (Streak). Naikkan level kedisiplinan Anda mulai dari Pemula hingga menjadi Stoik dan Master Zen seiring menguatnya kontrol diri Anda.
+
+6. LINIMASA AKTIVITAS PRIVAT DI PERANGKAT
+Pantau riwayat perlindungan, batas waktu yang terpicu, dan jam produktif yang berhasil Anda selamatkan dalam linimasa kronologis yang rapi — tanpa perlu mendaftar atau membuat akun.
+
+🎯 COCOK UNTUK SIAPA?
+• Pelajar dan mahasiswa yang sedang mempersiapkan ujian (SNBT, tes masuk kerja, CPNS) dan butuh belajar tanpa distraksi
+• Programmer, desainer, dan pekerja kreatif yang membutuhkan konsentrasi penuh dalam Deep Work
+• Siapa saja yang ingin mengurangi scrolling kompulsif di media sosial dan meluangkan waktu nyata untuk keluarga
+• Anda yang ingin menghentikan kebiasaan doomscrolling di malam hari demi kualitas tidur yang lebih baik
+
+🔒 IZIN & KEBIJAKAN TRANSPARANSI
+Limitra menjunjung tinggi keterbukaan dan keamanan data pribadi:
+• Akses Data Penggunaan: Diperlukan semata-mata untuk menghitung durasi waktu layar aplikasi terpilih secara lokal di perangkat dan menegakkan batas waktu.
+• Layanan Aksesibilitas (Accessibility Service API): Hanya digunakan untuk mendeteksi saat aplikasi yang dibatasi dibuka dan segera memunculkan layar pelindung. Limitra TIDAK PERNAH membaca, menyimpan, atau mengirimkan pesan pribadi, kata sandi, maupun data pribadi pengguna.
+• Tampilkan di Atas Aplikasi Lain: Diperlukan untuk menampilkan layar kunci Stoik di atas aplikasi yang dibatasi.
+• Pengecualian Pengoptimalan Baterai: Menjaga pemblokiran tetap berjalan stabil dan andal di latar belakang sepanjang hari.
+
+❓ PERTANYAAN UMUM (FAQ)
+• Apakah Limitra berfungsi tanpa koneksi internet?
+Ya, Limitra sepenuhnya bekerja secara offline.
+
+• Apakah saya akan ditagih lagi di kemudian hari?
+Tidak pernah. Pembelian satu kali memberikan hak akses penuh seumur hidup.
+
+Waktu Anda adalah aset yang paling berharga. Jangan serahkan kepada algoritma medsos. Unduh Limitra dan rebut kembali fokus Anda!

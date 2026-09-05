@@ -66,4 +66,85 @@ class RestrictionScheduleTest {
             )
         )
     }
+
+    @Test
+    fun `portuguese weekdays match calendar day labels correctly`() {
+        // Seg-Sex (Monday-Friday in Portuguese)
+        val activeDays = "Seg, Ter, Qua, Qui, Sex"
+        // Should be active on Pzt (Monday) at 10:00
+        assertTrue(
+            RestrictionSchedule.isActiveAt(
+                activeDays = activeDays,
+                activeWindowEnabled = true,
+                activeStartMinutes = 8 * 60,
+                activeEndMinutes = 17 * 60,
+                currentDayLabel = "Pzt",
+                previousDayLabel = "Paz",
+                minuteOfDay = 10 * 60
+            )
+        )
+        // Should be active on Cum (Friday) at 16:59
+        assertTrue(
+            RestrictionSchedule.isActiveAt(
+                activeDays = activeDays,
+                activeWindowEnabled = true,
+                activeStartMinutes = 8 * 60,
+                activeEndMinutes = 17 * 60,
+                currentDayLabel = "Cum",
+                previousDayLabel = "Per",
+                minuteOfDay = 16 * 60 + 59
+            )
+        )
+        // Should NOT be active on Cmt (Saturday) or Paz (Sunday)
+        assertFalse(
+            RestrictionSchedule.isActiveAt(
+                activeDays = activeDays,
+                activeWindowEnabled = true,
+                activeStartMinutes = 8 * 60,
+                activeEndMinutes = 17 * 60,
+                currentDayLabel = "Cmt",
+                previousDayLabel = "Cum",
+                minuteOfDay = 10 * 60
+            )
+        )
+        // Should NOT be active outside 08:00 - 17:00 on weekdays
+        assertFalse(
+            RestrictionSchedule.isActiveAt(
+                activeDays = activeDays,
+                activeWindowEnabled = true,
+                activeStartMinutes = 8 * 60,
+                activeEndMinutes = 17 * 60,
+                currentDayLabel = "Pzt",
+                previousDayLabel = "Paz",
+                minuteOfDay = 17 * 60 + 30
+            )
+        )
+    }
+
+    @Test
+    fun `english weekdays match correctly`() {
+        val activeDays = "Mon,Tue,Wed,Thu,Fri"
+        assertTrue(
+            RestrictionSchedule.isActiveAt(
+                activeDays = activeDays,
+                activeWindowEnabled = false,
+                activeStartMinutes = 0,
+                activeEndMinutes = 0,
+                currentDayLabel = "Çar",
+                previousDayLabel = "Sal",
+                minuteOfDay = 12 * 60
+            )
+        )
+        assertFalse(
+            RestrictionSchedule.isActiveAt(
+                activeDays = activeDays,
+                activeWindowEnabled = false,
+                activeStartMinutes = 0,
+                activeEndMinutes = 0,
+                currentDayLabel = "Paz",
+                previousDayLabel = "Cmt",
+                minuteOfDay = 12 * 60
+            )
+        )
+    }
 }

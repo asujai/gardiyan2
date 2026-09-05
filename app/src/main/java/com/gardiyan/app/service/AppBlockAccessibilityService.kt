@@ -135,6 +135,15 @@ class AppBlockAccessibilityService : AccessibilityService() {
         return getCachedActiveRestrictedApps().filter { it.isScheduledAt(now) }
     }
 
+    /**
+     * Ön plandaki paket bugün kısıtlı olduğu hâlde izlenmiyorsa true döner.
+     * İzlemenin koptuğu ve yeniden kurulması gerektiği durumu işaret eder.
+     */
+    private fun isUntrackedRestrictedTarget(foregroundPackage: String): Boolean {
+        if (currentTrackedPackage == foregroundPackage) return false
+        return getCachedActiveRestrictedAppsForToday().any { it.packageName == foregroundPackage }
+    }
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
@@ -351,26 +360,50 @@ class AppBlockAccessibilityService : AccessibilityService() {
                         }
                     }
 
-                    currentTrackedPackage
-                        ?.takeIf { it == currentForegroundPackage }
-                        ?.let { pkg ->
-                            val app = cachedRestrictedApps.firstOrNull { it.packageName == pkg }
-                            if (app != null) {
-                                if (!app.isScheduledAt(now)) {
+                    val fgPkg = currentForegroundPackage
+                    if (fgPkg != null && fgPkg != packageName) {
+                        val app = cachedRestrictedApps.firstOrNull { it.packageName == fgPkg }
+                        if (app != null) {
+                            val scheduledNow = app.isScheduledAt(now)
+                            if (currentTrackedPackage == fgPkg) {
+                                if (!scheduledNow) {
                                     // A scheduled window may end while the target stays open.
                                     // Re-run foreground handling so the session is closed and
                                     // no usage outside the configured window is charged.
-                                    handleForegroundChange(pkg, allowRestrictedEntry = false)
+                                    handleForegroundChange(fgPkg, allowRestrictedEntry = false)
                                 } else {
                                     withContext(Dispatchers.IO) {
-                                        repository.updateSessionLastSeen(pkg)
+                                        repository.updateSessionLastSeen(fgPkg)
                                     }
-                                    if (app.isActive && !app.isFailed) {
+                                    // updateSessionLastSeen kalan süreyi canlı düşer.
+                                    // Süre burada biterse kullanıcı hedefte durduğu için
+                                    // yeni bir ön plan olayı gelmeyebilir; sayaca ek olarak
+                                    // her turda taze DB değeriyle kilit denetlenir.
+                                    val latest = withContext(Dispatchers.IO) {
+                                        repository.getRestrictedAppByIdSync(app.id)
+                                    }
+                                    if (latest != null &&
+                                        latest.isActive &&
+                                        (latest.remainingSecondsToday <= 0 || latest.isFailed)
+                                    ) {
+                                        foregroundMutex.withLock {
+                                            if (currentTrackedPackage == fgPkg &&
+                                                currentForegroundPackage == fgPkg
+                                            ) {
+                                                enforceExhaustedLock(latest, repository, "canlı denetim")
+                                            }
+                                        }
+                                    } else if (app.isActive && !app.isFailed) {
                                         checkAndTriggerNotifications(app)
                                     }
                                 }
+                            } else if (scheduledNow) {
+                                // Target app is open and its active scheduled window just started!
+                                // Start tracking and trigger lock immediately if limit is 0 or exhausted.
+                                handleForegroundChange(fgPkg, allowRestrictedEntry = true)
                             }
                         }
+                    }
 
                     // Ekran ve Kilit durumu tespiti
                     val pm = getSystemService(Context.POWER_SERVICE) as? PowerManager
@@ -490,7 +523,16 @@ class AppBlockAccessibilityService : AccessibilityService() {
                             Log.d(TAG, "Own package reported foreground while lock overlay visible; ignoring")
                         } else if (
                             foregroundPkg != packageName &&
-                            foregroundPkg != currentForegroundPackage
+                            (
+                                foregroundPkg != currentForegroundPackage ||
+                                    // Ön plan paketi değişmemiş olsa bile izleme kopmuş
+                                    // olabilir: araya sistem arayüzü girip çıktığında
+                                    // oturum kapanır ama kullanıcı hedefte kalır. Bu
+                                    // durumda ön plan paketi zaten hedefe eşit olduğu
+                                    // için eski koşul bir daha hiç tetiklenmiyor, süre
+                                    // düşülmüyor ve sayaç kurulmuyordu.
+                                    isUntrackedRestrictedTarget(foregroundPkg)
+                                )
                         ) {
                             if (foregroundPkg != currentForegroundPackage) {
                                 Log.w(TAG, "UsageStats fallback detected different package: $foregroundPkg (A11y had: $currentForegroundPackage)")
@@ -501,6 +543,8 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                         details = "UsageStats yedek doğrulaması: Ön plan = $foregroundPkg (A11y = $currentForegroundPackage)"
                                     )
                                 }
+                            } else {
+                                Log.w(TAG, "Tracking lost while staying in restricted target: $foregroundPkg. Recovering.")
                             }
                             handleForegroundChange(foregroundPkg, allowRestrictedEntry = false)
                         }
@@ -622,7 +666,10 @@ class AppBlockAccessibilityService : AccessibilityService() {
      */
     private fun isForegroundConfirmedByActiveWindow(packageName: String): Boolean {
         return try {
-            rootInActiveWindow?.packageName?.toString() == packageName
+            val activeWindowPackage = rootInActiveWindow?.packageName?.toString()
+            if (activeWindowPackage == packageName) return true
+            val recentEvent = queryForegroundEvent(2000L)
+            recentEvent?.packageName == packageName
         } catch (e: Exception) {
             Log.w(TAG, "isForegroundConfirmedByActiveWindow failed: ${e.message}")
             false
@@ -709,25 +756,28 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     val isNewEntry = currentTrackedPackage != matchingApp.packageName
                     val isExhausted = matchingApp.remainingSecondsToday <= 0 || matchingApp.isFailed
                     if (isNewEntry && !allowRestrictedEntry) {
-                        // Süresi dolmuş bir uygulama ön plandaysa, olayın kaynağı ne
-                        // olursa olsun kilit gösterilmelidir. Aksi hâlde ana ekrana
-                        // çekme hareketi yarıda bırakıldığında (a11y pencere olayı
-                        // gelmediği için) kısıtlama tamamen atlatılabiliyordu.
+                        // Erişilebilirlik pencere olayı her zaman gelmez: araya sistem
+                        // arayüzü, klavye ya da başlatıcı girdiğinde izleme kopar ve
+                        // kullanıcı hedefte kalmaya devam eder. Bu durumda giriş
+                        // yalnızca a11y olayına bırakılırsa oturum hiç kurulamaz;
+                        // süre düşülmez ve sayaç kurulmadığı için kilit hiç gelmez.
                         //
-                        // Yanlış pozitife karşı: UsageStats bayat veri verebileceği
-                        // için ön plan, canlı pencere ile teyit edilir.
+                        // Bu yüzden polling de girişi kurabilir, ancak yalnızca hedefin
+                        // GERÇEKTEN aktif pencerede olduğu canlı erişilebilirlik
+                        // ağacından teyit edilirse. UsageStats'ın bayat verisi tek
+                        // başına yeterli değildir, dolayısıyla sahte giriş oluşmaz.
                         val confirmedByActiveWindow =
-                            isExhausted && isForegroundConfirmedByActiveWindow(matchingApp.packageName)
+                            isForegroundConfirmedByActiveWindow(matchingApp.packageName)
                         if (!confirmedByActiveWindow) {
                             Log.d(
                                 TAG,
-                                "handleForegroundChange: Restricted entry for ${matchingApp.packageName} blocked because allowRestrictedEntry=false"
+                                "handleForegroundChange: Restricted entry for ${matchingApp.packageName} blocked (not confirmed by active window)"
                             )
                             return@withLock
                         }
                         Log.w(
                             TAG,
-                            "handleForegroundChange: Re-locking exhausted ${matchingApp.packageName} (confirmed by active window)"
+                            "handleForegroundChange: Recovering tracking for ${matchingApp.packageName} (confirmed by active window, exhausted=$isExhausted)"
                         )
                     }
 
@@ -779,7 +829,18 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                 )
                             }
                         }
-                    } else {
+                    } else if (
+                        CountdownPolicy.shouldRestartCountdown(
+                            isNewEntry = isNewEntry,
+                            isCountdownRunning = tickJob?.isActive == true
+                        )
+                    ) {
+                        // Aynı uygulama içindeki gezinme de (video değişimi, tam ekran,
+                        // dialog, sekme) TYPE_WINDOW_STATE_CHANGED üretir. Eskiden bu
+                        // olayların her biri sayacı iptal edip kalan sürenin TAMAMIYLA
+                        // yeniden başlatıyordu; uzun oturumlarda sayaç asla dolmuyor,
+                        // kilit ancak Limitra açılıp kapandıktan sonra geliyordu.
+                        // Çalışan bir sayaca artık dokunulmaz.
                         val remaining = matchingApp.remainingSecondsToday
                         if (com.gardiyan.app.BuildConfig.DEBUG) {
                             Log.d(TAG, "Timer starting for ${matchingApp.appName}. Remaining time: ${remaining}s")
@@ -798,36 +859,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
                                     Log.d(TAG, "Tick fired: ${matchingApp.appName} remaining=$remaining reached zero")
                                     val latestApp = repository.getRestrictedAppByIdSync(matchingApp.id)
                                         ?: return@withLock
-                                    if (!latestApp.isScheduledAt(System.currentTimeMillis())) {
-                                        repository.closeActiveSession("Aktif saat aralığı sona erdi")
-                                        clearTrackingState()
-                                        return@withLock
-                                    }
-                                    val exhaustedApp = latestApp.copy(
-                                            remainingSecondsToday = 0,
-                                            remainingMinutesToday = 0
-                                    )
-                                    repository.updateRestrictedApp(exhaustedApp)
-                                    // Flow güncellemesi gelene kadar tüm hızlı denetimler de
-                                    // sıfır süreyi görsün.
-                                    cachedRestrictedApps = cachedRestrictedApps.map { app ->
-                                        if (app.id == exhaustedApp.id) exhaustedApp else app
-                                    }
-                                    entryTimeMillis = 0L
-                                    ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
-                                    BlockOverlayService.showLockOverlay(
-                                        applicationContext,
-                                        matchingApp.appName,
-                                        matchingApp.packageName
-                                    )
-                                    withContext(Dispatchers.IO) {
-                                        repository.closeActiveSession("Kısıtlama süresi dolduğu için kilitlendi (tick)")
-                                        repository.insertLog(
-                                            eventType = "OVERLAY_SHOWN",
-                                            appName = matchingApp.appName,
-                                            details = "${matchingApp.appName} için kilit ekranı gösterildi. Gerekçe: Günlük kullanım limiti doldu."
-                                        )
-                                    }
+                                    enforceExhaustedLock(latestApp, repository, "sayaç")
                                 }
                             } catch (e: kotlinx.coroutines.CancellationException) {
                                 Log.d(TAG, "Tick cancelled (exited before time up)")
@@ -839,6 +871,54 @@ class AppBlockAccessibilityService : AccessibilityService() {
                     Log.e(TAG, "Error in handleForegroundChange: ${e.message}", e)
                 }
             }
+        }
+    }
+
+    /**
+     * Süresi dolmuş hedefi kilitler. Çağıran taraf [foregroundMutex] kilidini
+     * tutmalıdır. [tickJob] bilerek iptal edilmez: bu fonksiyon sayacın kendi
+     * gövdesinden de çağrıldığı için iptal, çağrının geri kalanını düşürürdü.
+     */
+    private suspend fun enforceExhaustedLock(
+        app: RestrictedAppEntity,
+        repository: GuardianRepository,
+        reason: String
+    ) {
+        if (!app.isScheduledAt(System.currentTimeMillis())) {
+            withContext(Dispatchers.IO) {
+                repository.closeActiveSession("Aktif saat aralığı sona erdi")
+            }
+            clearTrackingState()
+            return
+        }
+
+        val exhaustedApp = app.copy(remainingSecondsToday = 0, remainingMinutesToday = 0)
+        if (app.remainingSecondsToday != 0 || app.remainingMinutesToday != 0) {
+            withContext(Dispatchers.IO) {
+                repository.updateRestrictedApp(exhaustedApp)
+            }
+        }
+        // Flow güncellemesi gelene kadar tüm hızlı denetimler de sıfır süreyi görsün.
+        cachedRestrictedApps = cachedRestrictedApps.map { cached ->
+            if (cached.id == exhaustedApp.id) exhaustedApp else cached
+        }
+        entryTimeMillis = 0L
+
+        if (BlockOverlayService.isLockOverlayFor(app.packageName)) return
+
+        ignoreOwnPackageEventsUntil = System.currentTimeMillis() + 1500L
+        BlockOverlayService.showLockOverlay(
+            applicationContext,
+            app.appName,
+            app.packageName
+        )
+        withContext(Dispatchers.IO) {
+            repository.closeActiveSession("Kısıtlama süresi dolduğu için kilitlendi ($reason)")
+            repository.insertLog(
+                eventType = "OVERLAY_SHOWN",
+                appName = app.appName,
+                details = "${app.appName} için kilit ekranı gösterildi. Gerekçe: Günlük kullanım limiti doldu ($reason)."
+            )
         }
     }
 
@@ -1047,6 +1127,20 @@ data class ForegroundEvaluationResult(
     val isRestrictedEntryAllowed: Boolean
 )
 
+/**
+ * Geri sayımın ne zaman yeniden kurulacağını belirler.
+ *
+ * Kısıtlı uygulamanın kendi içindeki gezinme de ön plan olayı ürettiği için,
+ * her olayda sayacı kalan sürenin tamamıyla yeniden başlatmak sayacın hiç
+ * dolmamasına yol açıyordu. Sayaç yalnızca gerçekten yeni bir girişte ya da
+ * çalışan sayaç kalmadığında kurulur.
+ */
+object CountdownPolicy {
+    fun shouldRestartCountdown(isNewEntry: Boolean, isCountdownRunning: Boolean): Boolean {
+        return isNewEntry || !isCountdownRunning
+    }
+}
+
 object ForegroundPolicyEvaluator {
     fun evaluate(
         currentTrackedPackage: String?,
@@ -1070,12 +1164,16 @@ object ForegroundPolicyEvaluator {
         }
 
         val isSameAsTracked = currentTrackedPackage == candidatePackage
-        // Süresi dolmuş uygulama canlı pencereyle teyit edildiyse, giriş olayı
-        // "izinli" olmasa bile kilit yeniden gösterilir. Aksi hâlde ana ekrana
-        // çekme hareketi yarıda bırakıldığında kısıtlama atlatılabiliyordu.
-        val canRelockExhausted =
-            isCandidateLimitExhaustedOrFailed && isForegroundConfirmedByActiveWindow
-        if (!isSameAsTracked && !allowRestrictedEntry && !canRelockExhausted) {
+        // Canlı pencere teyidi varsa giriş, süre dolmuş olsun ya da olmasın kurulur.
+        //
+        // Eskiden yalnız süresi dolmuş hedef için teyide izin veriliyordu. Bunun yan
+        // etkisi ağırdı: araya sistem arayüzü veya klavye girip izleme koptuğunda,
+        // süresi HENÜZ dolmamış hedef yeniden izlemeye alınamıyordu. Oturum
+        // kurulmadığı için süre düşülmüyor, sayaç kurulmadığı için kilit hiç
+        // gelmiyordu; kısıtlama ancak Limitra açılıp kapandıktan sonra devreye
+        // giriyordu. Teyit canlı erişilebilirlik ağacından geldiği için bayat
+        // UsageStats verisiyle sahte giriş yine mümkün değildir.
+        if (!isSameAsTracked && !allowRestrictedEntry && !isForegroundConfirmedByActiveWindow) {
             val hadTracked = currentTrackedPackage != null
             return ForegroundEvaluationResult(
                 nextTrackedPackage = null,

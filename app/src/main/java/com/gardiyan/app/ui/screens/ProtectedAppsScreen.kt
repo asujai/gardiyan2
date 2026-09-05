@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.gardiyan.app.R
+import java.util.Calendar
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.data.model.RestrictionSchedule
 import com.gardiyan.app.data.model.isScheduledAt
@@ -604,10 +605,23 @@ private fun RestrictionGroupCard(
         stringResource(R.string.protected_group_all_day)
     }
     val selectedDays = app.activeDays.split(',').map { it.trim() }.filter { it.isNotEmpty() }
-    val daysText = if (selectedDays.isEmpty() || selectedDays.size == RestrictionSchedule.dayLabels.size) {
+    val dayResMap = mapOf(
+        Calendar.MONDAY to R.string.day_mon,
+        Calendar.TUESDAY to R.string.day_tue,
+        Calendar.WEDNESDAY to R.string.day_wed,
+        Calendar.THURSDAY to R.string.day_thu,
+        Calendar.FRIDAY to R.string.day_fri,
+        Calendar.SATURDAY to R.string.day_sat,
+        Calendar.SUNDAY to R.string.day_sun
+    )
+    val localizedDayStrings = selectedDays.map { raw ->
+        val calDay = RestrictionSchedule.normalizeToCalendarDay(raw)
+        calDay?.let { dayResMap[it] }?.let { stringResource(it) } ?: raw
+    }
+    val daysText = if (selectedDays.isEmpty() || selectedDays.size >= RestrictionSchedule.dayLabels.size) {
         stringResource(R.string.protected_group_every_day)
     } else {
-        selectedDays.joinToString(" · ")
+        localizedDayStrings.joinToString(" · ")
     }
 
     Card(
