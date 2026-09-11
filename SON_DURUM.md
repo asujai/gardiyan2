@@ -8,9 +8,12 @@
 - **Son Çalışma:** `[antigravity] feat: resolve store backlog M1-M7, add 3 new cards, 7/10 inch tablet assets, eliminate Card 2 blank space, and sync all 198 store assets`
 
 ## Son İşlem
-- **Play Mağaza Metni AI Görünürlük Hizalaması (Claude, 11 Eylül 21:25):** en-US "Limitra AppBlock" → "Limitra App Block"; tr-TR/en-US açıklamalarına web sitesi satırı eklendi ve canlıda doğrulandı. Sitenin GEO/AEO işleri (JSON-LD, 16 yeni sayfa, llms-full.txt, bot logu) `C:\Users\abdul\lmitraweb\AI_GORUNURLUK.md` içinde izleniyor.
+- **Günlük Kullanım Listesi Gece Yarısı Hatası (Claude, 12 Eylül 00:20):** Günlük sıralama artık `queryAndAggregateUsageStats` (gün kovası, gece yarısında geç devrilir) yerine `queryEvents` olay günlüğünden hesaplanıyor (`UsageEventAggregator`). Dünkü süre bugüne sızmıyor. Limit motoru etkilenmemişti. Cihazda görsel teyit bekliyor.
 
 ### Önceki İşlem
+- **Play Mağaza Metni AI Görünürlük Hizalaması (Claude, 11 Eylül 21:25):** en-US "Limitra AppBlock" → "Limitra App Block"; tr-TR/en-US açıklamalarına web sitesi satırı eklendi ve canlıda doğrulandı. Sitenin GEO/AEO işleri (JSON-LD, 16 yeni sayfa, llms-full.txt, bot logu) `C:\Users\abdul\lmitraweb\AI_GORUNURLUK.md` içinde izleniyor.
+
+#### Daha Önceki İşlem
 - **Mağaza Yarım İşler Listesi (M1 - M7) Eksiksiz Tamamlandı ve Canlıya Senkronize Edildi (Antigravity, 5 Eylül 23:15):**
   1. **M1 — Ekran Görüntülerindeki Alt Boşluk Tamamen Çözüldü:**
      - Kart 2 ("KISITLAMA EKLE / SET LIMITS") şablonu 6 uygulama hedef çipi, 5 hızlı ön ayar (15m - 2h), 09:00-18:00 saat aralığı, 7 koruma günü, 2 satırlık başlangıç bilgi şeridi ve çevrimdışı mimari kartı ile dolduruldu.
@@ -56,6 +59,7 @@
   - `AppBlockAccessibilityService.kt` dosyasına KESİNLİKLE dokunulmadı; Claude'un `d1acdc8` motor düzeltmeleri eksiksiz korunmaktadır.
 
 ## Bilinen Sorunlar / Notlar
+- **TEYİT BEKLİYOR:** Günlük kullanım listesi düzeltmesi (12 Eylül) cihazda kurulup gece yarısından sonra kontrol edilmeli; sonra v1.2.2.
 - **ÇÖZÜLDÜ (M1, M2, M3, M5, M6, M7):** Mağaza varlıklarının tüm eksiklikleri giderildi, 11 dil için 198 varlık canlıda aktiftir.
 - **AÇIK (M4): Tanıtım Videosu:** YouTube URL sağlandığında `gpc listings patch --video <URL>` ile canlıya bağlanacaktır.
 - **DURUM: Xiaomi HyperOS Cihazında Erişilebilirlik Servisi:** Kullanıcının bağlı cihazında Ayarlar > Erişilebilirlik'ten Limitra'yı açık tutması, "Otomatik Başlatma" izni vermesi ve "Pil kısıtlaması yok" seçeneğini işaretlemesi gerekmektedir.

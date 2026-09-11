@@ -17,6 +17,7 @@ import com.gardiyan.app.data.local.entity.UserSessionEntity
 import com.gardiyan.app.data.model.AppUsageSummary
 import com.gardiyan.app.data.model.UsagePeriod
 import com.gardiyan.app.data.repository.GuardianRepository
+import com.gardiyan.app.data.usage.UsageEventAggregator
 import com.gardiyan.app.data.timeline.encodeRestrictionLogDetails
 import com.gardiyan.app.service.AccessibilityHealthMonitor
 import com.gardiyan.app.service.AppBlockAccessibilityService
@@ -112,6 +113,9 @@ internal fun RestrictedAppEntity.withReducedDailyLimit(
         isFailed = isFailed
     )
 }
+
+/** Olay günlüğünde gece yarısı öncesi başlayan oturumu görmek için geriye bakış (6 saat). */
+private const val USAGE_EVENTS_LOOKBACK_MS = 6L * 60L * 60L * 1000L
 
 class GuardianViewModel(context: Context) : ViewModel() {
 
@@ -668,7 +672,18 @@ class GuardianViewModel(context: Context) : ViewModel() {
         return popularList + otherList
     }
 
-    private fun getUsageRankingForInterval(startTime: Long, endTime: Long): List<AppUsageSummary> {
+    /**
+     * Ön plan sürelerini toplar. Günlük listede (eventBased=true) olay günlüğü
+     * kullanılır; queryAndAggregateUsageStats gün kovası gece yarısında hemen
+     * devrilmediği için 00:06'da dünkü toplamı "bugün" diye döndürür.
+     * Haftalık/aylık için kova sapması ihmal edilebilir ve olay günlüğü ~7 gün
+     * tutulduğundan özet tablo kalır.
+     */
+    private fun getUsageRankingForInterval(
+        startTime: Long,
+        endTime: Long,
+        eventBased: Boolean = false
+    ): List<AppUsageSummary> {
         if (!hasUsageStatsPermission(appContext)) return emptyList()
         val usageStatsManager = appContext.getSystemService(Context.USAGE_STATS_SERVICE)
             as? UsageStatsManager ?: return emptyList()
@@ -683,23 +698,28 @@ class GuardianViewModel(context: Context) : ViewModel() {
         }.getOrDefault(emptySet())
 
         return runCatching {
-            usageStatsManager.queryAndAggregateUsageStats(startTime, endTime)
-                .values
-                .asSequence()
-                .filter { it.packageName != appContext.packageName }
-                .filter { it.packageName in launcherPackages }
-                .filter { it.totalTimeInForeground > 0L }
-                .map { stat ->
+            val totals: Map<String, Long> = if (eventBased) {
+                // Gece yarısı öncesi açılıp hâlâ ön planda olan oturumu yakalamak için geriye bak.
+                val lookback = startTime - USAGE_EVENTS_LOOKBACK_MS
+                UsageEventAggregator.aggregate(
+                    UsageEventAggregator.stream(usageStatsManager.queryEvents(lookback, endTime)),
+                    startTime,
+                    endTime
+                )
+            } else {
+                usageStatsManager.queryAndAggregateUsageStats(startTime, endTime)
+                    .values.associate { it.packageName to it.totalTimeInForeground }
+            }
+            totals.asSequence()
+                .filter { (pkg, _) -> pkg != appContext.packageName && pkg in launcherPackages }
+                .filter { (_, millis) -> millis > 0L }
+                .map { (pkg, millis) ->
                     val appName = runCatching {
                         packageManager.getApplicationLabel(
-                            packageManager.getApplicationInfo(stat.packageName, 0)
+                            packageManager.getApplicationInfo(pkg, 0)
                         ).toString()
-                    }.getOrDefault(stat.packageName)
-                    AppUsageSummary(
-                        packageName = stat.packageName,
-                        appName = appName,
-                        usageMillis = stat.totalTimeInForeground
-                    )
+                    }.getOrDefault(pkg)
+                    AppUsageSummary(packageName = pkg, appName = appName, usageMillis = millis)
                 }
                 .sortedByDescending { it.usageMillis }
                 .toList()
@@ -758,7 +778,7 @@ class GuardianViewModel(context: Context) : ViewModel() {
 
         val endTime = System.currentTimeMillis()
         val startTime = getUsagePeriodStart(period)
-        return getUsageRankingForInterval(startTime, endTime)
+        return getUsageRankingForInterval(startTime, endTime, eventBased = period == UsagePeriod.DAILY)
     }
 
     private fun getUsagePeriodStart(period: UsagePeriod): Long {

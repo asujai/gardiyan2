@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-12 00:20] - Günlük Kullanım Listesi Gece Yarısı Sıfırlanmıyor Hatası Düzeltildi
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[YENİ]` app/src/main/java/com/gardiyan/app/data/usage/UsageEventAggregator.kt, app/src/test/java/com/gardiyan/app/UsageEventAggregatorTest.kt; `[GÜNCELLENDİ]` app/src/main/java/com/gardiyan/app/viewmodel/GuardianViewModel.kt, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Kullanıcı 00:06'da günlük listede YouTube 57 dk / Clash Royale 45 dk gördü. Kök neden: `getUsageRankingForInterval` → `queryAndAggregateUsageStats` Android gün kovasını döndürür ve kova gece yarısında hemen devrilmez; dünkü toplam "bugün" diye gelir. Düzeltme: yalnız `UsagePeriod.DAILY` için `queryEvents` olay günlüğünden tek geçişte paket→ön plan süresi hesaplanır (`UsageEventAggregator`, 6 saat geriye bakış ile gece yarısı öncesi başlayan oturum yakalanır). Haftalık/aylık/ortalama özet tabloda kaldı (olay günlüğü ~7 gün tutuluyor, kova sapması o ölçekte ihmal edilebilir). Limit/engelleme motoru zaten olay bazlı + baseline ile çalıştığından etkilenmiyordu.
+* **Doğrulama:** `UsageEventAggregatorTest` 3/3 (dün 57 dk sızmıyor, gece yarısını aşan oturum yalnız bugünkü kısmı sayıyor, yabancı paket background olayı yok sayılıyor); `GuardianViewModelRulesTest` 7/7; `assembleDebug` temiz. `UsageRankingVisualCheckTest` bu ortamda Robolectric SDK 36 / Java 17 uyumsuzluğu nedeniyle koşmuyor (değişiklikten bağımsız, önceden de aynı).
+* **Bilinen Sorunlar:** Cihazda görsel teyit henüz yapılmadı; yeni APK kurulup 00:xx'te liste kontrol edilmeli.
+* **Sonraki Öneri:** Kullanıcı cihazda doğruladıktan sonra v1.2.2 olarak Play'e gönderilebilir.
+
 ## [2026-09-11 21:25] - Play Mağaza Metninde Ürün Adı Birleştirildi ve Web Sitesi Linki Eklendi (AI Görünürlük Faz 5.2)
 
 * **Model:** Claude
