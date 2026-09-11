@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-11 21:25] - Play Mağaza Metninde Ürün Adı Birleştirildi ve Web Sitesi Linki Eklendi (AI Görünürlük Faz 5.2)
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` metadata/en-US/full_description.txt, metadata/tr-TR/full_description.txt, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Kullanıcının verdiği `ai-gorunurluk-playbook.md` kapsamında (asıl iş `C:\Users\abdul\lmitraweb` reposunda, bkz. oradaki `AI_GORUNURLUK.md`) mağaza tarafı: en-US açıklamasındaki "Limitra AppBlock" yazımı "Limitra App Block" olarak site ile hizalandı; tr-TR ve en-US açıklamalarının sonuna `https://limitra.online` ve SSS/fiyat/karşılaştırma sayfalarına işaret eden satır eklendi (AI'lar mağaza açıklamasını okuyor; site↔mağaza entity bağı). Play başlıkları dil bazlı olarak korundu (kullanıcı kararı). `assetlinks.json` manifest'te App Links (autoVerify) olmadığından üretilmedi.
+* **Doğrulama:** `gpc listings update` en-US ve tr-TR "Listing updated"; `gpc listings get` ile canlıda "App Block is engineered" ve site linki teyit edildi; tr-TR `grep -c "Ã"` = 0; uzunluklar 3.423 / 3.275 karakter (<4000).
+* **Bilinen Sorunlar:** Yok.
+* **Sonraki Öneri:** M4 tanıtım videosu YouTube'a yüklendiğinde (AI görünürlük için en güçlü sinyal) `gpc listings patch --video` ile bağlanmalı.
+
 ## [2026-09-05 23:15] - Magaza Yarim Kalan Isleri (M1 - M7) Eksiksiz Tamamlandi ve Canliya Esitlendi
 
 * **Model:** Antigravity

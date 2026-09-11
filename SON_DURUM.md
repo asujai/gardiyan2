@@ -1,4 +1,4 @@
-﻿# SON DURUM
+# SON DURUM
 
 ## Genel Bakış
 - **Proje:** Limitra: AppBlock (Gardiyan) - Android Uygulama Kontrol ve Zaman Sınırı Yöneticisi
@@ -8,6 +8,9 @@
 - **Son Çalışma:** `[antigravity] feat: resolve store backlog M1-M7, add 3 new cards, 7/10 inch tablet assets, eliminate Card 2 blank space, and sync all 198 store assets`
 
 ## Son İşlem
+- **Play Mağaza Metni AI Görünürlük Hizalaması (Claude, 11 Eylül 21:25):** en-US "Limitra AppBlock" → "Limitra App Block"; tr-TR/en-US açıklamalarına web sitesi satırı eklendi ve canlıda doğrulandı. Sitenin GEO/AEO işleri (JSON-LD, 16 yeni sayfa, llms-full.txt, bot logu) `C:\Users\abdul\lmitraweb\AI_GORUNURLUK.md` içinde izleniyor.
+
+### Önceki İşlem
 - **Mağaza Yarım İşler Listesi (M1 - M7) Eksiksiz Tamamlandı ve Canlıya Senkronize Edildi (Antigravity, 5 Eylül 23:15):**
   1. **M1 — Ekran Görüntülerindeki Alt Boşluk Tamamen Çözüldü:**
      - Kart 2 ("KISITLAMA EKLE / SET LIMITS") şablonu 6 uygulama hedef çipi, 5 hızlı ön ayar (15m - 2h), 09:00-18:00 saat aralığı, 7 koruma günü, 2 satırlık başlangıç bilgi şeridi ve çevrimdışı mimari kartı ile dolduruldu.
