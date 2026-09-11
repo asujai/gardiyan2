@@ -2,7 +2,6 @@ package com.gardiyan.app
 
 import com.gardiyan.app.data.local.entity.RestrictedAppEntity
 import com.gardiyan.app.data.timeline.parseRestrictionLogDetails
-import com.gardiyan.app.viewmodel.shouldPenalizeRestrictionRemoval
 import com.gardiyan.app.viewmodel.withReducedDailyLimit
 import com.gardiyan.app.viewmodel.buildRestrictionAssignments
 import com.gardiyan.app.viewmodel.buildRestrictionLogSpecs
@@ -67,20 +66,6 @@ class GuardianViewModelRulesTest {
         val details = logs.map { parseRestrictionLogDetails(it.details) }
         assertTrue(details.all { it?.dailyLimitMinutes == 45 })
         assertTrue(details.all { it?.restrictionName == "Sosyal Medya" })
-    }
-
-    @Test
-    fun `removing a restriction before its limit is exhausted is not a discipline failure`() {
-        val app = restriction(remainingSeconds = 60)
-
-        assertFalse(shouldPenalizeRestrictionRemoval(app))
-    }
-
-    @Test
-    fun `removing a restriction after its limit is exhausted is a discipline failure`() {
-        val app = restriction(remainingSeconds = 0)
-
-        assertTrue(shouldPenalizeRestrictionRemoval(app))
     }
 
     @Test

@@ -45,8 +45,6 @@ internal fun isAccessibilityComponentEnabled(
     return AccessibilityHealthMonitor.isComponentEnabled(enabledServicesSetting, packageName, className)
 }
 
-internal fun shouldPenalizeRestrictionRemoval(app: RestrictedAppEntity): Boolean =
-    app.remainingSecondsToday <= 0
 
 internal data class RestrictionAssignment(
     val appName: String,
@@ -225,8 +223,6 @@ class GuardianViewModel(context: Context) : ViewModel() {
             val app = repository.getRestrictedAppByIdSync(id)
             repository.removeRestrictedApp(id)
             if (app != null) {
-                val shouldPenalize = shouldPenalizeRestrictionRemoval(app)
-
                 // Aktif oturum bu uygulama ise kapat
                 val activeSession = repository.getActiveSession()
                 if (activeSession != null && activeSession.packageName == app.packageName) {
@@ -238,32 +234,26 @@ class GuardianViewModel(context: Context) : ViewModel() {
                     BlockOverlayService.forceHideLockOverlay("Kisitlama silindi: ${app.packageName}")
                 }
 
-                if (shouldPenalize) {
-                    // Limiti dolmuş kısıtlamayı silmek disiplin başarısızlığıdır.
-                    val session = repository.getSessionSync()
-                    if (session != null) {
-                        repository.saveSession(
-                            session.copy(
-                                level = 1,
-                                hasRedBadge = true,
-                                activeRedemptionDaysLeft = 2,
-                                redemptionStreakGoal = 2,
-                                consecutiveSuccessDays = 0
-                            )
+                // Basılı tutup kısıtlamayı silmek, kalan süreden bağımsız disiplin
+                // başarısızlığıdır: seviye 1, kırmızı rozet, zaman tünelinde kırmızı kayıt.
+                val session = repository.getSessionSync()
+                if (session != null) {
+                    repository.saveSession(
+                        session.copy(
+                            level = 1,
+                            hasRedBadge = true,
+                            activeRedemptionDaysLeft = 2,
+                            redemptionStreakGoal = 2,
+                            consecutiveSuccessDays = 0
                         )
-                    }
-
-                    repository.insertLog(
-                        eventType = "RESTRICTION_REMOVED",
-                        appName = app.appName,
-                        details = "${app.appName} restriction was removed after its daily limit was exhausted."
-                    )
-                    repository.insertLog(
-                        eventType = "RESTRICTION_DELETED",
-                        appName = app.appName,
-                        details = "${app.appName} restriction was removed after its daily limit was exhausted."
                     )
                 }
+                repository.insertLog(
+                    eventType = "RESTRICTION_DELETED",
+                    appName = app.appName,
+                    packageName = app.packageName,
+                    details = "${app.appName} restriction was deleted via hold gesture."
+                )
             }
 
             // Başka aktif kısıtlama kaldı mı kontrol et, kalmadıysa servisi durdur

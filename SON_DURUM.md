@@ -8,6 +8,9 @@
 - **Son Çalışma:** `[antigravity] feat: resolve store backlog M1-M7, add 3 new cards, 7/10 inch tablet assets, eliminate Card 2 blank space, and sync all 198 store assets`
 
 ## Son İşlem
+- **Basılı Tutarak Silme = Başarısızlık (Claude, 12 Eylül 00:45):** `removeRestrictedApp` kalan süreden bağımsız seviye 1 + kırmızı rozet + `RESTRICTION_DELETED` logu yazıyor; zaman tüneli ve disiplin takviminde kırmızı görünür. Önceki "limit dolmadıysa cezasız" kuralı kaldırıldı.
+
+#### Daha Önceki İşlem
 - **Günlük Kullanım Listesi Gece Yarısı Hatası (Claude, 12 Eylül 00:20):** Günlük sıralama artık `queryAndAggregateUsageStats` (gün kovası, gece yarısında geç devrilir) yerine `queryEvents` olay günlüğünden hesaplanıyor (`UsageEventAggregator`). Dünkü süre bugüne sızmıyor. Limit motoru etkilenmemişti. Cihazda görsel teyit bekliyor.
 
 ### Önceki İşlem
@@ -59,7 +62,7 @@
   - `AppBlockAccessibilityService.kt` dosyasına KESİNLİKLE dokunulmadı; Claude'un `d1acdc8` motor düzeltmeleri eksiksiz korunmaktadır.
 
 ## Bilinen Sorunlar / Notlar
-- **TEYİT BEKLİYOR:** Günlük kullanım listesi düzeltmesi (12 Eylül) cihazda kurulup gece yarısından sonra kontrol edilmeli; sonra v1.2.2.
+- **TEYİT BEKLİYOR:** Günlük kullanım listesi (kullanıcı teyit etti) + basılı tutarak silme cezası (12 Eylül) → v1.2.2 hazırlanabilir.
 - **ÇÖZÜLDÜ (M1, M2, M3, M5, M6, M7):** Mağaza varlıklarının tüm eksiklikleri giderildi, 11 dil için 198 varlık canlıda aktiftir.
 - **AÇIK (M4): Tanıtım Videosu:** YouTube URL sağlandığında `gpc listings patch --video <URL>` ile canlıya bağlanacaktır.
 - **DURUM: Xiaomi HyperOS Cihazında Erişilebilirlik Servisi:** Kullanıcının bağlı cihazında Ayarlar > Erişilebilirlik'ten Limitra'yı açık tutması, "Otomatik Başlatma" izni vermesi ve "Pil kısıtlaması yok" seçeneğini işaretlemesi gerekmektedir.

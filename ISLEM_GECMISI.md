@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-12 00:45] - Basılı Tutarak Kısıtlama Silme Her Durumda Disiplin Başarısızlığı Sayılıyor
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` app/src/main/java/com/gardiyan/app/viewmodel/GuardianViewModel.kt, app/src/test/java/com/gardiyan/app/GuardianViewModelRulesTest.kt, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Kullanıcı: bir uygulamayı basılı tutup kısıtlamayı kaldırınca zaman tünelinde görünmüyor, disiplin geçmişinde başarısızlık sayılmıyor. Kök neden: `shouldPenalizeRestrictionRemoval` yalnız `remainingSecondsToday <= 0` iken ceza/log üretiyordu; limit dolmadan silmek sessizdi. Kapı kaldırıldı: `removeRestrictedApp` artık her silmede seviye 1 + kırmızı rozet + `RESTRICTION_DELETED` logu (packageName ile) yazıyor. Aynı işlem için çift kayıt (REMOVED+DELETED) teke indirildi. `RESTRICTION_DELETED` zaten `DayStatus.FAILURE_EVENT_TYPES`, günlük değerlendirme ve zaman tüneli filtrelerinde olduğundan dashboard/disiplin/timeline ek değişiklik gerektirmedi.
+* **Doğrulama:** `GuardianViewModelRulesTest` (eski "limit dolmadan silmek ceza değil" testi kaldırıldı), `DayStatusTest`, `assembleDebug` temiz.
+* **Bilinen Sorunlar:** Cihaz teyidi bekliyor.
+* **Sonraki Öneri:** Cihaz teyidi sonrası her iki düzeltme (günlük liste + silme cezası) v1.2.2 olarak Play'e.
+
 ## [2026-09-12 00:20] - Günlük Kullanım Listesi Gece Yarısı Sıfırlanmıyor Hatası Düzeltildi
 
 * **Model:** Claude
