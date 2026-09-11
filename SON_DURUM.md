@@ -4,10 +4,14 @@
 - **Proje:** Limitra: AppBlock (Gardiyan) - Android Uygulama Kontrol ve Zaman Sınırı Yöneticisi
 - **Paket Adı:** `com.gardiyan.app`
 - **Yayındaki Sürüm:** Version Code 18 (v1.2.1) - Production `%100`, durum `completed`
+- **Bekleyen Sürüm:** Version Code 19 (v1.2.2) - Production **taslak**, kullanıcı Console'dan yayınlayacak
 - **Mağaza Varlıkları:** 11 dil × 18 varlık = 198 görsel Play Store'da canlı ve doğrulanmış
 - **Son Çalışma:** `[antigravity] feat: resolve store backlog M1-M7, add 3 new cards, 7/10 inch tablet assets, eliminate Card 2 blank space, and sync all 198 store assets`
 
 ## Son İşlem
+- **v1.2.2 Taslak Yayın (Claude, 12 Eylül 01:35):** Code 19 imzalı AAB Play'e yüklendi, Production'da draft. tr-TR sürüm notu girildi; en-US notu Console'da elle eklenecek (metin ISLEM_GECMISI'nde).
+
+#### Daha Önceki İşlem
 - **Düzenleme Uyarısı Hatası (Claude, 12 Eylül 01:15):** ProtectedApps alt sayfasındaki "daha yüksek limit" uyarısı artık anında görünüyor (SnackbarHost alt sayfanın üstüne taşındı) ve art arda tıklamalar kuyruklanmıyor (tek job, öncekini iptal). Debug APK cihaza kuruldu.
 
 #### Daha Önceki İşlem
@@ -68,7 +72,7 @@
   - `AppBlockAccessibilityService.kt` dosyasına KESİNLİKLE dokunulmadı; Claude'un `d1acdc8` motor düzeltmeleri eksiksiz korunmaktadır.
 
 ## Bilinen Sorunlar / Notlar
-- **TEYİT BEKLİYOR:** Günlük kullanım listesi (kullanıcı teyit etti) + basılı tutarak silme cezası (12 Eylül) → v1.2.2 hazırlanabilir.
+- **YAYIN BEKLİYOR:** v1.2.2 (Code 19) Production taslakta; 3 düzeltme kullanıcı tarafından cihazda teyit edildi.
 - **ÇÖZÜLDÜ (M1, M2, M3, M5, M6, M7):** Mağaza varlıklarının tüm eksiklikleri giderildi, 11 dil için 198 varlık canlıda aktiftir.
 - **AÇIK (M4): Tanıtım Videosu:** YouTube URL sağlandığında `gpc listings patch --video <URL>` ile canlıya bağlanacaktır.
 - **DURUM: Xiaomi HyperOS Cihazında Erişilebilirlik Servisi:** Kullanıcının bağlı cihazında Ayarlar > Erişilebilirlik'ten Limitra'yı açık tutması, "Otomatik Başlatma" izni vermesi ve "Pil kısıtlaması yok" seçeneğini işaretlemesi gerekmektedir.

@@ -1,5 +1,15 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-12 01:35] - v1.2.2 (Code 19) Play Console Production'a Taslak Olarak Hazırlandı
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` app/build.gradle.kts (versionCode 19, versionName 1.2.2), SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Sürüm yükseltildi; `:app:bundleRelease` ile imzalı AAB (5.35 MB, sha256 3b199efb…) üretildi; `gpc bundles upload` ile yüklendi; `gpc tracks update --track production --status draft` ile Production'da **taslak** sürüm oluşturuldu (rollout 0, yayın kullanıcı tarafından Console'dan yapılacak). Sürüm notu tr-TR yazıldı (3 madde: günlük liste, silme cezası, uyarı hatası). CLI tek dilde not kabul ettiği için en-US notu Console'da elle girilmeli (metin: `%TEMP%/rn_en.txt` içeriği, ISLEM_GECMISI'nde aşağıda).
+  - en-US: "• Daily usage list now resets correctly at midnight; yesterday's time no longer leaks into today. • Deleting a restriction via hold gesture is now always recorded in the timeline and discipline history. • Limit edit warning shows instantly and no longer repeats."
+* **Doğrulama:** `gpc tracks list`: production [19] draft. Commit `4d95a5c`.
+* **Bilinen Sorunlar:** Yok.
+* **Sonraki Öneri:** Kullanıcı Console'da en-US notu ekleyip "Yayınla"; sonra `gpc tracks list` ile completed teyidi ve SON_DURUM'da yayındaki sürüm güncellemesi.
+
 ## [2026-09-12 01:15] - Kısıtlama Düzenleme Uyarısı Geç Görünme ve Kuyruklanma Hatası
 
 * **Model:** Claude
