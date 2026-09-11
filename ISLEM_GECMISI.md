@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-12 01:05] - Ölü Kod Temizliği: Kullanılmayan "Tümünü İptal" Akışı Silindi
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[SİLİNDİ]` app/src/main/java/com/gardiyan/app/ui/components/HoldToCancelButton.kt; `[GÜNCELLENDİ]` GuardianViewModel.kt (cancelAllWithFiveSecondHold, toggleMonitoringService kaldırıldı), GuardianRepository.kt (cancelAllActiveTargets, deactivateAllRestrictedApps kaldırıldı), GuardianDao.kt (deactivateAllRestrictedApps kaldırıldı), BlockOverlayService.kt (yalnız KDoc), SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Hiçbir ekrandan çağrılmayan `FiveSecondHoldCancelButton` (adı 5 sn, sabiti 5 dk) ve ona bağlı VM/Repo/DAO zinciri silindi. Kullanıcı görünen tek akış olan tek-uygulama basılı tutarak silme (`HoldToDeleteButton` → `removeRestrictedApp`) dokunulmadı. İşlevsel değişiklik yok.
+* **Doğrulama:** JDK 21 (Android Studio jbr) ile tam birim test paketi: 145 test, 0 hata; `assembleDebug` temiz. Not: varsayılan JDK 17 ile Robolectric SDK 36 testleri (7 sınıf) sandbox kuramıyor — ortam sorunu, kod değil.
+* **Bilinen Sorunlar:** Yok.
+* **Sonraki Öneri:** Cihaz teyidi sonrası v1.2.2.
+
 ## [2026-09-12 00:45] - Basılı Tutarak Kısıtlama Silme Her Durumda Disiplin Başarısızlığı Sayılıyor
 
 * **Model:** Claude

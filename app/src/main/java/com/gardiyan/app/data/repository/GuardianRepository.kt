@@ -340,9 +340,6 @@ class GuardianRepository(
         guardianDao.markRestrictedAppFailed(id)
     }
 
-    suspend fun deactivateAllRestrictedApps() {
-        guardianDao.deactivateAllRestrictedApps()
-    }
 
     suspend fun resetRestrictedApp(id: Long) {
         val app = guardianDao.getRestrictedAppByIdSync(id) ?: return
@@ -655,32 +652,6 @@ class GuardianRepository(
                 prefs.edit().putLong("lastKnownWallClockMillis", nowWall).apply()
             }
         }
-    }
-
-    suspend fun cancelAllActiveTargets() {
-        val session = getSessionSync() ?: return
-        val activeApps = guardianDao.getActiveRestrictedAppsSync()
-        if (activeApps.isEmpty()) return
-
-        guardianDao.deactivateAllRestrictedApps()
-
-        guardianDao.insertUserSession(
-            session.copy(
-                isActive = false,
-                level = 1,
-                hasRedBadge = true,
-                activeRedemptionDaysLeft = 2,
-                redemptionStreakGoal = 2,
-                consecutiveSuccessDays = 0
-            )
-        )
-
-        val appNames = activeApps.joinToString(", ") { it.appName }
-        insertLog(
-            eventType = "CRITICAL_ACTION_COMPLETED",
-            appName = appNames,
-            details = "Tüm kısıtlamalar korumalı bir işlemle kaldırıldı."
-        )
     }
 
     suspend fun failRestrictedApp(appId: Long) {

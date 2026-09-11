@@ -69,7 +69,7 @@ import androidx.core.content.res.ResourcesCompat
  * - Döngü sonsuza kadar devam eder
  *
  * İptal akışı:
- * - ViewModel.cancelAllWithFiveSecondHold() çağrılır
+ * - Kullanıcı kısıtlamayı 5 dakika basılı tutarak siler (ViewModel.removeRestrictedApp)
  * - forceHideLockOverlay() çağrılarak overlay kapatılır
  */
 class BlockOverlayService : Service() {

@@ -377,8 +377,8 @@ class GuardianViewModel(context: Context) : ViewModel() {
     }
 
     /**
-     * Servisi başlat. Kolay kapatma yok — dışarıdan false geçilemez.
-     * Servis durdurmak SADECE cancelAllWithFiveSecondHold() ile mümkündür.
+     * Servisi başlat. Servis yalnız aktif kısıtlama kalmadığında
+     * (removeRestrictedApp / clearAllUserData) durur.
      */
     private fun startMonitoringService(context: Context) {
         val serviceIntent = Intent(context, BlockOverlayService::class.java)
@@ -388,48 +388,6 @@ class GuardianViewModel(context: Context) : ViewModel() {
             context.startService(serviceIntent)
         }
         _isMonitoringActive.value = true
-    }
-
-    /**
-     * Eski API uyumluluğu için korundu ama enable=false durumunda
-     * doğrudan servisi durdurmaz — sadece 5sn hold üzerinden çalışır.
-     *
-     * enable=true: servisi başlatır
-     * enable=false: NO-OP (kolay kapatma engellenmiştir)
-     */
-    fun toggleMonitoringService(context: Context, enable: Boolean) {
-        if (enable) {
-            startMonitoringService(context)
-        }
-        // enable = false → NO-OP
-        // Servis durdurmak YALNIZCA cancelAllWithFiveSecondHold() ile mümkündür
-    }
-
-    /**
-     * 5 saniye basılı tutma sonrası çağrılır. Tüm aktif kısıtlamaları
-     * kaldırır, level'ı 1'e çeker, kırmızı rozet ekler, overlay'i
-     * temizler ve servisi durdurur.
-     *
-     * TEK YASAL DURDURMA YÖNTEMİ BU FONKSİYONDUR.
-     */
-    fun cancelAllWithFiveSecondHold() {
-        viewModelScope.launch {
-            try {
-                repository.cancelAllActiveTargets()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            // Servisi durdur — sadece burada yapılır
-            if (BlockOverlayService.isServiceRunning.get()) {
-                val serviceIntent = Intent(appContext, BlockOverlayService::class.java)
-                appContext.stopService(serviceIntent)
-                _isMonitoringActive.value = false
-            }
-            // Overlay açıksa kapat
-            if (BlockOverlayService.isLockOverlayVisible.get()) {
-                BlockOverlayService.forceHideLockOverlay("Kullanici tum kisitlamalari iptal etti")
-            }
-        }
     }
 
     fun clearLogs() {

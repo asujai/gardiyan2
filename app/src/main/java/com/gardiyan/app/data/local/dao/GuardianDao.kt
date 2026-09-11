@@ -78,8 +78,6 @@ interface GuardianDao {
     @Query("UPDATE restricted_apps SET isFailed = 1 WHERE id = :id")
     suspend fun markRestrictedAppFailed(id: Long)
 
-    @Query("UPDATE restricted_apps SET isActive = 0 WHERE isActive = 1")
-    suspend fun deactivateAllRestrictedApps()
 
     @Query("UPDATE restricted_apps SET isActive = 1, isFailed = 0, remainingSecondsToday = dailyLimitMinutes * 60, remainingMinutesToday = dailyLimitMinutes, lastResetDate = :resetDate, lastLimitUpdateDate = '', todayMinLimitMinutes = 0, usageStatsBaselineMillisToday = -1, lastUsageStatsObservedMillisToday = 0, lastUsageStatsReconciledAtMillis = 0 WHERE id = :id")
     suspend fun resetRestrictedApp(id: Long, resetDate: String)

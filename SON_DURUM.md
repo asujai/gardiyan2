@@ -8,6 +8,9 @@
 - **Son Çalışma:** `[antigravity] feat: resolve store backlog M1-M7, add 3 new cards, 7/10 inch tablet assets, eliminate Card 2 blank space, and sync all 198 store assets`
 
 ## Son İşlem
+- **Ölü Kod Temizliği (Claude, 12 Eylül 01:05):** Çağrılmayan "tüm kısıtlamaları iptal" zinciri (HoldToCancelButton, cancelAllWithFiveSecondHold, cancelAllActiveTargets, deactivateAllRestrictedApps, toggleMonitoringService) silindi. 145/145 test (JDK 21). Tam test için `-Dorg.gradle.java.home="C:/Program Files/Android/Android Studio/jbr"` gerekir.
+
+#### Daha Önceki İşlem
 - **Basılı Tutarak Silme = Başarısızlık (Claude, 12 Eylül 00:45):** `removeRestrictedApp` kalan süreden bağımsız seviye 1 + kırmızı rozet + `RESTRICTION_DELETED` logu yazıyor; zaman tüneli ve disiplin takviminde kırmızı görünür. Önceki "limit dolmadıysa cezasız" kuralı kaldırıldı.
 
 #### Daha Önceki İşlem
