@@ -2,7 +2,7 @@ Limitra: Screen Time, Focus & Smart App Blocker
 
 Tired of recurring monthly and yearly subscriptions? Reclaim control of your digital life with Limitra — a 100% offline, privacy-first, distraction-free app blocker with zero subscriptions and lifetime ownership.
 
-Do you spend countless hours mindlessly scrolling short videos (Reels, TikTok, Shorts), checking feeds, or losing track of time in mobile games? Limitra AppBlock is engineered to break dopamine-driven phone addiction, foster Deep Work, and boost your daily productivity.
+Do you spend countless hours mindlessly scrolling short videos (Reels, TikTok, Shorts), checking feeds, or losing track of time in mobile games? Limitra App Block is engineered to break dopamine-driven phone addiction, foster Deep Work, and boost your daily productivity.
 
 🌟 WHY CHOOSE LIMITRA?
 
@@ -45,3 +45,5 @@ Yes! Limitra is entirely offline. All blocking and streak calculations run local
 Never. No subscriptions, no renewals. One purchase grants lifetime ownership.
 
 Your attention is your most valuable asset. Stop surrendering it to algorithm feeds. Download Limitra and keep your time!
+
+Website: https://limitra.online — FAQ, pricing, changelog and comparisons with StayFree, AppBlock, YourHour, Digital Wellbeing and Forest.
