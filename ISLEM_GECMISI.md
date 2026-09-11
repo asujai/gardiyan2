@@ -1,5 +1,14 @@
 # İŞLEM GEÇMİŞİ
 
+## [2026-09-12 01:15] - Kısıtlama Düzenleme Uyarısı Geç Görünme ve Kuyruklanma Hatası
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` app/src/main/java/com/gardiyan/app/ui/screens/ProtectedAppsScreen.kt, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Hata doğrulandı, iki kök neden: (1) `SnackbarHost` Scaffold içindeydi; yönetim alt sayfası Scaffold'un üstüne çizilen ayrı bir Box olduğundan uyarı sayfanın altında kalıyor, sayfa kapanınca görünüyordu. (2) `showSnackbar` askıya alan çağrı; her tıklama `coroutineScope.launch` ile ayrı iş başlatıp mutex kuyruğuna giriyordu → 100 tık = 100 uyarı. Düzeltme: host dış Box'ın en üstüne (alt sayfadan sonra) taşındı; tek `snackbarJob` tutulup yeni mesajda önceki iş iptal ediliyor (`Job.cancel` mutex beklemesini ve görünen snackbar'ı iptal eder) — kuyruk yok, son tıklamadan ~4 sn sonra hiçbir uyarı kalmaz.
+* **Doğrulama:** `assembleDebug` temiz; APK bağlı cihaza (X4XKPFXWVSO7TKEE) kuruldu, kullanıcı görsel teyidi bekleniyor.
+* **Bilinen Sorunlar:** Yok.
+* **Sonraki Öneri:** Cihaz teyidi sonrası v1.2.2.
+
 ## [2026-09-12 01:05] - Ölü Kod Temizliği: Kullanılmayan "Tümünü İptal" Akışı Silindi
 
 * **Model:** Claude

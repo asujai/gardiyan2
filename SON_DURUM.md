@@ -8,6 +8,9 @@
 - **Son Çalışma:** `[antigravity] feat: resolve store backlog M1-M7, add 3 new cards, 7/10 inch tablet assets, eliminate Card 2 blank space, and sync all 198 store assets`
 
 ## Son İşlem
+- **Düzenleme Uyarısı Hatası (Claude, 12 Eylül 01:15):** ProtectedApps alt sayfasındaki "daha yüksek limit" uyarısı artık anında görünüyor (SnackbarHost alt sayfanın üstüne taşındı) ve art arda tıklamalar kuyruklanmıyor (tek job, öncekini iptal). Debug APK cihaza kuruldu.
+
+#### Daha Önceki İşlem
 - **Ölü Kod Temizliği (Claude, 12 Eylül 01:05):** Çağrılmayan "tüm kısıtlamaları iptal" zinciri (HoldToCancelButton, cancelAllWithFiveSecondHold, cancelAllActiveTargets, deactivateAllRestrictedApps, toggleMonitoringService) silindi. 145/145 test (JDK 21). Tam test için `-Dorg.gradle.java.home="C:/Program Files/Android/Android Studio/jbr"` gerekir.
 
 #### Daha Önceki İşlem

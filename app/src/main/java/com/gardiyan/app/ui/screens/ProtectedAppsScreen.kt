@@ -48,6 +48,7 @@ import com.gardiyan.app.ui.components.localizedMinutes
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -93,6 +94,13 @@ fun ProtectedAppsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    // Tek uyarı kuralı: yeni mesaj öncekini iptal eder, kuyruk oluşmaz.
+    // showSnackbar askıya alan bir çağrıdır; iptal edilmeyen her tıklama sıraya girer.
+    var snackbarJob by remember { mutableStateOf<Job?>(null) }
+    val showMessage: (String) -> Unit = { message ->
+        snackbarJob?.cancel()
+        snackbarJob = coroutineScope.launch { snackbarHostState.showSnackbar(message) }
+    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -114,10 +122,7 @@ fun ProtectedAppsScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            containerColor = MatteSurface,
-            snackbarHost = { SnackbarHost(snackbarHostState) }
-        ) { paddingValues ->
+        Scaffold(containerColor = MatteSurface) { paddingValues ->
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -512,11 +517,7 @@ fun ProtectedAppsScreen(
                                 appName = latestApp.appName,
                                 onDeleteConfirmed = {
                                     viewModel.removeRestrictedApp(latestApp.id)
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            context.getString(R.string.log_desc_restriction_deleted, latestApp.appName)
-                                        )
-                                    }
+                                    showMessage(context.getString(R.string.log_desc_restriction_deleted, latestApp.appName))
                                     selectedAppForManagement = null
                                 },
                                 onHoldStarted = {
@@ -542,24 +543,12 @@ fun ProtectedAppsScreen(
                             val newLimit = limitHours * 60 + limitMinsOnly
                             
                             if (newLimit <= 0) {
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        context.getString(R.string.setup_target_error_zero_duration)
-                                    )
-                                }
+                                showMessage(context.getString(R.string.setup_target_error_zero_duration))
                             } else if (newLimit > latestApp.dailyLimitMinutes) {
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        context.getString(R.string.protected_apps_limit_error)
-                                    )
-                                }
+                                showMessage(context.getString(R.string.protected_apps_limit_error))
                             } else {
                                 viewModel.updateRestrictionSettings(latestApp.id, newLimit, daysStr)
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        context.getString(R.string.protected_apps_save_success)
-                                    )
-                                }
+                                showMessage(context.getString(R.string.protected_apps_save_success))
                                 selectedAppForManagement = null
                             }
                         },
@@ -578,6 +567,12 @@ fun ProtectedAppsScreen(
                 }
             }
         }
+
+        // Alt sayfa Scaffold'un üstüne çizildiği için host burada; aksi halde uyarı sayfa kapanana kadar görünmez.
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
