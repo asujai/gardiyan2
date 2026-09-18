@@ -6,9 +6,19 @@
 - **Yayındaki Sürüm:** Version Code 18 (v1.2.1) - Production `%100`, durum `completed`
 - **Bekleyen Sürüm:** Version Code 19 (v1.2.2) - Production **taslak**, kullanıcı Console'dan yayınlayacak
 - **Mağaza Varlıkları:** 11 dil × 18 varlık = 198 görsel Play Store'da canlı ve doğrulanmış
-- **Son Çalışma:** `[antigravity] feat: resolve store backlog M1-M7, add 3 new cards, 7/10 inch tablet assets, eliminate Card 2 blank space, and sync all 198 store assets`
+- **Son Çalışma:** Codex — reklam öncesi mağaza analizi ve 3 Türkçe görsel konsepti (18 Eylül 2026); rapor: `store_assets/tr-TR-concepts-2026-09-18/ANALIZ.md`.
 
-## Son İşlem
+## Son İnceleme — Reklam Öncesi Mağaza (Codex, 18 Eylül 2026)
+
+- Canlı TR mağazada ₺29,99, 10+ indirme, görünür yıldız puanı yok; satış/dönüşüm ölçümü yapılmadı.
+- Sekiz görsel incelendi: yoğun küçük yazı, Pro yükseltme maketi, koşulsuz iade garantisi, kanıtsız tasarruf/pil/şifreleme ifadeleri düzeltme gerektiriyor. Önceki envanter tamlığı pazarlama doğruluğu anlamına gelmiyor.
+- Rapor ve 3 Türkçe PNG: store_assets/tr-TR-concepts-2026-09-18/. Bunlar 941x1672 tasarım konseptleri; gerçek UI/orijinal logo ve 1080x1920 yayın üretimi bekliyor. Mevcut varlıklar/canlı mağaza korunmuştur.
+- Doğrulama: canlı tarayıcı, 8 mevcut ve 3 yeni görsel, manifest/Room, resmi Google rehberleri. Uygulama kodunda değişiklik yok.
+- Sonraki iş: iddia düzeltmeleri + gerçek ekranlarla yeni set + ölçümlü A/B testi. Önerilen model: Codex; kullanıcı tercihiyle diğer modeller de devam edebilir.
+- Bu çalışma öncesi son commit: 2bdb491. Bu çalışmanın commit'i git log üzerinden görülebilir.
+
+## Önceki Son İşlem
+
 - **v1.2.2 Taslak Yayın (Claude, 12 Eylül 01:35):** Code 19 imzalı AAB Play'e yüklendi, Production'da draft. tr-TR sürüm notu girildi; en-US notu Console'da elle eklenecek (metin ISLEM_GECMISI'nde).
 
 #### Daha Önceki İşlem
