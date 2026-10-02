@@ -534,6 +534,57 @@
     <string name="perm_guidance_text">แตะการ์ดสิทธิ์แต่ละใบ ค้นหา Limitra ในหน้าจอการตั้งค่า Android ที่เปิดขึ้น และเปิดใช้งานสิทธิ์ที่จำเป็น จากนั้นกลับมาเพื่อทำขั้นตอนต่อไป</string>
     <string name="profile_notifications_title">การแจ้งเตือน</string>
     <string name="profile_notifications_desc">แสดงคำเตือนขีดจำกัดและการแจ้งเตือนสถานะ</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">ความสำเร็จ</string>
+    <string name="achievements_subtitle">กรอบที่คุณได้รับเมื่อรักษาสถิติต่อเนื่องไว้ได้</string>
+    <string name="achievements_current_streak">สถิติปัจจุบัน</string>
+    <string name="achievements_best_streak">สถิติยาวที่สุด</string>
+    <string name="achievements_next">ถัดไป: %1$s</string>
+    <string name="achievements_all_unlocked">คุณได้รับกรอบครบทุกอันแล้ว รักษาสถิติต่อไป</string>
+    <string name="achievements_unlocked">ได้รับแล้ว</string>
+    <string name="achievements_locked">ล็อกอยู่</string>
+    <string name="achievements_equip">ใช้กรอบนี้</string>
+    <string name="achievements_equipped">กำลังใช้</string>
+    <string name="achievements_count">ได้รับ %1$d จาก %2$d</string>
+    <string name="achievements_entry_desc">กรอบของคุณและเป้าหมายถัดไป</string>
+    <string name="achievements_celebration_title">ได้รับกรอบใหม่</string>
+    <string name="achievements_celebration_desc">%1$s เป็นของคุณแล้ว สถิติของคุณถึง %2$d วัน</string>
+    <string name="achievements_celebration_cta">สวมเลย</string>
+    <string name="achievements_celebration_later">ภายหลัง</string>
+    <string name="achievements_rule_title">วิธีการทำงาน</string>
+    <string name="achievements_rule_desc">ทุกวันที่คุณอยู่ในขีดจำกัดจะเพิ่มหนึ่งวันให้สถิติ การฝ่าฝืนหรือการลบข้อจำกัดจะรีเซ็ตสถิติ แต่กรอบที่ได้รับแล้วยังเป็นของคุณ</string>
+    <string name="frame_spark">ประกายแรก</string>
+    <string name="frame_spark_story">วันแรกที่ไม่ผิดพลาด ทุกสถิติยาวเริ่มต้นที่นี่</string>
+    <string name="frame_bronze">วงแหวนสำริด</string>
+    <string name="frame_bronze_story">สามวันติดกัน นิสัยเริ่มก่อตัว</string>
+    <string name="frame_silver_laurel">ช่อมะกอกเงิน</string>
+    <string name="frame_silver_laurel_story">ควบคุมได้ครบหนึ่งสัปดาห์ คนโบราณสวมช่อลอเรลให้ผู้ชนะ</string>
+    <string name="frame_gold_seal">ตราทองคำ</string>
+    <string name="frame_gold_seal_story">สิบห้าวัน คำสัญญาที่ให้กับตัวเองถูกประทับตราแล้ว</string>
+    <string name="frame_moonstone">มูนสโตน</string>
+    <string name="frame_moonstone_story">หนึ่งเดือนเต็ม: หนึ่งรอบดวงจันทร์แห่งสมาธิ</string>
+    <string name="frame_obsidian_crown">มงกุฎออบซิเดียน</string>
+    <string name="frame_obsidian_crown_story">หกสิบวัน น้อยคนจะควบคุมตนเองได้ถึงระดับนี้</string>
+    <string name="frame_century_flame">เปลวไฟร้อยวัน</string>
+    <string name="frame_century_flame_story">หนึ่งร้อยวัน ไฟที่คุณจุดในวันแรกยังคงลุกโชน</string>
+    <string name="frame_aurora">แสงเหนือ</string>
+    <string name="frame_aurora_story">ครึ่งปี หาได้ยากและงดงาม</string>
+    <string name="frame_stoic">สโตอิก</string>
+    <string name="frame_stoic_story">หนึ่งปีเต็ม คุณคือเจ้านายของความสนใจของตัวเอง</string>
+    <string name="dashboard_today_clean">วันนี้ยังไม่มีการฝ่าฝืน</string>
+    <string name="dashboard_today_violated">วันนี้มีการเกินขีดจำกัด</string>
+    <string name="dashboard_today_idle">ยังไม่มีการป้องกันที่ใช้งาน</string>
+    <string name="greeting_morning">สวัสดีตอนเช้า</string>
+    <string name="greeting_afternoon">สวัสดีตอนบ่าย</string>
+    <string name="greeting_evening">สวัสดีตอนเย็น</string>
+    <plurals name="achievements_days">
+        <item quantity="other">%d วัน</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="other">เหลืออีก %d วัน</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="other">ปลดล็อกเมื่อสถิติถึง %d วัน</item>
+    </plurals>
 </resources>
-
-

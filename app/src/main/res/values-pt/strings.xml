@@ -527,6 +527,60 @@
     <string name="perm_guidance_text">Toque em cada cartão de permissão, encontre o Limitra na tela de configurações do Android que se abre e ative a permissão necessária. Depois, retorne para concluir a próxima etapa.</string>
     <string name="profile_notifications_title">Notificações</string>
     <string name="profile_notifications_desc">Mostrar avisos de limite e notificações de status.</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">Conquistas</string>
+    <string name="achievements_subtitle">Molduras que você ganha mantendo sua sequência intacta.</string>
+    <string name="achievements_current_streak">Sequência atual</string>
+    <string name="achievements_best_streak">Melhor sequência</string>
+    <string name="achievements_next">Próxima: %1$s</string>
+    <string name="achievements_all_unlocked">Você ganhou todas as molduras. Mantenha a sequência viva.</string>
+    <string name="achievements_unlocked">Conquistada</string>
+    <string name="achievements_locked">Bloqueada</string>
+    <string name="achievements_equip">Usar esta moldura</string>
+    <string name="achievements_equipped">Em uso</string>
+    <string name="achievements_count">%1$d de %2$d conquistadas</string>
+    <string name="achievements_entry_desc">Sua moldura e sua próxima meta</string>
+    <string name="achievements_celebration_title">Nova moldura conquistada</string>
+    <string name="achievements_celebration_desc">%1$s agora é sua. Sua sequência chegou a %2$d dias.</string>
+    <string name="achievements_celebration_cta">Usar agora</string>
+    <string name="achievements_celebration_later">Depois</string>
+    <string name="achievements_rule_title">Como funciona</string>
+    <string name="achievements_rule_desc">Cada dia dentro dos seus limites soma um dia à sua sequência. Uma violação ou a remoção de uma restrição zera a sequência, mas as molduras conquistadas continuam suas.</string>
+    <string name="frame_spark">Primeira Faísca</string>
+    <string name="frame_spark_story">O primeiro dia limpo. Toda longa sequência começa aqui.</string>
+    <string name="frame_bronze">Anel de Bronze</string>
+    <string name="frame_bronze_story">Três dias seguidos. O hábito está tomando forma.</string>
+    <string name="frame_silver_laurel">Louro de Prata</string>
+    <string name="frame_silver_laurel_story">Uma semana inteira de controle. Os antigos coroavam seus vencedores com louros.</string>
+    <string name="frame_gold_seal">Selo de Ouro</string>
+    <string name="frame_gold_seal_story">Quinze dias. A promessa que você fez a si mesmo agora tem um selo.</string>
+    <string name="frame_moonstone">Pedra da Lua</string>
+    <string name="frame_moonstone_story">Um mês inteiro: um ciclo lunar completo de foco.</string>
+    <string name="frame_obsidian_crown">Coroa de Obsidiana</string>
+    <string name="frame_obsidian_crown_story">Sessenta dias. Poucas pessoas chegam a esse nível de autodomínio.</string>
+    <string name="frame_century_flame">Chama Centenária</string>
+    <string name="frame_century_flame_story">Cem dias. O fogo que você acendeu no primeiro dia ainda queima.</string>
+    <string name="frame_aurora">Aurora</string>
+    <string name="frame_aurora_story">Meio ano. Raro e lindo de ver.</string>
+    <string name="frame_stoic">O Estoico</string>
+    <string name="frame_stoic_story">Um ano inteiro. Você é dono da sua própria atenção.</string>
+    <string name="dashboard_today_clean">Hoje está limpo até agora</string>
+    <string name="dashboard_today_violated">Um limite foi excedido hoje</string>
+    <string name="dashboard_today_idle">Ainda não há proteção ativa</string>
+    <string name="greeting_morning">Bom dia</string>
+    <string name="greeting_afternoon">Boa tarde</string>
+    <string name="greeting_evening">Boa noite</string>
+    <plurals name="achievements_days">
+        <item quantity="one">%d dia</item>
+        <item quantity="other">%d dias</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="one">Falta %d dia</item>
+        <item quantity="other">Faltam %d dias</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="one">Desbloqueia com %d dia de sequência</item>
+        <item quantity="other">Desbloqueia com %d dias de sequência</item>
+    </plurals>
 </resources>
-
-

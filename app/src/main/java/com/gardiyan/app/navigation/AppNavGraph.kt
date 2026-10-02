@@ -1,5 +1,10 @@
 package com.gardiyan.app.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,6 +17,7 @@ import com.gardiyan.app.ui.screens.SetupTargetScreen
 import com.gardiyan.app.ui.screens.DisciplineDetailScreen
 import com.gardiyan.app.ui.screens.UsageDetailsScreen
 import com.gardiyan.app.ui.screens.SavedQuotesScreen
+import com.gardiyan.app.ui.screens.AchievementsScreen
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import com.gardiyan.app.hasRequiredSetupPermissions
 
@@ -23,6 +29,7 @@ const val ROUTE_SETTINGS = "settings"
 const val ROUTE_DISCIPLINE_DETAIL = "discipline_detail"
 const val ROUTE_USAGE_DETAILS = "usage_details"
 const val ROUTE_SAVED_QUOTES = "saved_quotes"
+const val ROUTE_ACHIEVEMENTS = "achievements"
 
 @Composable
 fun AppNavGraph(
@@ -46,7 +53,12 @@ fun AppNavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = if (canEnterMainApp) ROUTE_DASHBOARD else ROUTE_PERMISSIONS
+        startDestination = if (canEnterMainApp) ROUTE_DASHBOARD else ROUTE_PERMISSIONS,
+        // Sayfalar yumuşak bir solma ve hafif dikey kaymayla değişir.
+        enterTransition = { fadeIn(tween(260)) + slideInVertically(tween(320)) { it / 28 } },
+        exitTransition = { fadeOut(tween(180)) },
+        popEnterTransition = { fadeIn(tween(240)) },
+        popExitTransition = { fadeOut(tween(200)) + slideOutVertically(tween(260)) { it / 28 } }
     ) {
         composable(ROUTE_PERMISSIONS) {
             PermissionsScreen(
@@ -84,6 +96,9 @@ fun AppNavGraph(
                 },
                 onNavigateToUsageDetails = {
                     navController.navigate(ROUTE_USAGE_DETAILS)
+                },
+                onNavigateToAchievements = {
+                    navController.navigate(ROUTE_ACHIEVEMENTS)
                 }
             )
         }
@@ -113,6 +128,9 @@ fun AppNavGraph(
                 isNotificationsEnabled = isNotificationsEnabled,
                 onNavigateToSavedQuotes = {
                     navController.navigate(ROUTE_SAVED_QUOTES)
+                },
+                onNavigateToAchievements = {
+                    navController.navigate(ROUTE_ACHIEVEMENTS)
                 }
             )
         }
@@ -124,6 +142,12 @@ fun AppNavGraph(
         }
         composable(ROUTE_USAGE_DETAILS) {
             UsageDetailsScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(ROUTE_ACHIEVEMENTS) {
+            AchievementsScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() }
             )

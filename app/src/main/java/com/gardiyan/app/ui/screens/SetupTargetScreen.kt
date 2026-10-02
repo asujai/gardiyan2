@@ -1,5 +1,25 @@
 package com.gardiyan.app.ui.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.ui.graphics.graphicsLayer
+import com.gardiyan.app.ui.components.AnimatedSheet
+import com.gardiyan.app.ui.components.Hairline
+import com.gardiyan.app.ui.components.IconBadge
+import com.gardiyan.app.ui.components.LimitraCard
+import com.gardiyan.app.ui.components.LimitraIcons
+import com.gardiyan.app.ui.components.LimitraPrimaryButton
+import com.gardiyan.app.ui.components.ScreenHeader
 import android.app.TimePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -93,350 +113,171 @@ fun SetupTargetScreen(
 
     val currentTotalMinutes = selectedHours * 60 + selectedMinutes
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(MatteSurface)) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MatteSurface)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(DarkCharcoal)
-                            .border(1.dp, BorderGray, CircleShape)
-                            .size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.btn_back_desc),
-                            tint = PureBlack,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = stringResource(R.string.setup_target_add),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PureBlack,
-                        letterSpacing = 1.sp
-                    )
-                }
+                ScreenHeader(
+                    title = stringResource(R.string.dashboard_add_restriction),
+                    onBack = onBack
+                )
             }
 
-            // Form panel enclosed in a single card
+            // Form paneli tek kart içinde
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(24.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
+                LimitraCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp)) {
                     Column(
                         modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                        verticalArrangement = Arrangement.spacedBy(22.dp)
                     ) {
+                        // SECTION 1: Uygulama seçimi
                         Column {
-                            Text(
-                                text = stringResource(R.string.setup_target_restriction_name_optional),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MutedGray,
-                                letterSpacing = 0.5.sp
-                            )
+                            FormLabel(stringResource(R.string.setup_target_select_app_title))
                             Spacer(modifier = Modifier.height(12.dp))
-                            OutlinedTextField(
-                                value = restrictionName,
-                                onValueChange = { if (it.length <= 50) restrictionName = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(R.string.setup_target_restriction_name_placeholder),
-                                        color = MutedGray,
-                                        fontSize = 13.sp
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Edit, contentDescription = null, tint = MutedGray)
-                                },
-                                trailingIcon = {
-                                    if (restrictionName.isNotEmpty()) {
-                                        IconButton(onClick = { restrictionName = "" }) {
-                                            Icon(Icons.Default.Close, contentDescription = null, tint = MutedGray)
-                                        }
-                                    }
-                                },
-                                singleLine = true,
-                                shape = RoundedCornerShape(14.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = SuccessGreen,
-                                    unfocusedBorderColor = BorderGray,
-                                    focusedContainerColor = MatteSurface,
-                                    unfocusedContainerColor = MatteSurface,
-                                    focusedTextColor = PureBlack,
-                                    unfocusedTextColor = PureBlack
-                                )
-                            )
-                        }
-
-                        HorizontalDivider(color = BorderGray, thickness = 1.dp)
-
-                        // SECTION 1: App Selection
-                        Column {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.setup_target_select_app_title),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MutedGray,
-                                    letterSpacing = 0.5.sp
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(18.dp))
                                     .background(MatteSurface)
-                                    .border(1.dp, BorderGray, RoundedCornerShape(12.dp))
-                                    .clickable { 
+                                    .border(
+                                        1.dp,
+                                        if (selectedApps.isNotEmpty()) CopperAccent.copy(alpha = 0.5f) else BorderGray,
+                                        RoundedCornerShape(18.dp)
+                                    )
+                                    .clickable {
                                         searchQuery = ""
-                                        isAppSheetVisible = true 
+                                        isAppSheetVisible = true
                                     }
-                                    .padding(14.dp)
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
+                                if (selectedApps.isNotEmpty()) {
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        items(selectedApps.toList(), key = { it.second }) { app ->
+                                            SelectedAppChip(
+                                                appName = app.first,
+                                                packageName = app.second,
+                                                onRemove = {
+                                                    selectedApps = selectedApps - app
+                                                },
+                                                modifier = Modifier.animateItem()
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Text(
+                                        text = stringResource(R.string.setup_target_select_app_placeholder),
+                                        fontSize = 14.sp,
+                                        color = MutedGray,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(vertical = 6.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .clip(CircleShape)
+                                        .background(CopperAccent.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = LimitraIcons.Plus,
+                                        contentDescription = null,
+                                        tint = CopperAccent,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        // SECTION 2: Günlük limit
+                        Column {
+                            FormLabel(stringResource(R.string.setup_target_daily_limit))
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            if (presetChoices.isNotEmpty()) {
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    contentPadding = PaddingValues(vertical = 4.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    if (selectedApps.isNotEmpty()) {
-                                        LazyRow(
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            modifier = Modifier.weight(1f)
+                                    items(presetChoices) { choice ->
+                                        val isSelected = currentTotalMinutes == choice.second
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(99.dp))
+                                                .background(if (isSelected) PureBlack else MatteSurface)
+                                                .border(1.dp, if (isSelected) PureBlack else BorderGray, RoundedCornerShape(99.dp))
+                                                .clickable {
+                                                    selectedHours = choice.second / 60
+                                                    selectedMinutes = choice.second % 60
+                                                }
+                                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                            contentAlignment = Alignment.Center
                                         ) {
-                                            items(selectedApps.toList(), key = { it.second }) { app ->
-                                                SelectedAppChip(
-                                                    appName = app.first,
-                                                    packageName = app.second,
-                                                    onRemove = {
-                                                        selectedApps = selectedApps - app
-                                                    }
-                                                )
-                                            }
+                                            Text(
+                                                text = choice.first,
+                                                fontSize = 12.sp,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (isSelected) OnPureBlack else PureBlack
+                                            )
                                         }
-                                    } else {
-                                        Text(
-                                            text = stringResource(R.string.setup_target_select_app_placeholder),
-                                            fontSize = 13.sp,
-                                            color = MutedGray,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.List,
-                                        contentDescription = null,
-                                        tint = MutedGray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                        }
-
-                        HorizontalDivider(color = BorderGray, thickness = 1.dp)
-
-                        // SECTION 2: Daily Limit
-                        Column {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.setup_target_daily_limit),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MutedGray,
-                                    letterSpacing = 0.5.sp
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                contentPadding = PaddingValues(vertical = 4.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                items(presetChoices) { choice ->
-                                    val isSelected = currentTotalMinutes == choice.second
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(99.dp))
-                                            .background(if (isSelected) PureBlack else MatteSurface)
-                                            .border(1.dp, if (isSelected) PureBlack else BorderGray, RoundedCornerShape(99.dp))
-                                            .clickable {
-                                                selectedHours = choice.second / 60
-                                                selectedMinutes = choice.second % 60
-                                            }
-                                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = choice.first,
-                                            fontSize = 12.sp,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isSelected) OnPureBlack else PureBlack
-                                        )
                                     }
                                 }
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
 
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            // Custom Hour/Minute Up-Down Picker
+                            // Saat / dakika seçici
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MatteSurface, RoundedCornerShape(16.dp))
-                                    .border(1.dp, BorderGray, RoundedCornerShape(16.dp))
-                                    .padding(16.dp),
+                                    .clip(RoundedCornerShape(22.dp))
+                                    .background(MatteSurface)
+                                    .border(1.dp, BorderGray, RoundedCornerShape(22.dp))
+                                    .padding(vertical = 14.dp),
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Hours Column
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    modifier = Modifier.width(80.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.setup_target_hour_label),
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MutedGray,
-                                        modifier = Modifier.padding(bottom = 6.dp)
-                                    )
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier
-                                            .background(DarkCharcoal, RoundedCornerShape(12.dp))
-                                            .border(1.dp, BorderGray, RoundedCornerShape(12.dp))
-                                    ) {
-                                        RepeatingIconButton(
-                                            onClick = {
-                                                if (selectedHours < 23) selectedHours++
-                                            },
-                                            modifier = Modifier.size(32.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.ArrowDropDown,
-                                                contentDescription = stringResource(R.string.setup_target_hour_inc_desc),
-                                                tint = MutedGray,
-                                                modifier = Modifier.rotate(180f)
-                                            )
-                                        }
-                                        Text(
-                                            text = String.format(Locale.ROOT, "%02d", selectedHours),
-                                            fontSize = 24.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = PureBlack,
-                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-                                        )
-                                        RepeatingIconButton(
-                                            onClick = {
-                                                if (selectedHours > 0) selectedHours--
-                                            },
-                                            modifier = Modifier.size(32.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.ArrowDropDown,
-                                                contentDescription = stringResource(R.string.setup_target_hour_dec_desc),
-                                                tint = MutedGray
-                                            )
-                                        }
-                                    }
-                                }
-
+                                TimeUnitStepper(
+                                    label = stringResource(R.string.setup_target_hour_label),
+                                    value = selectedHours,
+                                    incDescription = stringResource(R.string.setup_target_hour_inc_desc),
+                                    decDescription = stringResource(R.string.setup_target_hour_dec_desc),
+                                    onInc = { if (selectedHours < 23) selectedHours++ },
+                                    onDec = { if (selectedHours > 0) selectedHours-- }
+                                )
                                 Text(
                                     text = ":",
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = LimitraDisplay,
+                                    fontSize = 40.sp,
                                     color = MutedGray,
-                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                                    modifier = Modifier.padding(start = 14.dp, end = 14.dp, top = 22.dp)
                                 )
-
-                                // Minutes Column
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    modifier = Modifier.width(80.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.setup_target_minute_label),
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MutedGray,
-                                        modifier = Modifier.padding(bottom = 6.dp)
-                                    )
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier
-                                            .background(DarkCharcoal, RoundedCornerShape(12.dp))
-                                            .border(1.dp, BorderGray, RoundedCornerShape(12.dp))
-                                    ) {
-                                        RepeatingIconButton(
-                                            onClick = {
-                                                if (selectedMinutes < 59) selectedMinutes++
-                                            },
-                                            modifier = Modifier.size(32.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.ArrowDropDown,
-                                                contentDescription = stringResource(R.string.setup_target_minute_inc_desc),
-                                                tint = MutedGray,
-                                                modifier = Modifier.rotate(180f)
-                                            )
-                                        }
-                                        Text(
-                                            text = String.format(Locale.ROOT, "%02d", selectedMinutes),
-                                            fontSize = 24.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = PureBlack,
-                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-                                        )
-                                        RepeatingIconButton(
-                                            onClick = {
-                                                if (selectedMinutes > 0) selectedMinutes--
-                                            },
-                                            modifier = Modifier.size(32.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.ArrowDropDown,
-                                                contentDescription = stringResource(R.string.setup_target_minute_dec_desc),
-                                                tint = MutedGray
-                                            )
-                                        }
-                                    }
-                                }
+                                TimeUnitStepper(
+                                    label = stringResource(R.string.setup_target_minute_label),
+                                    value = selectedMinutes,
+                                    incDescription = stringResource(R.string.setup_target_minute_inc_desc),
+                                    decDescription = stringResource(R.string.setup_target_minute_dec_desc),
+                                    onInc = { if (selectedMinutes < 59) selectedMinutes++ },
+                                    onDec = { if (selectedMinutes > 0) selectedMinutes-- }
+                                )
                             }
                         }
 
-                        HorizontalDivider(color = BorderGray, thickness = 1.dp)
+                        Hairline()
 
+                        // SECTION 3: Aktif saat aralığı
                         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -444,43 +285,39 @@ fun SetupTargetScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = stringResource(R.string.setup_target_active_window),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MutedGray,
-                                        letterSpacing = 0.5.sp
-                                    )
+                                    FormLabel(stringResource(R.string.setup_target_active_window))
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = stringResource(R.string.setup_target_active_window_desc),
-                                        fontSize = 11.sp,
+                                        fontSize = 12.sp,
                                         color = MutedGray,
-                                        lineHeight = 15.sp
+                                        lineHeight = 17.sp
                                     )
                                 }
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Switch(
                                     checked = activeWindowEnabled,
                                     onCheckedChange = { activeWindowEnabled = it },
                                     colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = SuccessGreen,
+                                        checkedThumbColor = OnAccent,
+                                        checkedTrackColor = CopperAccent,
+                                        checkedBorderColor = CopperAccent,
                                         uncheckedThumbColor = MutedGray,
-                                        uncheckedTrackColor = BorderGray
+                                        uncheckedTrackColor = WarmGray,
+                                        uncheckedBorderColor = BorderGray
                                     )
                                 )
                             }
 
-                            if (activeWindowEnabled) {
+                            AnimatedVisibility(
+                                visible = activeWindowEnabled,
+                                enter = expandVertically(spring(dampingRatio = 0.85f, stiffness = 400f)) + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .background(MatteSurface)
-                                        .border(1.dp, BorderGray, RoundedCornerShape(16.dp))
-                                        .padding(14.dp),
+                                    modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.Bottom
                                 ) {
                                     ScheduleTimeField(
                                         label = stringResource(R.string.setup_target_start_time),
@@ -496,7 +333,12 @@ fun SetupTargetScreen(
                                             ).show()
                                         }
                                     )
-                                    Text("–", color = MutedGray, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        "–",
+                                        color = MutedGray,
+                                        fontSize = 20.sp,
+                                        modifier = Modifier.padding(bottom = 14.dp)
+                                    )
                                     ScheduleTimeField(
                                         label = stringResource(R.string.setup_target_end_time),
                                         minutes = activeEndMinutes,
@@ -515,59 +357,34 @@ fun SetupTargetScreen(
                             }
                         }
 
-                        HorizontalDivider(color = BorderGray, thickness = 1.dp)
+                        Hairline()
 
-                        // SECTION 3: Days Selection
+                        // SECTION 4: Günler
                         Column {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(MatteSurface),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.DateRange,
-                                        contentDescription = null,
-                                        tint = MutedGray,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                                Text(
-                                    text = stringResource(R.string.setup_target_days),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MutedGray,
-                                    letterSpacing = 0.5.sp
-                                )
-                            }
-
+                            FormLabel(stringResource(R.string.setup_target_days))
                             Spacer(modifier = Modifier.height(14.dp))
-
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 daysOfWeek.forEach { day ->
                                     val isSelected = selectedDays.contains(day)
-                                    // Aktif gün = yeşil (tema-uyumlu): yeşil tint dolgu + yeşil
-                                    // çerçeve + yeşil yazı. Pasif gün normal tema kartı görünümünde.
+                                    val dayBg by animateColorAsState(
+                                        if (isSelected) CopperAccent.copy(alpha = 0.14f) else MatteSurface,
+                                        label = "dayBg"
+                                    )
+                                    val dayFg by animateColorAsState(
+                                        if (isSelected) CopperAccent else MutedGray,
+                                        label = "dayFg"
+                                    )
                                     Box(
                                         modifier = Modifier
                                             .weight(1f)
                                             .aspectRatio(1f)
-                                            .padding(horizontal = 2.dp)
+                                            .padding(horizontal = 2.5.dp)
                                             .clip(CircleShape)
-                                            .background(if (isSelected) SuccessGreen.copy(alpha = 0.15f) else MatteSurface)
-                                            .border(
-                                                if (isSelected) 1.5.dp else 1.dp,
-                                                if (isSelected) SuccessGreen else BorderGray,
-                                                CircleShape
-                                            )
+                                            .background(dayBg)
+                                            .border(if (isSelected) 1.5.dp else 1.dp, if (isSelected) CopperAccent else BorderGray, CircleShape)
                                             .clickable {
                                                 selectedDays = if (isSelected) {
                                                     selectedDays - day
@@ -581,11 +398,53 @@ fun SetupTargetScreen(
                                             text = stringResource(daysMap[day]!!),
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isSelected) SuccessGreen else MutedGray
+                                            color = dayFg,
+                                            maxLines = 1
                                         )
                                     }
                                 }
                             }
+                        }
+
+                        Hairline()
+
+                        // SECTION 5: İsim (isteğe bağlı)
+                        Column {
+                            FormLabel(stringResource(R.string.setup_target_restriction_name_optional))
+                            Spacer(modifier = Modifier.height(12.dp))
+                            OutlinedTextField(
+                                value = restrictionName,
+                                onValueChange = { if (it.length <= 50) restrictionName = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                    Text(
+                                        text = stringResource(R.string.setup_target_restriction_name_placeholder),
+                                        color = MutedGray,
+                                        fontSize = 14.sp
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Edit, contentDescription = null, tint = MutedGray, modifier = Modifier.size(20.dp))
+                                },
+                                trailingIcon = {
+                                    if (restrictionName.isNotEmpty()) {
+                                        IconButton(onClick = { restrictionName = "" }) {
+                                            Icon(Icons.Default.Close, contentDescription = null, tint = MutedGray)
+                                        }
+                                    }
+                                },
+                                singleLine = true,
+                                shape = RoundedCornerShape(18.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = CopperAccent,
+                                    unfocusedBorderColor = BorderGray,
+                                    focusedContainerColor = MatteSurface,
+                                    unfocusedContainerColor = MatteSurface,
+                                    focusedTextColor = PureBlack,
+                                    unfocusedTextColor = PureBlack,
+                                    cursorColor = CopperAccent
+                                )
+                            )
                         }
                     }
                 }
@@ -593,55 +452,42 @@ fun SetupTargetScreen(
 
             // Bottom actions
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Button(
-                        onClick = {
-                            if (selectedApps.isEmpty()) {
-                                Toast.makeText(context, context.getString(R.string.setup_target_error_no_app), Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
-                            if (selectedDays.isEmpty()) {
-                                Toast.makeText(context, context.getString(R.string.setup_target_error_no_day), Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
-                            if (currentTotalMinutes <= 0) {
-                                Toast.makeText(context, context.getString(R.string.setup_target_error_zero_duration), Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
-                            val daysStr = daysOfWeek.filter { it in selectedDays }.joinToString(",")
-                            viewModel.addRestrictionGroup(
-                                restrictionName = restrictionName,
-                                apps = selectedApps.toList(),
-                                dailyLimitMinutes = currentTotalMinutes,
-                                activeDays = daysStr,
-                                activeWindowEnabled = activeWindowEnabled,
-                                activeStartMinutes = activeStartMinutes,
-                                activeEndMinutes = activeEndMinutes
-                            )
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.setup_target_toast_added, selectedApps.size),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            selectedApps = emptySet()
-                            onCompleted()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(54.dp)
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.setup_target_btn_activate),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            letterSpacing = 0.5.sp
+                LimitraPrimaryButton(
+                    text = stringResource(R.string.setup_target_btn_activate),
+                    icon = LimitraIcons.Shield,
+                    onClick = {
+                        if (selectedApps.isEmpty()) {
+                            Toast.makeText(context, context.getString(R.string.setup_target_error_no_app), Toast.LENGTH_SHORT).show()
+                            return@LimitraPrimaryButton
+                        }
+                        if (selectedDays.isEmpty()) {
+                            Toast.makeText(context, context.getString(R.string.setup_target_error_no_day), Toast.LENGTH_SHORT).show()
+                            return@LimitraPrimaryButton
+                        }
+                        if (currentTotalMinutes <= 0) {
+                            Toast.makeText(context, context.getString(R.string.setup_target_error_zero_duration), Toast.LENGTH_SHORT).show()
+                            return@LimitraPrimaryButton
+                        }
+                        val daysStr = daysOfWeek.filter { it in selectedDays }.joinToString(",")
+                        viewModel.addRestrictionGroup(
+                            restrictionName = restrictionName,
+                            apps = selectedApps.toList(),
+                            dailyLimitMinutes = currentTotalMinutes,
+                            activeDays = daysStr,
+                            activeWindowEnabled = activeWindowEnabled,
+                            activeStartMinutes = activeStartMinutes,
+                            activeEndMinutes = activeEndMinutes
                         )
-                    }
-                }
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.setup_target_toast_added, selectedApps.size),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        selectedApps = emptySet()
+                        onCompleted()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             item {
@@ -649,203 +495,269 @@ fun SetupTargetScreen(
             }
         }
 
-        // Search Bottom Sheet Overlay
-        if (isAppSheetVisible) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
-                    .clickable { isAppSheetVisible = false }
+        // Uygulama seçme sayfası
+        AnimatedSheet(
+            visible = isAppSheetVisible,
+            onDismiss = { isAppSheetVisible = false },
+            heightFraction = 0.9f
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.setup_target_select_app_title),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MutedGray
+                )
+                IconButton(
+                    onClick = { isAppSheetVisible = false },
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MatteSurface)
+                        .size(40.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.btn_close), tint = PureBlack, modifier = Modifier.size(18.dp))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Arama kutusu
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text(stringResource(R.string.setup_target_search_placeholder), color = MutedGray, fontSize = 14.sp) },
+                leadingIcon = { Icon(LimitraIcons.Search, contentDescription = null, tint = MutedGray, modifier = Modifier.size(20.dp)) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.btn_clean), tint = MutedGray)
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = CopperAccent,
+                    unfocusedBorderColor = BorderGray,
+                    focusedContainerColor = MatteSurface,
+                    unfocusedContainerColor = MatteSurface,
+                    focusedTextColor = PureBlack,
+                    unfocusedTextColor = PureBlack,
+                    cursorColor = CopperAccent
+                ),
+                shape = RoundedCornerShape(18.dp),
+                singleLine = true
             )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.85f)
-                    .align(Alignment.BottomCenter)
-                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .background(DarkCharcoal)
-                    .border(1.dp, BorderGray, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .clickable(enabled = false) {}
-            ) {
-                Column(
+            Spacer(modifier = Modifier.height(12.dp))
+
+            val filteredApps = remember(searchQuery, availableApps) {
+                if (searchQuery.isBlank()) {
+                    availableApps
+                } else {
+                    availableApps.filter {
+                        it.first.contains(searchQuery, ignoreCase = true) ||
+                        it.second.contains(searchQuery, ignoreCase = true)
+                    }
+                }
+            }
+
+            if (filteredApps.isEmpty()) {
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp)
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Drag Indicator
-                    Box(
-                        modifier = Modifier
-                            .width(40.dp)
-                            .height(5.dp)
-                            .clip(RoundedCornerShape(2.5.dp))
-                            .background(BorderGray)
-                            .align(Alignment.CenterHorizontally)
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(24.dp)
                     ) {
+                        IconBadge(icon = LimitraIcons.Search, tint = MutedGray, size = 60.dp)
+                        Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = stringResource(R.string.setup_target_select_app_title),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontFamily = FontFamily.SansSerif,
+                            text = stringResource(R.string.setup_target_no_match),
+                            fontFamily = LimitraDisplay,
+                            fontSize = 22.sp,
                             color = PureBlack
                         )
-                        IconButton(
-                            onClick = { isAppSheetVisible = false },
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MatteSurface)
-                                .size(36.dp)
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.btn_close), tint = PureBlack, modifier = Modifier.size(18.dp))
-                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = stringResource(R.string.setup_target_no_match_desc, searchQuery),
+                            fontSize = 13.sp,
+                            color = MutedGray,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 19.sp
+                        )
                     }
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // Search box
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        placeholder = { Text(stringResource(R.string.setup_target_search_placeholder), color = MutedGray, fontSize = 13.sp) },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MutedGray) },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.btn_clean), tint = MutedGray)
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PureWhite,
-                            unfocusedBorderColor = BorderGray,
-                            focusedContainerColor = MatteSurface,
-                            unfocusedContainerColor = MatteSurface,
-                            focusedTextColor = PureBlack,
-                            unfocusedTextColor = PureBlack
-                        ),
-                        shape = RoundedCornerShape(14.dp),
-                        singleLine = true
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    val filteredApps = remember(searchQuery, availableApps) {
-                        if (searchQuery.isBlank()) {
-                            availableApps
-                        } else {
-                            availableApps.filter {
-                                it.first.contains(searchQuery, ignoreCase = true) ||
-                                it.second.contains(searchQuery, ignoreCase = true)
-                            }
-                        }
-                    }
-                    
-                    if (filteredApps.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(24.dp)
-                            ) {
-                                Text("🔍", fontSize = 44.sp)
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text(
-                                    text = stringResource(R.string.setup_target_no_match),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = PureBlack
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = stringResource(R.string.setup_target_no_match_desc, searchQuery),
-                                    fontSize = 12.sp,
-                                    color = MutedGray,
-                                    textAlign = TextAlign.Center,
-                                    lineHeight = 18.sp
-                                )
-                            }
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(filteredApps, key = { it.second }) { app ->
-                                val isSelected = selectedApps.any { it.second == app.second }
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(14.dp))
-                                        .background(if (isSelected) SuccessGreen.copy(alpha = 0.1f) else Color.Transparent)
-                                        .clickable {
-                                            selectedApps = if (isSelected) {
-                                                selectedApps.filterNot { it.second == app.second }.toSet()
-                                            } else {
-                                                selectedApps + app
-                                            }
-                                        }
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                                ) {
-                                    AppIconView(packageName = app.second, modifier = Modifier.size(36.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = app.first,
-                                            fontSize = 14.sp,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                            color = PureBlack
-                                        )
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Text(
-                                            text = app.second,
-                                            fontSize = 10.sp,
-                                            fontFamily = FontFamily.Monospace,
-                                            color = MutedGray
-                                        )
-                                    }
-                                    if (isSelected) {
-                                        Icon(Icons.Default.Check, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(20.dp))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (selectedApps.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(
-                            onClick = { isAppSheetVisible = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen, contentColor = Color.White),
-                            shape = RoundedCornerShape(16.dp),
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    items(filteredApps, key = { it.second }) { app ->
+                        val isSelected = selectedApps.any { it.second == app.second }
+                        val rowBg by animateColorAsState(
+                            if (isSelected) CopperAccent.copy(alpha = 0.10f) else Color.Transparent,
+                            label = "appRowBg"
+                        )
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(50.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(rowBg)
+                                .clickable {
+                                    selectedApps = if (isSelected) {
+                                        selectedApps.filterNot { it.second == app.second }.toSet()
+                                    } else {
+                                        selectedApps + app
+                                    }
+                                }
+                                .padding(horizontal = 10.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            Text(
-                                text = stringResource(R.string.setup_target_confirm_selection, selectedApps.size),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.5.sp
-                            )
+                            AppIconView(packageName = app.second, modifier = Modifier.size(40.dp).clip(RoundedCornerShape(11.dp)))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = app.first,
+                                    fontSize = 15.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                    color = PureBlack
+                                )
+                                Spacer(modifier = Modifier.height(1.dp))
+                                Text(
+                                    text = app.second,
+                                    fontSize = 11.sp,
+                                    color = MutedGray,
+                                    maxLines = 1
+                                )
+                            }
+                            SelectionCheck(selected = isSelected)
                         }
                     }
                 }
             }
+
+            AnimatedVisibility(
+                visible = selectedApps.isNotEmpty(),
+                enter = slideInVertically { it } + fadeIn(),
+                exit = slideOutVertically { it } + fadeOut()
+            ) {
+                LimitraPrimaryButton(
+                    text = stringResource(R.string.setup_target_confirm_selection, selectedApps.size),
+                    onClick = { isAppSheetVisible = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp, bottom = 12.dp)
+                )
+            }
+        }
+    }
+}
+
+/** Form bölüm etiketi. */
+@Composable
+private fun FormLabel(text: String) {
+    Text(
+        text = text,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold,
+        color = MutedGray,
+        letterSpacing = 1.sp
+    )
+}
+
+/** Yuvarlak seçim işareti: seçilince dolar ve tik yaylı biçimde belirir. */
+@Composable
+private fun SelectionCheck(selected: Boolean) {
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1f else 0f,
+        animationSpec = spring(dampingRatio = 0.5f, stiffness = 500f),
+        label = "checkScale"
+    )
+    Box(
+        modifier = Modifier
+            .size(26.dp)
+            .clip(CircleShape)
+            .border(1.5.dp, if (selected) CopperAccent else BorderGray, CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .clip(CircleShape)
+                .background(CopperAccent),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Check, contentDescription = null, tint = OnAccent, modifier = Modifier.size(16.dp))
+        }
+    }
+}
+
+/** Saat veya dakika için büyük serif rakam ve yukarı/aşağı düğmeleri. */
+@Composable
+private fun TimeUnitStepper(
+    label: String,
+    value: Int,
+    incDescription: String,
+    decDescription: String,
+    onInc: () -> Unit,
+    onDec: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(92.dp)
+    ) {
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.8.sp,
+            color = MutedGray
+        )
+        RepeatingIconButton(onClick = onInc, modifier = Modifier.size(40.dp)) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = incDescription,
+                tint = PureBlack
+            )
+        }
+        AnimatedContent(
+            targetState = value,
+            transitionSpec = {
+                if (targetState > initialState) {
+                    (slideInVertically { -it / 2 } + fadeIn()) togetherWith (slideOutVertically { it / 2 } + fadeOut())
+                } else {
+                    (slideInVertically { it / 2 } + fadeIn()) togetherWith (slideOutVertically { -it / 2 } + fadeOut())
+                }
+            },
+            label = "stepper"
+        ) { v ->
+            Text(
+                text = String.format(Locale.ROOT, "%02d", v),
+                fontFamily = LimitraDisplay,
+                fontSize = 44.sp,
+                lineHeight = 48.sp,
+                color = PureBlack
+            )
+        }
+        RepeatingIconButton(onClick = onDec, modifier = Modifier.size(40.dp)) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = decDescription,
+                tint = PureBlack
+            )
         }
     }
 }
@@ -854,34 +766,34 @@ fun SetupTargetScreen(
 fun SelectedAppChip(
     appName: String,
     packageName: String,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = Modifier
-            .wrapContentWidth()
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
             .height(38.dp)
-            .border(1.dp, BorderGray, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(12.dp)
+            .clip(RoundedCornerShape(99.dp))
+            .background(DarkCharcoal)
+            .border(1.dp, BorderGray, RoundedCornerShape(99.dp))
+            .padding(start = 5.dp, end = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        AppIconView(packageName = packageName, modifier = Modifier.size(26.dp).clip(CircleShape))
+        Text(text = appName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = PureBlack, maxLines = 1)
+        Box(
+            modifier = Modifier
+                .size(26.dp)
+                .clip(CircleShape)
+                .clickable(onClick = onRemove),
+            contentAlignment = Alignment.Center
         ) {
-            AppIconView(packageName = packageName, modifier = Modifier.size(20.dp).clip(RoundedCornerShape(4.dp)))
-            Text(text = appName, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PureBlack)
-            IconButton(
-                onClick = onRemove,
-                modifier = Modifier.size(16.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(R.string.btn_close),
-                    tint = MutedGray,
-                    modifier = Modifier.size(10.dp)
-                )
-            }
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = stringResource(R.string.btn_close),
+                tint = MutedGray,
+                modifier = Modifier.size(14.dp)
+            )
         }
     }
 }
@@ -896,34 +808,31 @@ private fun ScheduleTimeField(
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = label,
-            fontSize = 10.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
+            letterSpacing = 0.8.sp,
             color = MutedGray
         )
         Spacer(modifier = Modifier.height(6.dp))
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(DarkCharcoal)
-                .border(1.dp, BorderGray, RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(18.dp))
+                .background(MatteSurface)
+                .border(1.dp, BorderGray, RoundedCornerShape(18.dp))
                 .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(vertical = 12.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.DateRange, contentDescription = null, tint = MutedGray, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = String.format(Locale.ROOT, "%02d:%02d", minutes / 60, minutes % 60),
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
+                fontFamily = LimitraDisplay,
+                fontSize = 28.sp,
                 color = PureBlack
             )
         }
     }
 }
-
 
 @Composable
 fun RepeatingIconButton(

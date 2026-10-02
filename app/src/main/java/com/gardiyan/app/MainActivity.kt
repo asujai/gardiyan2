@@ -4,21 +4,17 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -29,6 +25,12 @@ import androidx.navigation.compose.rememberNavController
 import com.gardiyan.app.navigation.*
 import com.gardiyan.app.service.AccessibilityHealthMonitor
 import com.gardiyan.app.service.BlockOverlayService
+import com.gardiyan.app.ui.components.BottomBarItem
+import com.gardiyan.app.ui.components.LimitraBottomBar
+import com.gardiyan.app.ui.components.LimitraIcons
+import com.gardiyan.app.ui.screens.AchievementCelebration
+import com.gardiyan.app.ui.screens.LocalAchievements
+import com.gardiyan.app.ui.screens.rememberAchievementController
 import com.gardiyan.app.ui.theme.*
 import com.gardiyan.app.viewmodel.GuardianViewModel
 import com.gardiyan.app.viewmodel.GuardianViewModelFactory
@@ -213,116 +215,80 @@ fun MainNavigationContent(
         }
     }
 
-    Scaffold(
-        bottomBar = {
-            if (canOpenMainApp && (currentRoute == ROUTE_DASHBOARD || currentRoute == ROUTE_PROTECTED || currentRoute == ROUTE_SETTINGS)) {
-                NavigationBar(
-                    containerColor = DarkCharcoal,
-                    contentColor = PureWhite
-                ) {
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Home, contentDescription = stringResource(R.string.nav_home)) },
-                        label = { NavBarLabel(stringResource(R.string.nav_home)) },
-                        selected = currentRoute == ROUTE_DASHBOARD,
-                        onClick = {
-                            if (currentRoute != ROUTE_DASHBOARD) {
-                                navController.navigate(ROUTE_DASHBOARD) {
-                                    popUpTo(ROUTE_DASHBOARD) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = PureBlack,
-                            selectedTextColor = PureBlack,
-                            indicatorColor = CopperAccent.copy(alpha = 0.15f),
-                            unselectedTextColor = MutedGray,
-                            unselectedIconColor = MutedGray
-                        )
-                    )
+    val showBottomBar = canOpenMainApp &&
+        (currentRoute == ROUTE_DASHBOARD || currentRoute == ROUTE_PROTECTED || currentRoute == ROUTE_SETTINGS)
+    val tabs = listOf(
+        BottomBarItem(ROUTE_DASHBOARD, stringResource(R.string.nav_home), LimitraIcons.Home),
+        BottomBarItem(ROUTE_PROTECTED, stringResource(R.string.nav_protected), LimitraIcons.Shield),
+        BottomBarItem(ROUTE_SETTINGS, stringResource(R.string.nav_profile), LimitraIcons.Award)
+    )
 
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Lock, contentDescription = stringResource(R.string.nav_protected)) },
-                        label = { NavBarLabel(stringResource(R.string.nav_protected)) },
-                        selected = currentRoute == ROUTE_PROTECTED,
-                        onClick = {
-                            if (currentRoute != ROUTE_PROTECTED) {
-                                navController.navigate(ROUTE_PROTECTED) {
-                                    popUpTo(ROUTE_DASHBOARD) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = PureBlack,
-                            selectedTextColor = PureBlack,
-                            indicatorColor = CopperAccent.copy(alpha = 0.15f),
-                            unselectedTextColor = MutedGray,
-                            unselectedIconColor = MutedGray
-                        )
-                    )
+    val achievements = rememberAchievementController(viewModel)
+    val celebration = achievements.pendingCelebration
+    val showCelebration = celebration != null && showBottomBar
+    var lastCelebration by remember { mutableStateOf(celebration) }
+    if (celebration != null) lastCelebration = celebration
 
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Person, contentDescription = stringResource(R.string.nav_profile)) },
-                        label = { NavBarLabel(stringResource(R.string.nav_profile)) },
-                        selected = currentRoute == ROUTE_SETTINGS,
-                        onClick = {
-                            if (currentRoute != ROUTE_SETTINGS) {
-                                navController.navigate(ROUTE_SETTINGS) {
-                                    popUpTo(ROUTE_DASHBOARD) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
+    CompositionLocalProvider(LocalAchievements provides achievements) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
+                bottomBar = {
+                    AnimatedVisibility(
+                        visible = showBottomBar,
+                        enter = slideInVertically { it } + fadeIn(),
+                        exit = slideOutVertically { it } + fadeOut()
+                    ) {
+                        LimitraBottomBar(
+                            items = tabs,
+                            selectedKey = currentRoute,
+                            onSelect = { route ->
+                                if (currentRoute != route) {
+                                    navController.navigate(route) {
+                                        popUpTo(ROUTE_DASHBOARD) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
                             }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = PureBlack,
-                            selectedTextColor = PureBlack,
-                            indicatorColor = CopperAccent.copy(alpha = 0.15f),
-                            unselectedTextColor = MutedGray,
-                            unselectedIconColor = MutedGray
                         )
+                    }
+                },
+                containerColor = MatteSurface
+            ) { innerPadding ->
+                Box(modifier = modifier.padding(innerPadding)) {
+                    AppNavGraph(
+                        navController = navController,
+                        viewModel = viewModel,
+                        isOverlayEnabled = isOverlayEnabled,
+                        isUsageEnabled = isUsageEnabled,
+                        isAccessibilityEnabled = isAccessibilityEnabled,
+                        accessibilityNeedsReenable = accessibilityStatus.requiresReenable,
+                        accessibilityFailSafeActive = isAccessibilityFailSafeActive,
+                        isBatteryExempted = isBatteryExempted,
+                        isNotificationsEnabled = isNotificationsEnabled,
+                        canEnterMainApp = canOpenMainApp
                     )
                 }
             }
-        },
-        containerColor = MatteSurface
-    ) { innerPadding ->
-        Box(modifier = modifier.padding(innerPadding)) {
-            AppNavGraph(
-                navController = navController,
-                viewModel = viewModel,
-                isOverlayEnabled = isOverlayEnabled,
-                isUsageEnabled = isUsageEnabled,
-                isAccessibilityEnabled = isAccessibilityEnabled,
-                accessibilityNeedsReenable = accessibilityStatus.requiresReenable,
-                accessibilityFailSafeActive = isAccessibilityFailSafeActive,
-                isBatteryExempted = isBatteryExempted,
-                isNotificationsEnabled = isNotificationsEnabled,
-                canEnterMainApp = canOpenMainApp
-            )
+
+            // Yeni kazanılan çerçevenin tam ekran kutlaması (ana sekmelerdeyken gösterilir).
+            AnimatedVisibility(
+                visible = showCelebration,
+                enter = fadeIn(tween(380)),
+                exit = fadeOut(tween(260))
+            ) {
+                lastCelebration?.let { tier ->
+                    AchievementCelebration(
+                        tier = tier,
+                        streak = achievements.progress.currentStreak,
+                        onEquip = {
+                            achievements.equip(tier)
+                            achievements.dismissCelebrations()
+                        },
+                        onDismiss = { achievements.dismissCelebrations() }
+                    )
+                }
+            }
         }
     }
-}
-
-/**
- * Bottom navigation sekme etiketi. Tüm sekmeler aynı bileşeni kullanır; böylece
- * "Profile & Settings" / "Profil & Einstellungen" gibi uzun çeviriler ikonun
- * altında ortalı ve dengeli durur, gerektiğinde kontrollü biçimde iki satıra
- * bölünür (locale bazlı özel kod yok).
- */
-@Composable
-private fun NavBarLabel(text: String) {
-    Text(
-        text = text,
-        fontSize = 12.sp,
-        lineHeight = 14.sp,
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.Bold,
-        textAlign = TextAlign.Center,
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis
-    )
 }

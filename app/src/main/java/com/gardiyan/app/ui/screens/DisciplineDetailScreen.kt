@@ -1,5 +1,9 @@
 package com.gardiyan.app.ui.screens
 
+import com.gardiyan.app.ui.components.LimitraCard
+import com.gardiyan.app.ui.components.LimitraIcons
+import com.gardiyan.app.ui.components.ScreenHeader
+import com.gardiyan.app.ui.theme.LimitraDisplay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -155,40 +159,20 @@ fun DisciplineDetailScreen(
 
     val todayLabel = stringResource(R.string.timeline_today)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.discipline_detail_title),
-                        fontWeight = FontWeight.Bold,
-                        color = PureBlack,
-                        fontSize = 20.sp
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.btn_back_desc),
-                            tint = PureBlack
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MatteSurface
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MatteSurface)
+            .padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                ScreenHeader(
+                    title = stringResource(R.string.discipline_detail_title),
+                    onBack = onBack
                 )
-            )
-        },
-        containerColor = MatteSurface
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+            }
             // Tamamlanan Seriler Başlığı ve İkonları
             if (completedSeriesCount > 0) {
                 item {
@@ -208,25 +192,28 @@ fun DisciplineDetailScreen(
                             val isSelected = (selectedSeries == seriesNum)
                             Card(
                                 modifier = Modifier
+                                    .clip(RoundedCornerShape(99.dp))
                                     .clickable { selectedSeries = seriesNum }
                                     .border(
                                         width = 1.dp,
                                         color = if (isSelected) CopperAccent else BorderGray,
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(99.dp)
                                     ),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) CopperAccent.copy(alpha = 0.15f) else DarkCharcoal
+                                    containerColor = if (isSelected) CopperAccent.copy(alpha = 0.12f) else DarkCharcoal
                                 ),
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(99.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Text(
-                                        text = "🛡️",
-                                        fontSize = 14.sp
+                                    Icon(
+                                        imageVector = LimitraIcons.Shield,
+                                        contentDescription = null,
+                                        tint = if (isSelected) CopperAccent else MutedGray,
+                                        modifier = Modifier.size(15.dp)
                                     )
                                     Text(
                                         text = stringResource(R.string.discipline_detail_series_label, seriesNum),
@@ -243,25 +230,28 @@ fun DisciplineDetailScreen(
                             val isSelected = (selectedSeries == null)
                             Card(
                                 modifier = Modifier
+                                    .clip(RoundedCornerShape(99.dp))
                                     .clickable { selectedSeries = null }
                                     .border(
                                         width = 1.dp,
                                         color = if (isSelected) CopperAccent else BorderGray,
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(99.dp)
                                     ),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) CopperAccent.copy(alpha = 0.15f) else DarkCharcoal
+                                    containerColor = if (isSelected) CopperAccent.copy(alpha = 0.12f) else DarkCharcoal
                                 ),
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(99.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Text(
-                                        text = "🔥",
-                                        fontSize = 14.sp
+                                    Icon(
+                                        imageVector = LimitraIcons.Flame,
+                                        contentDescription = null,
+                                        tint = if (isSelected) CopperAccent else MutedGray,
+                                        modifier = Modifier.size(15.dp)
                                     )
                                     Text(
                                         text = stringResource(R.string.discipline_detail_active_series) + " (${activeSeriesNumber})",
@@ -278,15 +268,9 @@ fun DisciplineDetailScreen(
 
             // Görüntülenen Serinin Adı ve Bilgi Kartı
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
+                LimitraCard(modifier = Modifier.fillMaxWidth()) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(18.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Row(
@@ -300,8 +284,8 @@ fun DisciplineDetailScreen(
                                 } else {
                                     stringResource(R.string.discipline_detail_series_label, currentViewingSeries)
                                 },
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
+                                fontFamily = LimitraDisplay,
+                                fontSize = 22.sp,
                                 color = PureBlack
                               )
 
@@ -394,7 +378,6 @@ fun DisciplineDetailScreen(
                 }
             }
             item { Spacer(modifier = Modifier.height(20.dp)) }
-        }
     }
 }
 

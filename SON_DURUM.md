@@ -6,7 +6,18 @@
 - **Yayındaki Sürüm:** Version Code 18 (v1.2.1) - Production `%100`, durum `completed`
 - **Bekleyen Sürüm:** Version Code 19 (v1.2.2) - Production **taslak**, kullanıcı Console'dan yayınlayacak
 - **Mağaza Varlıkları:** 11 dil × 18 varlık = 198 görsel Play Store'da canlı ve doğrulanmış
-- **Son Çalışma:** Codex — reklam öncesi mağaza analizi ve 3 Türkçe görsel konsepti (18 Eylül 2026); rapor: `store_assets/tr-TR-concepts-2026-09-18/ANALIZ.md`.
+- **Son Çalışma:** Claude — premium arayüz yenilemesi + Başarılar (çerçeve) bölümü (2 Ekim 2026). Yalnız yerel commit; GitHub'a push edilmedi (kullanıcı isteği).
+
+## Son İşlem — Premium Arayüz Yenilemesi ve Başarılar (Claude, 2 Ekim 2026)
+
+- **Durum:** Yerelde tamamlandı ve emülatörde (Pixel API 34) doğrulandı. GitHub değişiklikten önce 25ec471'e eşitlendi; bu iş **push edilmedi** — kullanıcı "şimdilik GitHub'a dokunma" dedi.
+- **Tasarım sistemi:** Newsreader (başlık/rakam) + Manrope (arayüz) fontları `res/font` içine eklendi. 4 palet × açık/koyu yeniden ayarlandı (`Color.kt`), M3 renk şeması tamamlandı, durum çubuğu ikonları temaya uyuyor. Ortak bileşenler: `ui/components/Premium.kt` (yaylı basma + titreşim, kart, birincil düğme, ekran başlığı, alttan açılan animasyonlu sayfa, giriş animasyonu), `LimitraIcons` (Lucide ince çizgi), `LimitraBottomBar` (kayan gösterge). `.clickable` satırlar tema üzerinden basınca hafifçe küçülür (`Motion.kt`).
+- **Ekranlar:** Ana ekran (selamlama, takılı çerçeve içinde seri, bugünün durumu, sıradaki çerçeve), Korunanlar (animasyonlu açılır gruplar, alttan açılan düzenleme), Kısıtlama Ekle, İzinler (ilerleme halkası + numaralı adımlar), İlerleme (madalyon, zaman tüneli düğümleri, kayan sekmeler, ayarlar), Disiplin/Kullanım detayı, Sözler. Kilit ekranı katmanı (`BlockOverlayService`) yalnız renk/yazı tipi bloğunda değişti; uygulamanın paletini kullanıyor.
+- **Başarılar:** `data/achievements/Achievements.kt` + `AchievementsScreen` + `AchievementFrames` (Canvas ile çizilen 9 animasyonlu çerçeve: 1/3/7/15/30/60/100/180/365 gün). Kaynak seri `consecutiveSuccessDays`; en uzun seri, takılı çerçeve ve kutlananlar `limitra_achievements` SharedPreferences'ta (veritabanına dokunulmadı). Yeni çerçevede tam ekran kutlama. Metinler 11 dilde.
+- **Mantık:** Repository, ViewModel, DAO, erişilebilirlik servisi değişmedi. Ekranlardaki hesaplama/doğrulama kodu aynen korundu; bölüm sıraları ve görünüm değişti.
+- **Doğrulama:** `testDebugUnitTest` 155/155 (JDK 21 jbr). Yeni testler: `AchievementsTest` (7), palet kontrast testi, Roborazzi `AchievementsVisualCheckTest`. Emülatörde kısıtlama oluşturma, düzenleme sayfası, tema değişimi, uygulama içindeyken 1 dk limit dolunca kilit ekranının gelmesi ve "Ana sayfaya dön" çıkışı denendi.
+- **Bilinen sorunlar:** Gerçek cihazda henüz denenmedi. `finytaels.otf` artık kullanılmıyor (silinmedi). Emülatöre test için `best_streak=70` yazıldı (yalnız emülatör). Uygulama her yeniden kurulduğunda Android erişilebilirlik iznini kapatır; testte bunu unutmak "kilit gelmiyor" sanısı yaratır.
+- **Sonraki adım:** Kullanıcı kendi telefonunda dener; beğenirse sürüm yükseltme + push + Play taslağı.
 
 ## Son İnceleme — Reklam Öncesi Mağaza (Codex, 18 Eylül 2026)
 

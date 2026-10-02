@@ -527,6 +527,66 @@
     <string name="perm_guidance_text">Нажмите на каждую карточку разрешения, найдите Limitra на открывшемся экране настроек Android и включите необходимое разрешение. Затем вернитесь, чтобы продолжить.</string>
     <string name="profile_notifications_title">Уведомления</string>
     <string name="profile_notifications_desc">Показывать предупреждения о лимитах и уведомления о статусе.</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">Достижения</string>
+    <string name="achievements_subtitle">Рамки, которые вы получаете, не прерывая серию.</string>
+    <string name="achievements_current_streak">Текущая серия</string>
+    <string name="achievements_best_streak">Лучшая серия</string>
+    <string name="achievements_next">Далее: %1$s</string>
+    <string name="achievements_all_unlocked">Вы получили все рамки. Не прерывайте серию.</string>
+    <string name="achievements_unlocked">Получено</string>
+    <string name="achievements_locked">Закрыто</string>
+    <string name="achievements_equip">Использовать рамку</string>
+    <string name="achievements_equipped">Используется</string>
+    <string name="achievements_count">Получено %1$d из %2$d</string>
+    <string name="achievements_entry_desc">Ваша рамка и следующая цель</string>
+    <string name="achievements_celebration_title">Новая рамка получена</string>
+    <string name="achievements_celebration_desc">%1$s теперь ваша. Ваша серия достигла %2$d дн.</string>
+    <string name="achievements_celebration_cta">Надеть</string>
+    <string name="achievements_celebration_later">Позже</string>
+    <string name="achievements_rule_title">Как это работает</string>
+    <string name="achievements_rule_desc">Каждый день в пределах лимитов добавляет день к серии. Нарушение или удаление ограничения обнуляет серию, но полученные рамки остаются у вас.</string>
+    <string name="frame_spark">Первая искра</string>
+    <string name="frame_spark_story">Первый чистый день. С него начинается любая длинная серия.</string>
+    <string name="frame_bronze">Бронзовое кольцо</string>
+    <string name="frame_bronze_story">Три дня подряд. Привычка обретает форму.</string>
+    <string name="frame_silver_laurel">Серебряный лавр</string>
+    <string name="frame_silver_laurel_story">Целая неделя контроля. В древности победителей венчали лавром.</string>
+    <string name="frame_gold_seal">Золотая печать</string>
+    <string name="frame_gold_seal_story">Пятнадцать дней. Обещание самому себе теперь скреплено печатью.</string>
+    <string name="frame_moonstone">Лунный камень</string>
+    <string name="frame_moonstone_story">Целый месяц: полный лунный цикл сосредоточенности.</string>
+    <string name="frame_obsidian_crown">Обсидиановая корона</string>
+    <string name="frame_obsidian_crown_story">Шестьдесят дней. Немногие достигают такого самообладания.</string>
+    <string name="frame_century_flame">Пламя ста дней</string>
+    <string name="frame_century_flame_story">Сто дней. Огонь, зажжённый в первый день, всё ещё горит.</string>
+    <string name="frame_aurora">Северное сияние</string>
+    <string name="frame_aurora_story">Полгода. Редкое и красивое зрелище.</string>
+    <string name="frame_stoic">Стоик</string>
+    <string name="frame_stoic_story">Целый год. Вы — хозяин собственного внимания.</string>
+    <string name="dashboard_today_clean">Сегодня пока без нарушений</string>
+    <string name="dashboard_today_violated">Сегодня лимит был превышен</string>
+    <string name="dashboard_today_idle">Активной защиты пока нет</string>
+    <string name="greeting_morning">Доброе утро</string>
+    <string name="greeting_afternoon">Добрый день</string>
+    <string name="greeting_evening">Добрый вечер</string>
+    <plurals name="achievements_days">
+        <item quantity="one">%d день</item>
+        <item quantity="few">%d дня</item>
+        <item quantity="many">%d дней</item>
+        <item quantity="other">%d дня</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="one">Остался %d день</item>
+        <item quantity="few">Осталось %d дня</item>
+        <item quantity="many">Осталось %d дней</item>
+        <item quantity="other">Осталось %d дня</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="one">Откроется при серии в %d день</item>
+        <item quantity="few">Откроется при серии в %d дня</item>
+        <item quantity="many">Откроется при серии в %d дней</item>
+        <item quantity="other">Откроется при серии в %d дня</item>
+    </plurals>
 </resources>
-
-

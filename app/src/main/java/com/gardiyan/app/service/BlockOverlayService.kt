@@ -1,5 +1,8 @@
 package com.gardiyan.app.service
 
+import com.gardiyan.app.ui.theme.AppThemePalette
+import com.gardiyan.app.ui.theme.OverlayColors
+import com.gardiyan.app.ui.theme.overlayColorsFor
 import android.accessibilityservice.AccessibilityService
 import android.app.AlarmManager
 import android.app.KeyguardManager
@@ -664,15 +667,15 @@ class BlockOverlayService : Service() {
             val quoteText = overlayView.findViewById<TextView>(R.id.quoteText)
             val quoteAuthorText = overlayView.findViewById<TextView>(R.id.quoteAuthorText)
 
-            // Yazı Tipi (Font) Ayarlamaları
+            // Yazı Tipi (Font) Ayarlamaları: uygulamanın serif/sans çifti
             try {
-                quoteText?.typeface = Typeface.SERIF
+                quoteText?.typeface = ResourcesCompat.getFont(this, R.font.newsreader_italic) ?: Typeface.SERIF
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to set serif typeface for quoteText: ${e.message}")
             }
 
             try {
-                val typefaceAuthor = ResourcesCompat.getFont(this, R.font.finytaels)
+                val typefaceAuthor = ResourcesCompat.getFont(this, R.font.manrope_bold)
                 if (typefaceAuthor != null) {
                     quoteAuthorText?.typeface = typefaceAuthor
                 }
@@ -742,39 +745,55 @@ class BlockOverlayService : Service() {
             }
 
             quoteText?.text = finalQuoteText
-            quoteAuthorText?.text = if (finalQuoteAuthor.isNotEmpty()) "- $finalQuoteAuthor" else ""
+            // Latin isimlerde Türkçe noktalı İ oluşmasın diye dil bağımsız büyük harf.
+            quoteAuthorText?.text = finalQuoteAuthor.uppercase(java.util.Locale.ROOT)
 
             // --- Programatik Tema Renklendirme ---
             // Kilit ekranı, sistem gece moduna değil uygulamanın kendi tema ayarına uymalıdır.
             val isDark = resolveAppIsDarkTheme()
+            val colors = resolveOverlayColors(isDark)
 
             val rootLayout = overlayView.findViewById<View>(R.id.rootLayout)
-            rootLayout?.setBackgroundColor(android.graphics.Color.parseColor(if (isDark) "#0B0F19" else "#F1F5F9"))
+            rootLayout?.setBackgroundColor(colors.ground)
 
+            // Kart yerine sakin, tam ekran bir sayfa: söz ana odak.
             val cardView = overlayView.findViewById<View>(R.id.cardLayout)
-            if (cardView != null) {
-                val scale = resources.displayMetrics.density
-                val cardDrawable = android.graphics.drawable.GradientDrawable().apply {
-                    shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                    cornerRadius = 24f * scale
-                    setColor(android.graphics.Color.parseColor(if (isDark) "#151D30" else "#FFFFFF"))
-                    setStroke((1f * scale).toInt(), android.graphics.Color.parseColor(if (isDark) "#24324D" else "#CBD5E1"))
+            cardView?.background = null
+            cardView?.elevation = 0f
+
+            val scale = resources.displayMetrics.density
+            overlayView.findViewById<View>(R.id.emojiContainer)?.background =
+                android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(colors.soft)
+                    setStroke((1.5f * scale).toInt(), colors.danger)
                 }
-                cardView.background = cardDrawable
-            }
+            overlayView.findViewById<View>(R.id.quoteDivider)?.setBackgroundColor(colors.border)
+            overlayView.findViewById<View>(R.id.footerDivider)?.setBackgroundColor(colors.border)
 
             val appTitleText = overlayView.findViewById<TextView>(R.id.appTitleText)
             val limitOverText = overlayView.findViewById<TextView>(R.id.limitOverText)
             val returnToHomeText = overlayView.findViewById<TextView>(R.id.returnToHomeText)
 
-            appTitleText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#2EC4B6" else "#0D9488"))
-            targetText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#FFFFFF" else "#0F172A"))
-            limitOverText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#EF4444" else "#DC2626"))
-            quoteText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#E2E8F0" else "#334155"))
-            quoteAuthorText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#475569"))
-            returnToHomeText?.setTextColor(android.graphics.Color.parseColor(if (isDark) "#94A3B8" else "#475569"))
+            val sans = runCatching { ResourcesCompat.getFont(this, R.font.manrope_semibold) }.getOrNull()
+            val sansBold = runCatching { ResourcesCompat.getFont(this, R.font.manrope_bold) }.getOrNull()
+            val display = runCatching { ResourcesCompat.getFont(this, R.font.newsreader_regular) }.getOrNull()
+            sansBold?.let {
+                appTitleText?.typeface = it
+                limitOverText?.typeface = it
+            }
+            display?.let { targetText?.typeface = it }
+            sans?.let { returnToHomeText?.typeface = it }
 
-            setupReturnHomeButton(overlayView, isDark)
+            appTitleText?.setTextColor(colors.muted)
+            appTitleText?.letterSpacing = 0.06f
+            targetText?.setTextColor(colors.ink)
+            limitOverText?.setTextColor(colors.danger)
+            quoteText?.setTextColor(colors.ink)
+            quoteAuthorText?.setTextColor(colors.muted)
+            returnToHomeText?.setTextColor(colors.muted)
+
+            setupReturnHomeButton(overlayView, colors)
             setupOverlayInputGuards(overlayView)
 
             val params = WindowManager.LayoutParams(
@@ -805,16 +824,17 @@ class BlockOverlayService : Service() {
     /**
      * Kilit ekranının TEK meşru çıkış yolu olan "Ana sayfaya dön" butonunu hazırlar.
      */
-    private fun setupReturnHomeButton(overlayView: View, isDark: Boolean) {
+    private fun setupReturnHomeButton(overlayView: View, colors: OverlayColors) {
         val button = overlayView.findViewById<TextView>(R.id.returnHomeButton) ?: return
         val scale = resources.displayMetrics.density
 
         button.background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            cornerRadius = 14f * scale
-            setColor(android.graphics.Color.parseColor(if (isDark) "#2EC4B6" else "#0D9488"))
+            cornerRadius = 18f * scale
+            setColor(colors.accent)
         }
-        button.setTextColor(android.graphics.Color.parseColor(if (isDark) "#04211E" else "#FFFFFF"))
+        button.setTextColor(colors.onAccent)
+        runCatching { ResourcesCompat.getFont(this, R.font.manrope_bold) }.getOrNull()?.let { button.typeface = it }
 
         button.setOnClickListener {
             if (returnHomeInProgress.getAndSet(true)) return@setOnClickListener
@@ -1007,6 +1027,15 @@ class BlockOverlayService : Service() {
      * - PREMIUM_DARK paleti her iki modda da koyu kalır.
      * - LIGHT/DARK seçimi doğrudan uygulanır, SYSTEM ise cihaz gece moduna bakar.
      */
+    /** Kilit ekranı uygulamanın seçili renk paletini kullanır. */
+    private fun resolveOverlayColors(isDark: Boolean): OverlayColors {
+        val prefs = getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
+        val palette = runCatching {
+            AppThemePalette.valueOf(prefs.getString("theme_palette", "BLUE") ?: "BLUE")
+        }.getOrDefault(AppThemePalette.BLUE)
+        return overlayColorsFor(isDark, palette)
+    }
+
     private fun resolveAppIsDarkTheme(): Boolean {
         val prefs = getSharedPreferences("gardiyan_settings", Context.MODE_PRIVATE)
         val mode = prefs.getString("theme_mode", "LIGHT") ?: "LIGHT"

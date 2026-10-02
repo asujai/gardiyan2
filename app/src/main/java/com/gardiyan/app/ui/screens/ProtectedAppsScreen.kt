@@ -1,5 +1,29 @@
 package com.gardiyan.app.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalHapticFeedback
+import com.gardiyan.app.ui.components.AnimatedSheet
+import com.gardiyan.app.ui.components.Hairline
+import com.gardiyan.app.ui.components.IconBadge
+import com.gardiyan.app.ui.components.LimitraCard
+import com.gardiyan.app.ui.components.LimitraIcons
+import com.gardiyan.app.ui.components.LimitraPrimaryButton
+import com.gardiyan.app.ui.components.ScreenHeader
+import com.gardiyan.app.ui.components.StatusPill
+import com.gardiyan.app.ui.components.entrance
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -121,6 +145,11 @@ fun ProtectedAppsScreen(
         }
     }
 
+    val played = remember { mutableSetOf<Int>() }
+    // Kapanış animasyonu süresince son seçilen uygulama gösterilmeye devam eder.
+    var lastManagedApp by remember { mutableStateOf<RestrictedAppEntity?>(null) }
+    if (selectedAppForManagement != null) lastManagedApp = selectedAppForManagement
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(containerColor = MatteSurface) { paddingValues ->
             LazyColumn(
@@ -128,22 +157,16 @@ fun ProtectedAppsScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // Header Area
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Text(
-                            text = stringResource(R.string.protected_apps_title),
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PureBlack
-                        )
-                    }
+                    ScreenHeader(
+                        title = stringResource(R.string.protected_apps_title),
+                        subtitle = stringResource(R.string.protected_apps_desc),
+                        modifier = Modifier.entrance(0, played)
+                    )
                 }
 
                 // Filter Buttons
@@ -154,12 +177,14 @@ fun ProtectedAppsScreen(
                     )
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .entrance(1, played)
                     ) {
                         items(filters) { (filter, label) ->
                             val isSelected = selectedFilter == filter
-                            val chipBg = if (isSelected) PureBlack else DarkCharcoal
-                            val chipText = if (isSelected) OnPureBlack else PureBlack
+                            val chipBg by animateColorAsState(if (isSelected) PureBlack else DarkCharcoal, label = "chipBg")
+                            val chipText by animateColorAsState(if (isSelected) OnPureBlack else PureBlack, label = "chipText")
                             val chipBorder = if (isSelected) PureBlack else BorderGray
 
                             Box(
@@ -169,11 +194,11 @@ fun ProtectedAppsScreen(
                                     .background(chipBg)
                                     .border(1.dp, chipBorder, RoundedCornerShape(99.dp))
                                     .clickable { selectedFilter = filter }
-                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .padding(horizontal = 18.dp, vertical = 11.dp)
                             ) {
                                 Text(
                                     text = label,
-                                    fontSize = 12.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = chipText
                                 )
@@ -185,55 +210,52 @@ fun ProtectedAppsScreen(
                 // App Cards or Empty State
                 if (filteredGroups.isEmpty()) {
                     item {
-                        Card(
+                        LimitraCard(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                            shape = RoundedCornerShape(20.dp)
+                                .entrance(2, played),
+                            elevated = false
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 48.dp, horizontal = 24.dp),
+                                    .padding(vertical = 44.dp, horizontal = 24.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(64.dp)
-                                        .clip(CircleShape)
-                                        .background(SuccessGreen.copy(alpha = 0.1f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(text = "🛡️", fontSize = 32.sp)
-                                }
-                                Spacer(modifier = Modifier.height(16.dp))
+                                IconBadge(
+                                    icon = LimitraIcons.Shield,
+                                    tint = CopperAccent,
+                                    size = 64.dp
+                                )
+                                Spacer(modifier = Modifier.height(18.dp))
                                 val hasAppsOutsideFilter = activeApps.isNotEmpty()
                                 Text(
                                     text = stringResource(
                                         if (hasAppsOutsideFilter) R.string.profile_timeline_filter_empty
                                         else R.string.protected_apps_empty
                                     ),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = PureBlack
+                                    fontFamily = LimitraDisplay,
+                                    fontSize = 22.sp,
+                                    lineHeight = 26.sp,
+                                    color = PureBlack,
+                                    textAlign = TextAlign.Center
                                 )
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = stringResource(
                                         if (hasAppsOutsideFilter) R.string.protected_apps_desc
                                         else R.string.protected_apps_empty_desc
                                     ),
-                                    fontSize = 11.sp,
+                                    fontSize = 13.sp,
                                     color = MutedGray,
                                     textAlign = TextAlign.Center,
-                                    lineHeight = 16.sp
+                                    lineHeight = 19.sp
                                 )
                             }
                         }
                     }
                 } else {
-                    items(filteredGroups, key = { it.id }) { group ->
+                    itemsIndexed(filteredGroups, key = { _, group -> group.id }) { index, group ->
                         RestrictionGroupCard(
                             group = group,
                             nowMillis = scheduleClockMillis,
@@ -249,7 +271,10 @@ fun ProtectedAppsScreen(
                                     }
                                 }
                             },
-                            onAppClick = { app -> selectedAppForManagement = app }
+                            onAppClick = { app -> selectedAppForManagement = app },
+                            modifier = Modifier
+                                .animateItem()
+                                .entrance(index + 2, played)
                         )
                     }
                 }
@@ -261,7 +286,13 @@ fun ProtectedAppsScreen(
         }
 
         // Management Bottom Sheet Overlay
-        selectedAppForManagement?.let { app ->
+        AnimatedSheet(
+            visible = selectedAppForManagement != null,
+            onDismiss = { selectedAppForManagement = null },
+            heightFraction = 0.88f
+        ) {
+            val app = lastManagedApp ?: return@AnimatedSheet
+            val locale = LocalConfiguration.current.locales[0]
             val latestApp = restrictedApps.firstOrNull { it.id == app.id } ?: app
 
             var limitHours by remember(app.id) { mutableStateOf(latestApp.dailyLimitMinutes / 60) }
@@ -271,301 +302,235 @@ fun ProtectedAppsScreen(
             // pasifleştirip korumadan kaçamasın diye burada gün düzenleme arayüzü yoktur.
             // Kayıtlı aktif günler veritabanında korunur ve koruma onlara göre çalışır.
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
-                    .clickable { selectedAppForManagement = null }
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.85f)
-                    .align(Alignment.BottomCenter)
-                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .background(DarkCharcoal)
-                    .border(1.dp, BorderGray, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .clickable(enabled = false) {}
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
+                Text(
+                    text = stringResource(R.string.protected_apps_mgmt).lowercase(locale)
+                        .replaceFirstChar { it.titlecase(locale) },
+                    fontFamily = LimitraDisplay,
+                    fontSize = 24.sp,
+                    color = PureBlack
+                )
+                IconButton(
+                    onClick = { selectedAppForManagement = null },
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp)
+                        .clip(CircleShape)
+                        .background(MatteSurface)
+                        .size(40.dp)
                 ) {
-                    // Drag Indicator
-                    Box(
-                        modifier = Modifier
-                            .width(40.dp)
-                            .height(5.dp)
-                            .clip(RoundedCornerShape(2.5.dp))
-                            .background(BorderGray)
-                            .align(Alignment.CenterHorizontally)
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.btn_close),
+                        tint = PureBlack,
+                        modifier = Modifier.size(18.dp)
                     )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.protected_apps_mgmt),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontFamily = FontFamily.SansSerif,
-                            color = PureBlack
-                        )
-                        IconButton(
-                            onClick = { selectedAppForManagement = null },
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MatteSurface)
-                                .size(36.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(R.string.btn_close),
-                                tint = PureBlack,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Uygulama Bilgileri Kartı
-                        item {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .border(1.dp, BorderGray, RoundedCornerShape(16.dp)),
-                                colors = CardDefaults.cardColors(containerColor = MatteSurface)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                                ) {
-                                    AppIconView(packageName = latestApp.packageName, modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = latestApp.appName,
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = PureBlack
-                                        )
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Text(
-                                            text = latestApp.packageName,
-                                            fontSize = 11.sp,
-                                            fontFamily = FontFamily.Monospace,
-                                            color = MutedGray
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // Durum ve Kalan Süre
-                        item {
-                            val totalSecs = latestApp.remainingSecondsToday.coerceAtLeast(0)
-                            val mm = totalSecs / 60
-                            val ss = totalSecs % 60
-                            val isLocked = totalSecs <= 0
-
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .border(1.dp, BorderGray, RoundedCornerShape(16.dp)),
-                                colors = CardDefaults.cardColors(containerColor = MatteSurface)
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.protected_apps_remaining_time),
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = PureBlack
-                                        )
-                                        Text(
-                                            text = String.format(Locale.ROOT, "%02d:%02d", mm, ss),
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            fontFamily = FontFamily.Monospace,
-                                            color = if (isLocked) DangerRed else PureBlack
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.perm_status),
-                                            fontSize = 13.sp,
-                                            color = MutedGray
-                                        )
-                                        Text(
-                                            text = when {
-                                                isLocked -> stringResource(R.string.protected_apps_limit_reached)
-                                                latestApp.isFailed -> stringResource(R.string.protected_apps_discipline_process)
-                                                else -> stringResource(R.string.status_protected)
-                                            },
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = when {
-                                                isLocked || latestApp.isFailed -> DangerRed
-                                                else -> SuccessGreen
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // Günlük Limit Düzenleme
-                        item {
-                            val totalSecs = latestApp.remainingSecondsToday.coerceAtLeast(0)
-                            val isLocked = totalSecs <= 0
-
-                            val durationText = buildString {
-                                if (limitHours > 0) {
-                                    append(context.localizedHours(limitHours))
-                                    append(" ")
-                                }
-                                append(context.localizedMinutes(limitMinsOnly))
-                            }
-
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .border(1.dp, BorderGray, RoundedCornerShape(16.dp)),
-                                colors = CardDefaults.cardColors(containerColor = MatteSurface)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.protected_apps_daily_limit),
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = PureBlack
-                                        )
-                                        Text(
-                                            text = durationText,
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = PureBlack
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(12.dp))
-
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .alpha(if (isLocked) 0.5f else 1f)
-                                            .pointerInput(isLocked) {
-                                                if (isLocked) {
-                                                    awaitPointerEventScope {
-                                                        while (true) {
-                                                            val event = awaitPointerEvent()
-                                                            event.changes.forEach { it.consume() }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                    ) {
-                                        DurationWheelPicker(
-                                            initialHours = limitHours,
-                                            initialMinutes = limitMinsOnly,
-                                            onDurationChanged = { h, m ->
-                                                limitHours = h
-                                                limitMinsOnly = m
-                                            },
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // Kısıtlamayı Tamamen Sil
-                        item {
-                            HoldToDeleteButton(
-                                appName = latestApp.appName,
-                                onDeleteConfirmed = {
-                                    viewModel.removeRestrictedApp(latestApp.id)
-                                    showMessage(context.getString(R.string.log_desc_restriction_deleted, latestApp.appName))
-                                    selectedAppForManagement = null
-                                },
-                                onHoldStarted = {
-                                    viewModel.logCriticalAction(
-                                        "CRITICAL_ACTION_STARTED",
-                                        latestApp.appName,
-                                        context.getString(R.string.log_desc_critical_start, latestApp.appName)
-                                    )
-                                }
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Kaydet / Kapat Butonları
-                    Button(
-                        onClick = {
-                            // Aktif günler düzenleme ekranında değiştirilemez: mevcut kayıtlı
-                            // günleri olduğu gibi geçir (isActiveDaysChanged her zaman false olur,
-                            // gün bilgisi korunur). Sadece günlük limit düzenlenebilir.
-                            val daysStr = latestApp.nextDayActiveDays.ifEmpty { latestApp.activeDays }
-                            val newLimit = limitHours * 60 + limitMinsOnly
-                            
-                            if (newLimit <= 0) {
-                                showMessage(context.getString(R.string.setup_target_error_zero_duration))
-                            } else if (newLimit > latestApp.dailyLimitMinutes) {
-                                showMessage(context.getString(R.string.protected_apps_limit_error))
-                            } else {
-                                viewModel.updateRestrictionSettings(latestApp.id, newLimit, daysStr)
-                                showMessage(context.getString(R.string.protected_apps_save_success))
-                                selectedAppForManagement = null
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = PureBlack, contentColor = OnPureBlack),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.protected_apps_save_btn),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        )
-                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // Uygulama bilgisi ve kalan süre
+                item {
+                    val totalSecs = latestApp.remainingSecondsToday.coerceAtLeast(0)
+                    val mm = totalSecs / 60
+                    val ss = totalSecs % 60
+                    val isLocked = totalSecs <= 0
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(MatteSurface)
+                            .border(1.dp, BorderGray, RoundedCornerShape(22.dp))
+                            .padding(18.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            AppRemainingProgress(
+                                app = latestApp,
+                                modifier = Modifier.size(58.dp),
+                                showPercentage = false
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = latestApp.appName,
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = PureBlack
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = latestApp.packageName,
+                                    fontSize = 11.sp,
+                                    color = MutedGray,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Hairline()
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.protected_apps_remaining_time),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MutedGray
+                                )
+                                Text(
+                                    text = String.format(Locale.ROOT, "%02d:%02d", mm, ss),
+                                    fontFamily = LimitraDisplay,
+                                    fontSize = 40.sp,
+                                    lineHeight = 44.sp,
+                                    color = if (isLocked) DangerRed else PureBlack
+                                )
+                            }
+                            StatusPill(
+                                text = when {
+                                    isLocked -> stringResource(R.string.protected_apps_limit_reached)
+                                    latestApp.isFailed -> stringResource(R.string.protected_apps_discipline_process)
+                                    else -> stringResource(R.string.status_protected)
+                                },
+                                color = when {
+                                    isLocked || latestApp.isFailed -> DangerRed
+                                    else -> SuccessGreen
+                                },
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Günlük Limit Düzenleme
+                item {
+                    val totalSecs = latestApp.remainingSecondsToday.coerceAtLeast(0)
+                    val isLocked = totalSecs <= 0
+
+                    val durationText = buildString {
+                        if (limitHours > 0) {
+                            append(context.localizedHours(limitHours))
+                            append(" ")
+                        }
+                        append(context.localizedMinutes(limitMinsOnly))
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(MatteSurface)
+                            .border(1.dp, BorderGray, RoundedCornerShape(22.dp))
+                            .padding(18.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.protected_apps_daily_limit),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PureBlack
+                            )
+                            Text(
+                                text = durationText,
+                                fontFamily = LimitraDisplay,
+                                fontSize = 20.sp,
+                                color = CopperAccent
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .alpha(if (isLocked) 0.5f else 1f)
+                                .pointerInput(isLocked) {
+                                    if (isLocked) {
+                                        awaitPointerEventScope {
+                                            while (true) {
+                                                val event = awaitPointerEvent()
+                                                event.changes.forEach { it.consume() }
+                                            }
+                                        }
+                                    }
+                                }
+                        ) {
+                            DurationWheelPicker(
+                                initialHours = limitHours,
+                                initialMinutes = limitMinsOnly,
+                                onDurationChanged = { h, m ->
+                                    limitHours = h
+                                    limitMinsOnly = m
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                }
+
+                // Kısıtlamayı Tamamen Sil
+                item {
+                    HoldToDeleteButton(
+                        appName = latestApp.appName,
+                        onDeleteConfirmed = {
+                            viewModel.removeRestrictedApp(latestApp.id)
+                            showMessage(context.getString(R.string.log_desc_restriction_deleted, latestApp.appName))
+                            selectedAppForManagement = null
+                        },
+                        onHoldStarted = {
+                            viewModel.logCriticalAction(
+                                "CRITICAL_ACTION_STARTED",
+                                latestApp.appName,
+                                context.getString(R.string.log_desc_critical_start, latestApp.appName)
+                            )
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Kaydet butonu
+            LimitraPrimaryButton(
+                text = stringResource(R.string.protected_apps_save_btn),
+                onClick = {
+                    // Aktif günler düzenleme ekranında değiştirilemez: mevcut kayıtlı
+                    // günleri olduğu gibi geçir (isActiveDaysChanged her zaman false olur,
+                    // gün bilgisi korunur). Sadece günlük limit düzenlenebilir.
+                    val daysStr = latestApp.nextDayActiveDays.ifEmpty { latestApp.activeDays }
+                    val newLimit = limitHours * 60 + limitMinsOnly
+
+                    if (newLimit <= 0) {
+                        showMessage(context.getString(R.string.setup_target_error_zero_duration))
+                    } else if (newLimit > latestApp.dailyLimitMinutes) {
+                        showMessage(context.getString(R.string.protected_apps_limit_error))
+                    } else {
+                        viewModel.updateRestrictionSettings(latestApp.id, newLimit, daysStr)
+                        showMessage(context.getString(R.string.protected_apps_save_success))
+                        selectedAppForManagement = null
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+            )
         }
 
         // Alt sayfa Scaffold'un üstüne çizildiği için host burada; aksi halde uyarı sayfa kapanana kadar görünmez.
@@ -582,7 +547,8 @@ private fun RestrictionGroupCard(
     nowMillis: Long,
     expanded: Boolean,
     onToggle: () -> Unit,
-    onAppClick: (RestrictedAppEntity) -> Unit
+    onAppClick: (RestrictedAppEntity) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val app = group.representative
     val isSingleApp = group.apps.size == 1
@@ -618,60 +584,69 @@ private fun RestrictionGroupCard(
     } else {
         localizedDayStrings.joinToString(" · ")
     }
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f),
+        label = "chevron"
+    )
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, BorderGray, RoundedCornerShape(22.dp)),
-        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(22.dp)
-    ) {
-        Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onToggle)
-                    .padding(18.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                if (isSingleApp) {
-                    AppRemainingProgress(
-                        app = app,
-                        modifier = Modifier.size(52.dp),
-                        showPercentage = false
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(SuccessGreen.copy(alpha = 0.10f))
-                            .border(1.5.dp, SuccessGreen, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.Lock, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(23.dp))
-                    }
-                }
+    LimitraCard(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onToggle)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            if (isSingleApp) {
+                AppRemainingProgress(
+                    app = app,
+                    modifier = Modifier.size(54.dp),
+                    showPercentage = false
+                )
+            } else {
+                IconBadge(
+                    icon = LimitraIcons.Shield,
+                    tint = if (group.isLimitReached) DangerRed else SuccessGreen,
+                    size = 52.dp
+                )
+            }
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = group.name,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PureBlack,
-                        maxLines = 1
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "$timeText  ·  $daysText",
-                        fontSize = 12.sp,
-                        color = MutedGray,
-                        maxLines = 2,
-                        lineHeight = 16.sp
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = group.name,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PureBlack,
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = "$timeText  ·  $daysText",
+                    fontSize = 12.sp,
+                    color = MutedGray,
+                    maxLines = 2,
+                    lineHeight = 16.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    StatusPill(
+                        text = when {
+                            group.isLimitReached -> stringResource(R.string.protected_apps_limit_reached)
+                            currentlyActive -> stringResource(R.string.protected_group_active)
+                            else -> stringResource(R.string.protected_group_scheduled)
+                        },
+                        color = when {
+                            group.isLimitReached -> DangerRed
+                            currentlyActive -> SuccessGreen
+                            else -> MutedGray
+                        }
                     )
                     if (isSingleApp) {
-                        Spacer(modifier = Modifier.height(5.dp))
                         Text(
                             text = stringResource(
                                 R.string.protected_apps_time_left,
@@ -683,64 +658,49 @@ private fun RestrictionGroupCard(
                         )
                     }
                 }
-
-                Surface(
-                    color = if (group.isLimitReached) DangerRed.copy(alpha = 0.10f) else SuccessGreen.copy(alpha = 0.10f),
-                    shape = RoundedCornerShape(99.dp)
-                ) {
-                    Text(
-                        text = when {
-                            group.isLimitReached -> stringResource(R.string.protected_apps_limit_reached)
-                            currentlyActive -> stringResource(R.string.protected_group_active)
-                            else -> stringResource(R.string.protected_group_scheduled)
-                        },
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (group.isLimitReached) DangerRed else SuccessGreen
-                    )
-                }
-
-                Icon(
-                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = null,
-                    tint = MutedGray
-                )
             }
 
-            if (expanded) {
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 18.dp), color = BorderGray)
+            Icon(
+                imageVector = if (isSingleApp) LimitraIcons.ChevronRight else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = MutedGray,
+                modifier = Modifier
+                    .size(22.dp)
+                    .graphicsLayer { rotationZ = if (isSingleApp) 0f else chevronRotation }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically(spring(dampingRatio = 0.85f, stiffness = 400f)) + fadeIn(),
+            exit = shrinkVertically(spring(stiffness = 600f)) + fadeOut()
+        ) {
+            Column {
+                Hairline(modifier = Modifier.padding(horizontal = 16.dp))
                 Column(
-                    modifier = Modifier.padding(18.dp),
+                    modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.protected_group_apps),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MutedGray,
-                        letterSpacing = 0.6.sp
-                    )
-                    Text(
                         text = stringResource(R.string.protected_group_app_count, group.apps.size),
                         fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = MutedGray
                     )
                     group.apps.forEach { protectedApp ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(16.dp))
                                 .background(MatteSurface)
-                                .border(1.dp, BorderGray, RoundedCornerShape(14.dp))
                                 .clickable { onAppClick(protectedApp) }
-                                .padding(13.dp),
+                                .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             AppIconView(
                                 packageName = protectedApp.packageName,
-                                modifier = Modifier.size(38.dp).clip(RoundedCornerShape(10.dp))
+                                modifier = Modifier.size(38.dp).clip(RoundedCornerShape(11.dp))
                             )
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
@@ -758,16 +718,16 @@ private fun RestrictionGroupCard(
                                             formatRemainingTime(protectedApp.remainingSecondsToday)
                                         )
                                     },
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     color = if (protectedApp.remainingSecondsToday <= 0) DangerRed else MutedGray
                                 )
                             }
                             AppRemainingProgress(
                                 app = protectedApp,
-                                modifier = Modifier.size(48.dp),
+                                modifier = Modifier.size(46.dp),
                                 showPercentage = true
                             )
-                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MutedGray)
+                            Icon(LimitraIcons.ChevronRight, contentDescription = null, tint = MutedGray, modifier = Modifier.size(18.dp))
                         }
                     }
                 }
@@ -788,30 +748,36 @@ private fun AppRemainingProgress(
     val percentage = (progress * 100).toInt()
     val progressColor = if (remainingSeconds <= 0) DangerRed else SuccessGreen
     val progressDescription = stringResource(R.string.protected_apps_usage_progress, percentage)
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(900),
+        label = "remainingRing"
+    )
 
     Box(
         modifier = modifier.semantics { contentDescription = progressDescription },
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            progress = { progress },
+            progress = { animatedProgress },
             modifier = Modifier.fillMaxSize(),
             color = progressColor,
-            trackColor = BorderGray.copy(alpha = 0.45f),
-            strokeWidth = 3.5.dp
+            trackColor = BorderGray.copy(alpha = 0.6f),
+            strokeWidth = 3.dp,
+            strokeCap = StrokeCap.Round
         )
         if (showPercentage) {
             Text(
                 text = "$percentage%",
                 fontSize = 10.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = PureBlack
             )
         } else {
             AppIconView(
                 packageName = app.packageName,
                 modifier = Modifier
-                    .size(38.dp)
+                    .fillMaxSize(0.74f)
                     .clip(CircleShape)
             )
         }
@@ -833,121 +799,126 @@ private fun HoldToDeleteButton(
     var isHolding by remember { mutableStateOf(false) }
     var completed by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
 
     LaunchedEffect(completed) {
         if (completed) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             onDeleteConfirmed()
         }
     }
+    val holdScale by animateFloatAsState(
+        targetValue = if (isHolding) 0.97f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f),
+        label = "holdScale"
+    )
 
-    Card(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderGray, RoundedCornerShape(20.dp)),
-        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(20.dp)
+            .clip(RoundedCornerShape(22.dp))
+            .border(1.dp, DangerRed.copy(alpha = 0.25f), RoundedCornerShape(22.dp))
+            .background(DangerRed.copy(alpha = 0.04f))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = null,
+                tint = DangerRed,
+                modifier = Modifier.size(15.dp)
+            )
+            Text(
+                text = stringResource(R.string.protected_apps_settings),
+                fontSize = 11.sp,
+                color = DangerRed,
+                letterSpacing = 1.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = stringResource(R.string.protected_apps_remove_instruction),
+            fontSize = 12.sp,
+            lineHeight = 17.sp,
+            color = MutedGray,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = null,
-                    tint = MutedGray,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    text = stringResource(R.string.protected_apps_settings),
-                    fontSize = 10.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    color = MutedGray,
-                    letterSpacing = 1.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = stringResource(R.string.protected_apps_remove_instruction),
-                fontSize = 11.sp,
-                color = MutedGray,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isHolding) DangerRed.copy(alpha = 0.15f) else MatteSurface)
-                    .border(
-                        width = if (isHolding) 1.5.dp else 1.dp,
-                        color = if (isHolding) DangerRed.copy(alpha = 0.5f) else BorderGray,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .pointerInput(Unit) {
-                        awaitEachGesture {
-                            awaitFirstDown(requireUnconsumed = false)
-                            isHolding = true
-                            progress = 0f
-                            onHoldStarted()
-                            val steps = 3000
-                            val stepDelay = 300000L / steps
-                            val timerJob = coroutineScope.launch {
-                                for (i in 1..steps) {
-                                    delay(stepDelay)
-                                    if (!isHolding) return@launch
-                                    progress = i / steps.toFloat()
-                                }
-                                completed = true
-                                isHolding = false
-                            }
-                            try {
-                                while (true) {
-                                    val event = awaitPointerEvent(PointerEventPass.Main)
-                                    if (event.changes.all { !it.pressed }) {
-                                        isHolding = false
-                                        progress = 0f
-                                        timerJob.cancel()
-                                        return@awaitEachGesture
-                                    }
-                                }
-                            } finally {
-                                timerJob.cancel()
-                            }
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                if (isHolding) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(progress)
-                            .background(DangerRed.copy(alpha = 0.25f))
-                            .align(Alignment.CenterStart)
-                    )
+                .height(52.dp)
+                .graphicsLayer {
+                    scaleX = holdScale
+                    scaleY = holdScale
                 }
-
-                Text(
-                    text = when {
-                        completed -> stringResource(R.string.protected_apps_removed)
-                        isHolding -> stringResource(R.string.protected_apps_dont_release, 300 - (progress * 300).toInt())
-                        else -> stringResource(R.string.protected_apps_remove_btn)
-                    },
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.SansSerif,
-                    color = if (isHolding) DangerRed else PureBlack
+                .clip(RoundedCornerShape(16.dp))
+                .background(if (isHolding) DangerRed.copy(alpha = 0.10f) else DarkCharcoal)
+                .border(
+                    width = if (isHolding) 1.5.dp else 1.dp,
+                    color = if (isHolding) DangerRed.copy(alpha = 0.6f) else DangerRed.copy(alpha = 0.35f),
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        awaitFirstDown(requireUnconsumed = false)
+                        isHolding = true
+                        progress = 0f
+                        onHoldStarted()
+                        val steps = 3000
+                        val stepDelay = 300000L / steps
+                        val timerJob = coroutineScope.launch {
+                            for (i in 1..steps) {
+                                delay(stepDelay)
+                                if (!isHolding) return@launch
+                                progress = i / steps.toFloat()
+                            }
+                            completed = true
+                            isHolding = false
+                        }
+                        try {
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Main)
+                                if (event.changes.all { !it.pressed }) {
+                                    isHolding = false
+                                    progress = 0f
+                                    timerJob.cancel()
+                                    return@awaitEachGesture
+                                }
+                            }
+                        } finally {
+                            timerJob.cancel()
+                        }
+                    }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            if (isHolding) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(progress)
+                        .background(DangerRed.copy(alpha = 0.22f))
+                        .align(Alignment.CenterStart)
                 )
             }
+
+            Text(
+                text = when {
+                    completed -> stringResource(R.string.protected_apps_removed)
+                    isHolding -> stringResource(R.string.protected_apps_dont_release, 300 - (progress * 300).toInt())
+                    else -> stringResource(R.string.protected_apps_remove_btn)
+                },
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = DangerRed
+            )
         }
     }
 }

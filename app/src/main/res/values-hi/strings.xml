@@ -527,6 +527,60 @@
     <string name="perm_guidance_text">प्रत्येक अनुमति कार्ड पर टैप करें, खुलने वाली Android सेटिंग स्क्रीन में Limitra खोजें, और आवश्यक अनुमति सक्षम करें। फिर अगला चरण पूरा करने के लिए वापस आएं।</string>
     <string name="profile_notifications_title">सूचनाएं</string>
     <string name="profile_notifications_desc">सीमा चेतावनी और स्थिति सूचनाएं दिखाएं।</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">उपलब्धियाँ</string>
+    <string name="achievements_subtitle">अपनी स्ट्रीक बनाए रखकर कमाए गए फ़्रेम।</string>
+    <string name="achievements_current_streak">मौजूदा स्ट्रीक</string>
+    <string name="achievements_best_streak">सबसे लंबी स्ट्रीक</string>
+    <string name="achievements_next">अगला: %1$s</string>
+    <string name="achievements_all_unlocked">आपने सभी फ़्रेम कमा लिए हैं। स्ट्रीक जारी रखें।</string>
+    <string name="achievements_unlocked">अर्जित</string>
+    <string name="achievements_locked">लॉक</string>
+    <string name="achievements_equip">यह फ़्रेम लगाएँ</string>
+    <string name="achievements_equipped">उपयोग में</string>
+    <string name="achievements_count">%2$d में से %1$d अर्जित</string>
+    <string name="achievements_entry_desc">आपका फ़्रेम और अगला लक्ष्य</string>
+    <string name="achievements_celebration_title">नया फ़्रेम मिला</string>
+    <string name="achievements_celebration_desc">%1$s अब आपका है। आपकी स्ट्रीक %2$d दिन तक पहुँची।</string>
+    <string name="achievements_celebration_cta">लगाएँ</string>
+    <string name="achievements_celebration_later">बाद में</string>
+    <string name="achievements_rule_title">यह कैसे काम करता है</string>
+    <string name="achievements_rule_desc">सीमा में रहने का हर दिन आपकी स्ट्रीक में एक दिन जोड़ता है। उल्लंघन या प्रतिबंध हटाने से स्ट्रीक शून्य हो जाती है, लेकिन कमाए गए फ़्रेम आपके ही रहते हैं।</string>
+    <string name="frame_spark">पहली चिंगारी</string>
+    <string name="frame_spark_story">पहला साफ़ दिन। हर लंबी स्ट्रीक यहीं से शुरू होती है।</string>
+    <string name="frame_bronze">कांस्य वलय</string>
+    <string name="frame_bronze_story">लगातार तीन दिन। आदत आकार ले रही है।</string>
+    <string name="frame_silver_laurel">रजत लॉरेल</string>
+    <string name="frame_silver_laurel_story">पूरा एक सप्ताह नियंत्रण। प्राचीन काल में विजेताओं को लॉरेल पहनाया जाता था।</string>
+    <string name="frame_gold_seal">स्वर्ण मुहर</string>
+    <string name="frame_gold_seal_story">पंद्रह दिन। खुद से किया वादा अब मुहरबंद है।</string>
+    <string name="frame_moonstone">चंद्रमणि</string>
+    <string name="frame_moonstone_story">पूरा एक महीना: ध्यान का एक पूरा चंद्र चक्र।</string>
+    <string name="frame_obsidian_crown">ऑब्सीडियन मुकुट</string>
+    <string name="frame_obsidian_crown_story">साठ दिन। बहुत कम लोग इस आत्म-नियंत्रण तक पहुँचते हैं।</string>
+    <string name="frame_century_flame">सौ दिन की ज्वाला</string>
+    <string name="frame_century_flame_story">सौ दिन। पहले दिन जलाई आग अब भी जल रही है।</string>
+    <string name="frame_aurora">ध्रुवीय ज्योति</string>
+    <string name="frame_aurora_story">आधा साल। दुर्लभ और देखने लायक।</string>
+    <string name="frame_stoic">स्टोइक</string>
+    <string name="frame_stoic_story">पूरा एक साल। अब आप अपने ध्यान के स्वामी हैं।</string>
+    <string name="dashboard_today_clean">आज अब तक साफ़</string>
+    <string name="dashboard_today_violated">आज एक सीमा पार हुई</string>
+    <string name="dashboard_today_idle">अभी कोई सक्रिय सुरक्षा नहीं</string>
+    <string name="greeting_morning">सुप्रभात</string>
+    <string name="greeting_afternoon">नमस्कार</string>
+    <string name="greeting_evening">शुभ संध्या</string>
+    <plurals name="achievements_days">
+        <item quantity="one">%d दिन</item>
+        <item quantity="other">%d दिन</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="one">%d दिन बाकी</item>
+        <item quantity="other">%d दिन बाकी</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="one">%d दिन की स्ट्रीक पर खुलेगा</item>
+        <item quantity="other">%d दिन की स्ट्रीक पर खुलेगा</item>
+    </plurals>
 </resources>
-
-

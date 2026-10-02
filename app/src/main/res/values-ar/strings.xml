@@ -527,6 +527,72 @@
     <string name="perm_guidance_text">اضغط على كل بطاقة إذن، وابحث عن Limitra في شاشة إعدادات Android التي تفتح، وقم بتمكين الإذن المطلوب. ثم ارجع لإكمال الخطوة التالية.</string>
     <string name="profile_notifications_title">الإشعارات</string>
     <string name="profile_notifications_desc">عرض تحذيرات الحد وإشعارات الحالة.</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">الإنجازات</string>
+    <string name="achievements_subtitle">إطارات تكسبها بالحفاظ على سلسلتك دون انقطاع.</string>
+    <string name="achievements_current_streak">السلسلة الحالية</string>
+    <string name="achievements_best_streak">أطول سلسلة</string>
+    <string name="achievements_next">التالي: %1$s</string>
+    <string name="achievements_all_unlocked">لقد كسبت جميع الإطارات. حافظ على السلسلة.</string>
+    <string name="achievements_unlocked">مكتسب</string>
+    <string name="achievements_locked">مقفل</string>
+    <string name="achievements_equip">استخدم هذا الإطار</string>
+    <string name="achievements_equipped">قيد الاستخدام</string>
+    <string name="achievements_count">تم كسب %1$d من %2$d</string>
+    <string name="achievements_entry_desc">إطارك وهدفك التالي</string>
+    <string name="achievements_celebration_title">كسبت إطارًا جديدًا</string>
+    <string name="achievements_celebration_desc">أصبح %1$s لك. وصلت سلسلتك إلى %2$d يومًا.</string>
+    <string name="achievements_celebration_cta">ارتدِه</string>
+    <string name="achievements_celebration_later">لاحقًا</string>
+    <string name="achievements_rule_title">كيف يعمل</string>
+    <string name="achievements_rule_desc">كل يوم تلتزم فيه بحدودك يضيف يومًا إلى سلسلتك. المخالفة أو إزالة قيد تعيد السلسلة إلى الصفر، لكن الإطارات التي كسبتها تبقى لك.</string>
+    <string name="frame_spark">الشرارة الأولى</string>
+    <string name="frame_spark_story">أول يوم نظيف. كل سلسلة طويلة تبدأ من هنا.</string>
+    <string name="frame_bronze">الحلقة البرونزية</string>
+    <string name="frame_bronze_story">ثلاثة أيام متتالية. العادة تتشكل.</string>
+    <string name="frame_silver_laurel">الغار الفضي</string>
+    <string name="frame_silver_laurel_story">أسبوع كامل من التحكم. كان القدماء يتوّجون المنتصرين بالغار.</string>
+    <string name="frame_gold_seal">الختم الذهبي</string>
+    <string name="frame_gold_seal_story">خمسة عشر يومًا. وعدك لنفسك أصبح مختومًا.</string>
+    <string name="frame_moonstone">حجر القمر</string>
+    <string name="frame_moonstone_story">شهر كامل: دورة قمرية كاملة من التركيز.</string>
+    <string name="frame_obsidian_crown">تاج الأوبسيديان</string>
+    <string name="frame_obsidian_crown_story">ستون يومًا. قليلون يبلغون هذا المستوى من ضبط النفس.</string>
+    <string name="frame_century_flame">شعلة المئة يوم</string>
+    <string name="frame_century_flame_story">مئة يوم. النار التي أشعلتها في اليوم الأول ما زالت مشتعلة.</string>
+    <string name="frame_aurora">الشفق القطبي</string>
+    <string name="frame_aurora_story">نصف عام. نادر وجميل.</string>
+    <string name="frame_stoic">الرواقي</string>
+    <string name="frame_stoic_story">عام كامل. أنت سيد انتباهك.</string>
+    <string name="dashboard_today_clean">اليوم نظيف حتى الآن</string>
+    <string name="dashboard_today_violated">تم تجاوز حد اليوم</string>
+    <string name="dashboard_today_idle">لا توجد حماية نشطة بعد</string>
+    <string name="greeting_morning">صباح الخير</string>
+    <string name="greeting_afternoon">طاب يومك</string>
+    <string name="greeting_evening">مساء الخير</string>
+    <plurals name="achievements_days">
+        <item quantity="zero">%d يوم</item>
+        <item quantity="one">يوم واحد</item>
+        <item quantity="two">يومان</item>
+        <item quantity="few">%d أيام</item>
+        <item quantity="many">%d يومًا</item>
+        <item quantity="other">%d يوم</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="zero">متبقٍ %d يوم</item>
+        <item quantity="one">متبقٍ يوم واحد</item>
+        <item quantity="two">متبقٍ يومان</item>
+        <item quantity="few">متبقٍ %d أيام</item>
+        <item quantity="many">متبقٍ %d يومًا</item>
+        <item quantity="other">متبقٍ %d يوم</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="zero">يُفتح عند سلسلة %d يوم</item>
+        <item quantity="one">يُفتح عند سلسلة يوم واحد</item>
+        <item quantity="two">يُفتح عند سلسلة يومين</item>
+        <item quantity="few">يُفتح عند سلسلة %d أيام</item>
+        <item quantity="many">يُفتح عند سلسلة %d يومًا</item>
+        <item quantity="other">يُفتح عند سلسلة %d يوم</item>
+    </plurals>
 </resources>
-
-

@@ -48,11 +48,11 @@
         <!-- Circular App Icon Container -->
         <FrameLayout
             android:id="@+id/emojiContainer"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_marginTop="24dp"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:layout_marginTop="28dp"
             android:background="@drawable/emoji_container_bg"
-            android:padding="12dp">
+            android:padding="16dp">
 
             <ImageView
                 android:id="@+id/emojiImage"
@@ -78,9 +78,8 @@
             android:layout_marginTop="16dp"
             android:gravity="center"
             android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.02" />
+            android:textSize="26sp"
+            android:letterSpacing="-0.01" />
 
         <!-- Status Message -->
         <TextView
@@ -91,12 +90,13 @@
             android:gravity="center"
             android:text="@string/overlay_limit_over"
             android:textColor="#EF4444"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:textStyle="bold"
             android:letterSpacing="0.01" />
 
         <!-- Divider Line before Quote -->
         <View
+            android:id="@+id/quoteDivider"
             android:layout_width="32dp"
             android:layout_height="1dp"
             android:layout_marginTop="24dp"
@@ -118,25 +118,26 @@
                 android:gravity="center"
                 android:text=""
                 android:textColor="#E2E8F0"
-                android:textSize="15sp"
+                android:textSize="23sp"
                 android:fontFamily="serif"
-                android:lineSpacingMultiplier="1.3" />
+                android:lineSpacingMultiplier="1.22" />
 
             <TextView
                 android:id="@+id/quoteAuthorText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="18dp"
                 android:gravity="center"
                 android:text=""
                 android:textColor="#94A3B8"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.08" />
+                android:letterSpacing="0.18" />
         </LinearLayout>
 
         <!-- Divider Line -->
         <View
+            android:id="@+id/footerDivider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="24dp"
@@ -160,7 +161,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:minHeight="52dp"
+            android:minHeight="56dp"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"

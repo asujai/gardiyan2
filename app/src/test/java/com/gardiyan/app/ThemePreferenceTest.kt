@@ -12,6 +12,11 @@ import com.gardiyan.app.ui.theme.MutedGray
 import com.gardiyan.app.ui.theme.DashboardMuted
 import com.gardiyan.app.ui.theme.updateAppColors
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import com.gardiyan.app.ui.theme.DarkCharcoal
+import com.gardiyan.app.ui.theme.MatteSurface
+import com.gardiyan.app.ui.theme.PureBlack
+import org.junit.Assert.assertTrue
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -60,7 +65,25 @@ class ThemePreferenceTest {
     fun `premium dark uses accessible muted text instead of the old low contrast gray`() {
         updateAppColors(isDark = true, palette = AppThemePalette.PREMIUM_DARK)
 
-        assertEquals(Color(0xFFA3A3A3), MutedGray)
-        assertEquals(Color(0xFFA3A3A3), DashboardMuted)
+        assertEquals(MutedGray, DashboardMuted)
+        assertTrue("ikincil metin zemin üzerinde en az 4.5:1 olmalı", contrast(MutedGray, MatteSurface) >= 4.5)
+        assertTrue("ikincil metin kart üzerinde en az 4.5:1 olmalı", contrast(MutedGray, DarkCharcoal) >= 4.5)
+    }
+
+    @Test
+    fun `every palette keeps readable secondary text in both modes`() {
+        for (palette in AppThemePalette.entries) {
+            for (dark in listOf(false, true)) {
+                updateAppColors(isDark = dark, palette = palette)
+                assertTrue("$palette dark=$dark muted/zemin", contrast(MutedGray, MatteSurface) >= 4.5)
+                assertTrue("$palette dark=$dark ana metin/kart", contrast(PureBlack, DarkCharcoal) >= 7.0)
+            }
+        }
+    }
+
+    private fun contrast(a: Color, b: Color): Double {
+        val la = a.luminance() + 0.05
+        val lb = b.luminance() + 0.05
+        return maxOf(la, lb) / minOf(la, lb).toDouble()
     }
 }

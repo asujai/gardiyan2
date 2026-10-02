@@ -1,5 +1,24 @@
 package com.gardiyan.app.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.StrokeCap
+import com.gardiyan.app.ui.components.FrameEmblem
+import com.gardiyan.app.ui.components.IconBadge
+import com.gardiyan.app.ui.components.LimitraCard
+import com.gardiyan.app.ui.components.LimitraIcons
+import com.gardiyan.app.ui.components.ScreenHeader
+import com.gardiyan.app.ui.components.entrance
+import com.gardiyan.app.ui.components.frameContentColor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -69,7 +88,8 @@ fun ProfileScreen(
     isAccessibilityEnabled: Boolean,
     isBatteryExempted: Boolean,
     isNotificationsEnabled: Boolean,
-    onNavigateToSavedQuotes: () -> Unit = {}
+    onNavigateToSavedQuotes: () -> Unit = {},
+    onNavigateToAchievements: () -> Unit = {}
 ) {
     val session by viewModel.userSession.collectAsState()
     val logs by viewModel.allLogs.collectAsState()
@@ -97,6 +117,8 @@ fun ProfileScreen(
     var showWeeklySummaryDetailDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val achievements = achievementController(viewModel)
+    val played = remember { mutableSetOf<Int>() }
     val allOk = isOverlayEnabled && isUsageEnabled && isAccessibilityEnabled && isBatteryExempted && isNotificationsEnabled
     var isHealthExpanded by remember { mutableStateOf(false) }
     var isClearingData by remember { mutableStateOf(false) }
@@ -1176,22 +1198,18 @@ fun ProfileScreen(
 
             if (groupedLogs.isEmpty()) {
                 item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, BorderGray.copy(alpha = 0.7f), RoundedCornerShape(20.dp)),
-                        colors = CardDefaults.cardColors(containerColor = MatteSurface),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
+                    LimitraCard(modifier = Modifier.fillMaxWidth(), elevated = false) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(24.dp)
+                                .padding(vertical = 32.dp, horizontal = 24.dp)
                         ) {
+                            IconBadge(icon = LimitraIcons.Award, tint = CopperAccent, size = 52.dp)
+                            Spacer(modifier = Modifier.height(14.dp))
                             Text(
                                 text = if (isNoDataYet) stringResource(R.string.profile_timeline_empty) else stringResource(R.string.profile_timeline_filter_empty),
-                                fontSize = 12.sp,
+                                fontSize = 14.sp,
                                 color = MutedGray,
                                 textAlign = TextAlign.Center
                             )
@@ -1209,20 +1227,20 @@ fun ProfileScreen(
                             else -> groupName
                         }
                         Text(
-                            text = displayGroupName.uppercase(),
-                            fontSize = 12.sp,
-                            fontFamily = FontFamily.SansSerif,
-                            color = MutedGray,
-                            letterSpacing = 0.5.sp,
-                            fontWeight = FontWeight.ExtraBold,
+                            text = displayGroupName,
+                            fontFamily = LimitraDisplay,
+                            fontSize = 22.sp,
+                            color = PureBlack,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 4.dp, top = 8.dp, bottom = 4.dp)
+                                .padding(start = 2.dp, top = 10.dp, bottom = 2.dp)
                         )
                     }
 
-                    items(groupLogs.size) { index ->
-                        val log = groupLogs[index]
+                    item {
+                        LimitraCard(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(start = 14.dp, end = 16.dp, top = 16.dp)) {
+                        groupLogs.forEachIndexed { index, log ->
                         val timeStr = timeFormat.format(java.util.Date(log.timestamp))
 
                         val title = when (log.eventType) {
@@ -1319,57 +1337,15 @@ fun ProfileScreen(
                             else -> MutedGray
                         }
 
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .border(1.dp, BorderGray.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
-                            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(4.dp)
-                                        .height(56.dp)
-                                        .background(statusColor)
-                                )
-
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        @Suppress("DEPRECATION")
-                                        Text(
-                                            text = title,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = PureBlack,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Text(
-                                            text = timeStr,
-                                            fontSize = 12.sp,
-                                            fontFamily = FontFamily.Monospace,
-                                            color = MutedGray
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = friendlyDetails,
-                                        fontSize = 12.sp,
-                                        color = MutedGray
-                                    )
-                                }
-                            }
+                        TimelineRow(
+                            title = title,
+                            details = friendlyDetails,
+                            time = timeStr,
+                            statusColor = statusColor,
+                            isLast = index == groupLogs.lastIndex
+                        )
+                        }
+                        }
                         }
                     }
                 }
@@ -1654,46 +1630,63 @@ fun ProfileScreen(
             }
 
         } else {
-            // 1. Profil Hub (Yeni Temiz Seviye Kartı - Tıklanabilir)
+            // 1. Profil Hub: takılı çerçeve içinde seviye madalyonu (tıklanınca seviye detayı)
             item {
-                Card(
-                    onClick = { showLevelDetailDialog = true },
+                val equipped = achievements.equipped
+                LimitraCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, BorderGray, RoundedCornerShape(24.dp)),
-                    colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-                    shape = RoundedCornerShape(24.dp)
+                        .entrance(0, played),
+                    shape = RoundedCornerShape(28.dp),
+                    onClick = { showLevelDetailDialog = true }
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
+                            .padding(horizontal = 20.dp, vertical = 22.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        FrameEmblem(
+                            tier = equipped,
+                            modifier = Modifier.size(150.dp)
+                        ) {
+                            val contentColor = if (equipped != null) frameContentColor(equipped, false) else PureBlack
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = level.toString(),
+                                    fontFamily = LimitraDisplay,
+                                    fontSize = 40.sp,
+                                    lineHeight = 42.sp,
+                                    color = contentColor
+                                )
+                                Text(
+                                    text = stringResource(R.string.profile_level_format, level)
+                                        .replace(level.toString(), "").trim(),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.2.sp,
+                                    color = contentColor.copy(alpha = 0.75f)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = stringResource(R.string.profile_level_format, level),
-                            fontSize = 12.sp,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MutedGray,
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            text = levelName.uppercase(),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Black,
+                            text = levelName,
+                            fontFamily = LimitraDisplay,
+                            fontSize = 30.sp,
+                            lineHeight = 34.sp,
                             color = PureBlack,
-                            letterSpacing = 0.5.sp
+                            textAlign = TextAlign.Center
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(18.dp))
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = progressLabel, fontSize = 12.sp, color = MutedGray)
+                                Text(text = progressLabel, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MutedGray)
                                 Text(
                                     text = progressText,
                                     fontSize = 12.sp,
@@ -1701,25 +1694,33 @@ fun ProfileScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
+                            val animatedLevelProgress by animateFloatAsState(
+                                targetValue = progress,
+                                animationSpec = tween(1000),
+                                label = "levelProgress"
+                            )
                             LinearProgressIndicator(
-                                progress = { progress },
+                                progress = { animatedLevelProgress },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(6.dp)
                                     .clip(RoundedCornerShape(3.dp)),
                                 color = progressColor,
-                                trackColor = MatteSurface
+                                trackColor = WarmGray,
+                                strokeCap = StrokeCap.Round,
+                                gapSize = 0.dp,
+                                drawStopIndicator = {}
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             Text(
                                 text = if (profileProgress.mode == ProfileProgressMode.REDEMPTION) {
                                     stringResource(R.string.profile_redemption_note)
                                 } else {
                                     nextLevelNote
                                 },
-                                fontSize = 12.sp,
-                                lineHeight = 17.sp,
+                                fontSize = 13.sp,
+                                lineHeight = 19.sp,
                                 color = MutedGray,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
@@ -1729,21 +1730,30 @@ fun ProfileScreen(
                 }
             }
 
-            // 2. Bento Kartları (Özet Bilgiler)
+            // 2. Başarılar girişi
+            item {
+                AchievementsEntryCard(
+                    progress = achievements.progress,
+                    onClick = onNavigateToAchievements,
+                    modifier = Modifier.entrance(1, played)
+                )
+            }
+
+            // 3. Bento Kartları (Özet Bilgiler)
             item {
                 val timeDisplayStr = if (totalSavedMillis > 0) {
                     formatUsageDuration(totalSavedMillis)
                 } else {
                     stringResource(R.string.profile_saved_time_no_data)
                 }
-                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                BoxWithConstraints(modifier = Modifier.fillMaxWidth().entrance(2, played)) {
                     val fontScale = LocalDensity.current.fontScale
                     val stackCards = shouldStackProfileSummaryCards(maxWidth.value, fontScale)
                     val cards: @Composable (Modifier) -> Unit = { cardModifier ->
                         ProfileSummaryCard(
                             title = stringResource(R.string.profile_streak_title),
                             value = stringResource(R.string.profile_streak_days, consecutiveSuccessDays),
-                            icon = Icons.Default.Check,
+                            icon = LimitraIcons.Flame,
                             onClick = { showStreakDetailDialog = true },
                             modifier = cardModifier
                         )
@@ -1757,14 +1767,14 @@ fun ProfileScreen(
                         ProfileSummaryCard(
                             title = stringResource(R.string.profile_protected_apps_title),
                             value = stringResource(R.string.profile_protected_apps, activeApps.size),
-                            icon = Icons.Default.Lock,
+                            icon = LimitraIcons.Shield,
                             onClick = { showActiveAppsDetailDialog = true },
                             modifier = cardModifier
                         )
                         ProfileSummaryCard(
                             title = stringResource(R.string.profile_weekly_summary_title),
                             value = stringResource(R.string.profile_weekly_success_days_format, weeklySuccessDays),
-                            icon = Icons.Default.Settings,
+                            icon = Icons.Default.Check,
                             onClick = { showWeeklySummaryDetailDialog = true },
                             modifier = cardModifier
                         )
@@ -1780,7 +1790,7 @@ fun ProfileScreen(
                                 ProfileSummaryCard(
                                     title = stringResource(R.string.profile_streak_title),
                                     value = stringResource(R.string.profile_streak_days, consecutiveSuccessDays),
-                                    icon = Icons.Default.Check,
+                                    icon = LimitraIcons.Flame,
                                     onClick = { showStreakDetailDialog = true },
                                     modifier = Modifier.weight(1f)
                                 )
@@ -1796,14 +1806,14 @@ fun ProfileScreen(
                                 ProfileSummaryCard(
                                     title = stringResource(R.string.profile_protected_apps_title),
                                     value = stringResource(R.string.profile_protected_apps, activeApps.size),
-                                    icon = Icons.Default.Lock,
+                                    icon = LimitraIcons.Shield,
                                     onClick = { showActiveAppsDetailDialog = true },
                                     modifier = Modifier.weight(1f)
                                 )
                                 ProfileSummaryCard(
                                     title = stringResource(R.string.profile_weekly_summary_title),
                                     value = stringResource(R.string.profile_weekly_success_days_format, weeklySuccessDays),
-                                    icon = Icons.Default.Settings,
+                                    icon = Icons.Default.Check,
                                     onClick = { showWeeklySummaryDetailDialog = true },
                                     modifier = Modifier.weight(1f)
                                 )
@@ -1821,6 +1831,56 @@ fun ProfileScreen(
     }
 }
 
+/** İlerleme ekranından Başarılar'a giriş: kazanılan çerçevelerin küçük dizisi. */
+@Composable
+private fun AchievementsEntryCard(
+    progress: com.gardiyan.app.data.achievements.AchievementProgress,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LimitraCard(modifier = modifier.fillMaxWidth(), onClick = onClick) {
+        Row(
+            modifier = Modifier.padding(start = 18.dp, end = 14.dp, top = 16.dp, bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.achievements_title),
+                    fontFamily = LimitraDisplay,
+                    fontSize = 22.sp,
+                    color = PureBlack
+                )
+                Text(
+                    text = stringResource(
+                        R.string.achievements_count,
+                        progress.unlocked.size,
+                        com.gardiyan.app.data.achievements.FrameTier.entries.size
+                    ),
+                    fontSize = 12.sp,
+                    color = MutedGray
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy((-10).dp)) {
+                    com.gardiyan.app.data.achievements.FrameTier.entries.take(6).forEach { tier ->
+                        FrameEmblem(
+                            tier = tier,
+                            locked = !progress.isUnlocked(tier),
+                            animated = false,
+                            modifier = Modifier.size(38.dp)
+                        )
+                    }
+                }
+            }
+            Icon(
+                imageVector = LimitraIcons.ChevronRight,
+                contentDescription = null,
+                tint = MutedGray,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
 @Composable
 private fun ProfileSectionHeader(
     selectedSection: ProfileSection,
@@ -1830,74 +1890,167 @@ private fun ProfileSectionHeader(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.profile_title),
-                fontSize = 20.sp,
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight.Black,
-                color = PureBlack
-            )
-            if (selectedSection == ProfileSection.TIMELINE) {
-                TextButton(
-                    onClick = onFilterClick,
-                    modifier = Modifier.heightIn(min = 48.dp)
+        ScreenHeader(
+            title = stringResource(R.string.nav_profile),
+            trailing = {
+                AnimatedVisibility(
+                    visible = selectedSection == ProfileSection.TIMELINE,
+                    enter = fadeIn() + scaleIn(initialScale = 0.9f),
+                    exit = fadeOut() + scaleOut(targetScale = 0.9f)
                 ) {
                     Text(
                         text = stringResource(R.string.profile_filter_btn_text),
-                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(99.dp))
+                            .background(CopperAccent.copy(alpha = 0.12f))
+                            .clickable(onClick = onFilterClick)
+                            .padding(horizontal = 14.dp, vertical = 9.dp),
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = SuccessGreen
+                        color = CopperAccent
                     )
                 }
             }
-        }
+        )
 
-        Row(
+        val sections = listOf(
+            ProfileSection.SUMMARY to R.string.profile_section_summary,
+            ProfileSection.TIMELINE to R.string.profile_section_timeline,
+            ProfileSection.SETTINGS to R.string.profile_section_settings
+        )
+        val selectedIndex = sections.indexOfFirst { it.first == selectedSection }.coerceAtLeast(0)
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(DarkCharcoal)
-                .border(1.dp, BorderGray, RoundedCornerShape(14.dp))
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(WarmGray)
+                .padding(4.dp)
         ) {
-            val sections = listOf(
-                ProfileSection.SUMMARY to R.string.profile_section_summary,
-                ProfileSection.TIMELINE to R.string.profile_section_timeline,
-                ProfileSection.SETTINGS to R.string.profile_section_settings
+            val segment = maxWidth / sections.size
+            val offset by animateDpAsState(
+                targetValue = segment * selectedIndex,
+                animationSpec = spring(dampingRatio = 0.75f, stiffness = 450f),
+                label = "profileTab"
             )
-            sections.forEach { (section, labelRes) ->
-                val isSelected = selectedSection == section
-                Surface(
-                    onClick = { onSectionSelected(section) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .heightIn(min = 48.dp)
-                        .semantics { selected = isSelected },
-                    color = if (isSelected) PureBlack else Color.Transparent,
-                    contentColor = if (isSelected) OnPureBlack else MutedGray,
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .offset(x = offset)
+                    .width(segment)
+                    .height(44.dp)
+                    .shadow(if (IsDarkUi) 0.dp else 3.dp, RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (IsDarkUi) PureBlack.copy(alpha = 0.12f) else DarkCharcoal)
+            )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                sections.forEach { (section, labelRes) ->
+                    val isSelected = selectedSection == section
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .semantics { selected = isSelected }
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { onSectionSelected(section) },
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
                             text = stringResource(labelRes),
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) PureBlack else MutedGray,
                             textAlign = TextAlign.Center,
                             maxLines = 2
                         )
                     }
                 }
             }
+        }
+    }
+}
+
+/** Zaman tüneli satırı: solda renkli düğüm ve bağlayıcı çizgi, sağda olay. */
+@Composable
+private fun TimelineRow(
+    title: String,
+    details: String,
+    time: String,
+    statusColor: Color,
+    isLast: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+    ) {
+        Box(
+            modifier = Modifier
+                .width(22.dp)
+                .fillMaxHeight(),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            if (!isLast) {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 18.dp)
+                        .width(1.5.dp)
+                        .fillMaxHeight()
+                        .background(BorderGray)
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .size(12.dp)
+                    .clip(CircleShape)
+                    .background(statusColor.copy(alpha = 0.18f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(statusColor)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = 16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PureBlack,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = time,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MutedGray
+                )
+            }
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                text = details,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                color = MutedGray
+            )
         }
     }
 }
@@ -2018,47 +2171,35 @@ private fun ProfileSummaryCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        onClick = onClick,
-        modifier = modifier
-            .heightIn(min = 104.dp)
-            .border(1.dp, BorderGray, RoundedCornerShape(18.dp)),
-        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(18.dp)
+    LimitraCard(
+        modifier = modifier.heightIn(min = 112.dp),
+        shape = RoundedCornerShape(22.dp),
+        onClick = onClick
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
+            IconBadge(icon = icon, tint = CopperAccent, size = 34.dp)
+            Column {
+                Text(
+                    text = value,
+                    fontFamily = LimitraDisplay,
+                    fontSize = 22.sp,
+                    lineHeight = 26.sp,
+                    color = PureBlack
+                )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = title,
-                    modifier = Modifier.weight(1f),
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = MutedGray
                 )
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = PureBlack,
-                    modifier = Modifier.size(20.dp)
-                )
             }
-            Text(
-                text = value,
-                fontSize = 18.sp,
-                lineHeight = 22.sp,
-                fontWeight = FontWeight.Black,
-                color = PureBlack
-            )
         }
     }
 }
@@ -2076,20 +2217,17 @@ private fun SettingsGroupCard(
         Text(
             text = title,
             modifier = Modifier.padding(start = 4.dp),
-            fontSize = 12.sp,
-            lineHeight = 16.sp,
-            fontWeight = FontWeight.ExtraBold,
+            fontSize = 13.sp,
+            lineHeight = 17.sp,
+            fontWeight = FontWeight.Bold,
             color = MutedGray
         )
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, borderColor, RoundedCornerShape(16.dp)),
-            colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(content = content)
-        }
+        LimitraCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            borderColor = borderColor,
+            content = content
+        )
     }
 }
 
@@ -2113,11 +2251,10 @@ private fun SettingsRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (icon != null) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = textColor,
-                modifier = Modifier.size(22.dp)
+            IconBadge(
+                icon = icon,
+                tint = if (textColor == PureBlack) CopperAccent else textColor,
+                size = 38.dp
             )
         }
         Column(modifier = Modifier.weight(1f)) {
@@ -2154,10 +2291,10 @@ private fun SettingsRow(
         }
         if (showArrow) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        imageVector = LimitraIcons.ChevronRight,
                         contentDescription = null,
                         tint = MutedGray,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
         }
     }
@@ -2249,12 +2386,7 @@ private fun SettingsSwitchRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
-                tint = PureBlack,
-                modifier = Modifier.size(22.dp)
-            )
+            IconBadge(icon = Icons.Default.Info, tint = CopperAccent, size = 38.dp)
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -2276,10 +2408,12 @@ private fun SettingsSwitchRow(
                 checked = checked,
                 onCheckedChange = null,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = PureWhite,
-                    checkedTrackColor = SuccessGreen,
+                    checkedThumbColor = OnAccent,
+                    checkedTrackColor = CopperAccent,
+                    checkedBorderColor = CopperAccent,
                     uncheckedThumbColor = MutedGray,
-                    uncheckedTrackColor = BorderGray
+                    uncheckedTrackColor = WarmGray,
+                    uncheckedBorderColor = BorderGray
                 )
             )
     }

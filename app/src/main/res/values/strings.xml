@@ -557,6 +557,60 @@
     <string name="profile_notifications_title">Notifications</string>
     <string name="profile_notifications_desc">Show limit warnings and status notifications.</string>
     <string name="profile_privacy_choices">Privacy Choices</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">Achievements</string>
+    <string name="achievements_subtitle">Frames you earn by keeping your streak unbroken.</string>
+    <string name="achievements_current_streak">Current streak</string>
+    <string name="achievements_best_streak">Best streak</string>
+    <string name="achievements_next">Next: %1$s</string>
+    <string name="achievements_all_unlocked">You have earned every frame. Keep the streak alive.</string>
+    <string name="achievements_unlocked">Earned</string>
+    <string name="achievements_locked">Locked</string>
+    <string name="achievements_equip">Use this frame</string>
+    <string name="achievements_equipped">In use</string>
+    <string name="achievements_count">%1$d of %2$d earned</string>
+    <string name="achievements_entry_desc">Your frame and your next milestone</string>
+    <string name="achievements_celebration_title">New frame earned</string>
+    <string name="achievements_celebration_desc">%1$s is now yours. Your streak reached %2$d days.</string>
+    <string name="achievements_celebration_cta">Wear it</string>
+    <string name="achievements_celebration_later">Later</string>
+    <string name="achievements_rule_title">How it works</string>
+    <string name="achievements_rule_desc">Each day you stay within your limits adds one day to your streak. A violation or removing a restriction resets the streak, but the frames you have earned stay yours.</string>
+    <string name="frame_spark">First Spark</string>
+    <string name="frame_spark_story">The first clean day. Every long streak starts here.</string>
+    <string name="frame_bronze">Bronze Ring</string>
+    <string name="frame_bronze_story">Three days in a row. The habit is taking shape.</string>
+    <string name="frame_silver_laurel">Silver Laurel</string>
+    <string name="frame_silver_laurel_story">A full week of control. The ancients crowned their victors with laurel.</string>
+    <string name="frame_gold_seal">Gold Seal</string>
+    <string name="frame_gold_seal_story">Fifteen days. The promise you made to yourself now carries a seal.</string>
+    <string name="frame_moonstone">Moonstone</string>
+    <string name="frame_moonstone_story">A whole month: one full moon cycle of focus.</string>
+    <string name="frame_obsidian_crown">Obsidian Crown</string>
+    <string name="frame_obsidian_crown_story">Sixty days. Few people reach this level of self-command.</string>
+    <string name="frame_century_flame">Century Flame</string>
+    <string name="frame_century_flame_story">One hundred days. The fire you lit on day one is still burning.</string>
+    <string name="frame_aurora">Aurora</string>
+    <string name="frame_aurora_story">Half a year. Rare, and beautiful to witness.</string>
+    <string name="frame_stoic">The Stoic</string>
+    <string name="frame_stoic_story">A full year. You are the master of your own attention.</string>
+    <string name="dashboard_today_clean">Today is clean so far</string>
+    <string name="dashboard_today_violated">A limit was broken today</string>
+    <string name="dashboard_today_idle">No active protection yet</string>
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <plurals name="achievements_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="one">%d day to go</item>
+        <item quantity="other">%d days to go</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="one">Unlocks at a %d-day streak</item>
+        <item quantity="other">Unlocks at a %d-day streak</item>
+    </plurals>
 </resources>
-
-

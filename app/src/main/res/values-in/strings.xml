@@ -527,6 +527,57 @@
     <string name="perm_guidance_text">Ketuk setiap kartu izin, temukan Limitra di layar pengaturan Android yang terbuka, dan aktifkan izin yang diperlukan. Kemudian kembali untuk menyelesaikan langkah berikutnya.</string>
     <string name="profile_notifications_title">Notifikasi</string>
     <string name="profile_notifications_desc">Tampilkan peringatan batas dan notifikasi status.</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">Pencapaian</string>
+    <string name="achievements_subtitle">Bingkai yang kamu dapat dengan menjaga rentetanmu tetap utuh.</string>
+    <string name="achievements_current_streak">Rentetan saat ini</string>
+    <string name="achievements_best_streak">Rentetan terbaik</string>
+    <string name="achievements_next">Berikutnya: %1$s</string>
+    <string name="achievements_all_unlocked">Kamu sudah mendapatkan semua bingkai. Jaga rentetanmu.</string>
+    <string name="achievements_unlocked">Didapat</string>
+    <string name="achievements_locked">Terkunci</string>
+    <string name="achievements_equip">Gunakan bingkai ini</string>
+    <string name="achievements_equipped">Sedang dipakai</string>
+    <string name="achievements_count">%1$d dari %2$d didapat</string>
+    <string name="achievements_entry_desc">Bingkaimu dan target berikutnya</string>
+    <string name="achievements_celebration_title">Bingkai baru didapat</string>
+    <string name="achievements_celebration_desc">%1$s sekarang milikmu. Rentetanmu mencapai %2$d hari.</string>
+    <string name="achievements_celebration_cta">Pakai</string>
+    <string name="achievements_celebration_later">Nanti</string>
+    <string name="achievements_rule_title">Cara kerjanya</string>
+    <string name="achievements_rule_desc">Setiap hari kamu tetap dalam batas menambah satu hari ke rentetanmu. Pelanggaran atau menghapus pembatasan mengatur ulang rentetan, tetapi bingkai yang sudah didapat tetap milikmu.</string>
+    <string name="frame_spark">Percikan Pertama</string>
+    <string name="frame_spark_story">Hari bersih pertama. Setiap rentetan panjang dimulai di sini.</string>
+    <string name="frame_bronze">Cincin Perunggu</string>
+    <string name="frame_bronze_story">Tiga hari berturut-turut. Kebiasaan mulai terbentuk.</string>
+    <string name="frame_silver_laurel">Laurel Perak</string>
+    <string name="frame_silver_laurel_story">Seminggu penuh terkendali. Orang zaman dulu memahkotai pemenang dengan laurel.</string>
+    <string name="frame_gold_seal">Segel Emas</string>
+    <string name="frame_gold_seal_story">Lima belas hari. Janji pada dirimu kini bersegel.</string>
+    <string name="frame_moonstone">Batu Bulan</string>
+    <string name="frame_moonstone_story">Sebulan penuh: satu siklus bulan untuk fokus.</string>
+    <string name="frame_obsidian_crown">Mahkota Obsidian</string>
+    <string name="frame_obsidian_crown_story">Enam puluh hari. Sedikit orang mencapai kendali diri setinggi ini.</string>
+    <string name="frame_century_flame">Api Seratus Hari</string>
+    <string name="frame_century_flame_story">Seratus hari. Api yang kamu nyalakan di hari pertama masih menyala.</string>
+    <string name="frame_aurora">Aurora</string>
+    <string name="frame_aurora_story">Setengah tahun. Langka dan indah untuk disaksikan.</string>
+    <string name="frame_stoic">Sang Stoik</string>
+    <string name="frame_stoic_story">Setahun penuh. Kamu adalah penguasa perhatianmu sendiri.</string>
+    <string name="dashboard_today_clean">Hari ini masih bersih</string>
+    <string name="dashboard_today_violated">Batas terlampaui hari ini</string>
+    <string name="dashboard_today_idle">Belum ada perlindungan aktif</string>
+    <string name="greeting_morning">Selamat pagi</string>
+    <string name="greeting_afternoon">Selamat siang</string>
+    <string name="greeting_evening">Selamat malam</string>
+    <plurals name="achievements_days">
+        <item quantity="other">%d hari</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="other">%d hari lagi</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="other">Terbuka pada rentetan %d hari</item>
+    </plurals>
 </resources>
-
-

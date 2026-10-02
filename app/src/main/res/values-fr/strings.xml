@@ -527,6 +527,60 @@
     <string name="perm_guidance_text">Appuyez sur chaque carte de permission, trouvez Limitra dans l\'écran de configuration Android qui s\'ouvre, puis activez la permission requise. Revenez ensuite pour terminer l\'étape suivante.</string>
     <string name="profile_notifications_title">Notifications</string>
     <string name="profile_notifications_desc">Afficher les avertissements de limite et les notifications d\'état.</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">Succès</string>
+    <string name="achievements_subtitle">Des cadres que tu gagnes en gardant ta série intacte.</string>
+    <string name="achievements_current_streak">Série actuelle</string>
+    <string name="achievements_best_streak">Meilleure série</string>
+    <string name="achievements_next">Prochain : %1$s</string>
+    <string name="achievements_all_unlocked">Tu as gagné tous les cadres. Garde la série en vie.</string>
+    <string name="achievements_unlocked">Obtenu</string>
+    <string name="achievements_locked">Verrouillé</string>
+    <string name="achievements_equip">Utiliser ce cadre</string>
+    <string name="achievements_equipped">Utilisé</string>
+    <string name="achievements_count">%1$d sur %2$d obtenus</string>
+    <string name="achievements_entry_desc">Ton cadre et ton prochain objectif</string>
+    <string name="achievements_celebration_title">Nouveau cadre obtenu</string>
+    <string name="achievements_celebration_desc">%1$s est désormais à toi. Ta série a atteint %2$d jours.</string>
+    <string name="achievements_celebration_cta">Le porter</string>
+    <string name="achievements_celebration_later">Plus tard</string>
+    <string name="achievements_rule_title">Comment ça marche</string>
+    <string name="achievements_rule_desc">Chaque jour passé dans tes limites ajoute un jour à ta série. Une infraction ou la suppression d\'une restriction remet la série à zéro, mais les cadres obtenus restent à toi.</string>
+    <string name="frame_spark">Première Étincelle</string>
+    <string name="frame_spark_story">Le premier jour sans écart. Toute longue série commence ici.</string>
+    <string name="frame_bronze">Anneau de Bronze</string>
+    <string name="frame_bronze_story">Trois jours d\'affilée. L\'habitude prend forme.</string>
+    <string name="frame_silver_laurel">Laurier d\'Argent</string>
+    <string name="frame_silver_laurel_story">Une semaine entière de maîtrise. Les Anciens couronnaient leurs vainqueurs de laurier.</string>
+    <string name="frame_gold_seal">Sceau d\'Or</string>
+    <string name="frame_gold_seal_story">Quinze jours. La promesse faite à toi-même porte désormais un sceau.</string>
+    <string name="frame_moonstone">Pierre de Lune</string>
+    <string name="frame_moonstone_story">Un mois entier : un cycle lunaire complet de concentration.</string>
+    <string name="frame_obsidian_crown">Couronne d\'Obsidienne</string>
+    <string name="frame_obsidian_crown_story">Soixante jours. Peu de gens atteignent une telle maîtrise de soi.</string>
+    <string name="frame_century_flame">Flamme Centenaire</string>
+    <string name="frame_century_flame_story">Cent jours. Le feu allumé le premier jour brûle encore.</string>
+    <string name="frame_aurora">Aurore Boréale</string>
+    <string name="frame_aurora_story">Six mois. Rare et magnifique à contempler.</string>
+    <string name="frame_stoic">Le Stoïcien</string>
+    <string name="frame_stoic_story">Une année entière. Tu es maître de ta propre attention.</string>
+    <string name="dashboard_today_clean">Aujourd\'hui, aucun écart pour l\'instant</string>
+    <string name="dashboard_today_violated">Une limite a été dépassée aujourd\'hui</string>
+    <string name="dashboard_today_idle">Aucune protection active pour l\'instant</string>
+    <string name="greeting_morning">Bonjour</string>
+    <string name="greeting_afternoon">Bon après-midi</string>
+    <string name="greeting_evening">Bonsoir</string>
+    <plurals name="achievements_days">
+        <item quantity="one">%d jour</item>
+        <item quantity="other">%d jours</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="one">Encore %d jour</item>
+        <item quantity="other">Encore %d jours</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="one">Débloqué à %d jour de série</item>
+        <item quantity="other">Débloqué à %d jours de série</item>
+    </plurals>
 </resources>
-
-

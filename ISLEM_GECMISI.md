@@ -1,3 +1,12 @@
+## [2026-10-02 13:45] - Premium Arayüz Yenilemesi ve Başarılar (Çerçeve) Bölümü
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[YENİ]` ui/components/Premium.kt, LimitraIcons.kt, LimitraBottomBar.kt, AchievementFrames.kt; ui/screens/AchievementsScreen.kt; ui/theme/Motion.kt; data/achievements/Achievements.kt; res/font (Manrope 5, Newsreader 3 ağırlık); test AchievementsTest.kt, AchievementsVisualCheckTest.kt + 2 ekran görüntüsü. `[GÜNCELLENDİ]` Color.kt, Theme.kt, Type.kt, MainActivity.kt, AppNavGraph.kt, Dashboard/Protected/Setup/Permissions/Profile/DisciplineDetail/UsageDetails/SavedQuotes ekranları, UsageRankingSection, DisciplineDayBox, WheelPicker, BlockOverlayService (yalnız renk/font bloğu), lock_overlay.xml, 11 dilde strings.xml, ThemePreferenceTest.kt, usage-ranking-visual-check.png
+* **Yapılan İşlem:** Önce GitHub 25ec471'e eşitlendi, sonra yalnız yerelde çalışıldı. Serif/sans font çifti, 4 palet × açık/koyu yeniden ayarı, ortak premium bileşenler (yaylı basma + titreşim, kayan sekmeler, alttan animasyonlu sayfalar, giriş animasyonları, kayan alt menü göstergesi, sayfa geçişleri) ve tüm ekranların görünüm katmanı yenilendi; hesaplama ve doğrulama mantığı aynen korundu. Başarılar: kesintisiz seriyle 9 çerçeve (1–365 gün), en uzun seri ve takılı çerçeve yerel tercihlerde, yeni çerçevede tam ekran kutlama, Ana ekran/İlerleme'de takılı çerçeve madalyonu. Kilit ekranı uygulama paletine ve fontlarına bağlandı.
+* **Doğrulama:** `testDebugUnitTest` 155 test, 0 hata (JDK 21). `assembleDebug` temiz; values-tr'de bozuk kodlama 0. Emülatör (Pixel API 34, tr-TR): ana akışlar, Premium Koyu tema, kısıtlama ekleme, 1 dk limitle uygulama içinde kilit ekranı (61. sn) ve "Ana sayfaya dön" çıkışı doğrulandı.
+* **Bilinen Sorunlar:** Gerçek cihazda denenmedi. finytaels.otf artık kullanılmıyor. Push yapılmadı (kullanıcı isteği).
+* **Sonraki Öneri:** Kullanıcı telefonunda deneme; onay sonrası versionCode artışı, push ve Play taslağı (Claude).
+
 ## [2026-09-18 18:38] - Reklam öncesi mağaza analizi ve Türkçe görsel konseptleri
 
 * **Model:** Codex

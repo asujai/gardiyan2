@@ -1,5 +1,18 @@
 package com.gardiyan.app.ui.components
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.runtime.getValue
+import com.gardiyan.app.ui.theme.IsDarkUi
+import com.gardiyan.app.ui.theme.LimitraDisplay
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -67,15 +80,14 @@ fun UsageRankingSection(
     val maxUsage = sortedItems.firstOrNull()?.usageMillis?.coerceAtLeast(1L) ?: 1L
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.usage_ranking_title),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = PureBlack
+        SectionHeader(
+            title = stringResource(R.string.usage_ranking_title),
+            actionText = if (sortedItems.size > MAX_VISIBLE_APPS) stringResource(R.string.usage_see_all) else null,
+            onAction = onSeeAll
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        PeriodSelector(
+        UsagePeriodSelector(
             selectedPeriod = selectedPeriod,
             onPeriodSelected = onPeriodSelected
         )
@@ -84,9 +96,13 @@ fun UsageRankingSection(
         if (visibleItems.isEmpty()) {
             UsageEmptyState()
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                visibleItems.forEach { item ->
+            LimitraCard(modifier = Modifier.fillMaxWidth()) {
+                visibleItems.forEachIndexed { index, item ->
+                    if (index > 0) {
+                        Hairline(modifier = Modifier.padding(start = 70.dp, end = 16.dp))
+                    }
                     UsageRankingRow(
+                        rank = index + 1,
                         item = item,
                         limitMinutes = appLimits[item.packageName],
                         isLimitExceeded = item.packageName in exceededPackages,
@@ -95,54 +111,61 @@ fun UsageRankingSection(
                 }
             }
         }
-
-        if (sortedItems.size > MAX_VISIBLE_APPS) {
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = stringResource(R.string.usage_see_all),
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable(onClick = onSeeAll)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                color = CopperAccent,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
     }
 }
 
+/** Dönem seçici: seçili dönemin arkasında yumuşak bir hap kayar. */
 @Composable
-private fun PeriodSelector(
+internal fun UsagePeriodSelector(
     selectedPeriod: UsagePeriod,
     onPeriodSelected: (UsagePeriod) -> Unit
 ) {
-    Row(
+    val periods = UsagePeriod.entries
+    val selectedIndex = periods.indexOf(selectedPeriod).coerceAtLeast(0)
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderGray, RoundedCornerShape(99.dp))
-            .background(Color.Transparent)
-            .padding(3.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+            .clip(RoundedCornerShape(99.dp))
+            .background(WarmGray)
+            .padding(4.dp)
     ) {
-        UsagePeriod.entries.forEach { period ->
-            val selected = period == selectedPeriod
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(99.dp))
-                    .background(if (selected) PureBlack else Color.Transparent)
-                    .clickable { onPeriodSelected(period) }
-                    .padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(period.labelResId),
-                    color = if (selected) OnPureBlack else PureBlack.copy(alpha = 0.7f),
-                    fontSize = 12.sp,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
-                )
+        val segment = maxWidth / periods.size
+        val offset by animateDpAsState(
+            targetValue = segment * selectedIndex,
+            animationSpec = spring(dampingRatio = 0.75f, stiffness = 450f),
+            label = "periodOffset"
+        )
+        Box(
+            modifier = Modifier
+                .offset(x = offset)
+                .width(segment)
+                .height(36.dp)
+                .shadow(if (IsDarkUi) 0.dp else 3.dp, RoundedCornerShape(99.dp))
+                .clip(RoundedCornerShape(99.dp))
+                .background(if (IsDarkUi) PureBlack.copy(alpha = 0.12f) else DarkCharcoal)
+        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            periods.forEach { period ->
+                val selected = period == selectedPeriod
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(99.dp))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { onPeriodSelected(period) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(period.labelResId),
+                        color = if (selected) PureBlack else MutedGray,
+                        fontSize = 12.sp,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                        maxLines = 1
+                    )
+                }
             }
         }
     }
@@ -150,89 +173,88 @@ private fun PeriodSelector(
 
 @Composable
 private fun UsageRankingRow(
+    rank: Int,
     item: AppUsageSummary,
     limitMinutes: Int?,
     isLimitExceeded: Boolean,
     progress: Float
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, BorderGray, RoundedCornerShape(24.dp)),
-        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(24.dp)
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(durationMillis = 900, delayMillis = 80 * rank),
+        label = "usageProgress"
+    )
+    Row(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AppIcon(packageName = item.packageName, appName = item.appName)
-            Spacer(modifier = Modifier.width(11.dp))
+        UsageAppIcon(packageName = item.packageName, appName = item.appName)
+        Spacer(modifier = Modifier.width(12.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = item.appName,
-                        modifier = Modifier.weight(1f),
-                        maxLines = 1,
-                        color = PureBlack,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = formatUsageDuration(item.usageMillis),
-                        color = PureBlack,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                }
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = item.appName,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = PureBlack,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = formatUsageDuration(item.usageMillis),
+                    color = if (isLimitExceeded) DangerRed else PureBlack,
+                    fontFamily = LimitraDisplay,
+                    fontSize = 18.sp
+                )
+            }
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(5.dp)
+                    .clip(CircleShape)
+                    .background(WarmGray)
+            ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp)
+                        .fillMaxWidth(animatedProgress)
+                        .height(5.dp)
                         .clip(CircleShape)
-                        .background(SoftCopper)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(progress)
-                            .height(6.dp)
-                            .clip(CircleShape)
-                            .background(if (isLimitExceeded) DangerRed else CopperAccent)
-                    )
-                }
-                Spacer(modifier = Modifier.height(7.dp))
+                        .background(if (isLimitExceeded) DangerRed else CopperAccent)
+                )
+            }
+            Spacer(modifier = Modifier.height(7.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = limitMinutes?.let { stringResource(R.string.usage_limit_prefix, formatMinutes(it)) } ?: stringResource(R.string.usage_limit_not_set),
+                    color = MutedGray,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                if (isLimitExceeded) {
                     Text(
-                        text = limitMinutes?.let { stringResource(R.string.usage_limit_prefix, formatMinutes(it)) } ?: stringResource(R.string.usage_limit_not_set),
-                        color = MutedGray,
+                        text = stringResource(R.string.usage_limit_exceeded),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(SoftDangerRed)
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                        color = DangerRed,
                         fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Bold
                     )
-                    if (isLimitExceeded) {
-                        Text(
-                            text = stringResource(R.string.usage_limit_exceeded),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(SoftDangerRed)
-                                .padding(horizontal = 7.dp, vertical = 3.dp),
-                            color = DangerRed,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             }
         }
@@ -240,7 +262,7 @@ private fun UsageRankingRow(
 }
 
 @Composable
-private fun AppIcon(packageName: String, appName: String) {
+internal fun UsageAppIcon(packageName: String, appName: String) {
     val context = LocalContext.current
     val icon = remember(packageName) {
         runCatching {
@@ -262,55 +284,45 @@ private fun AppIcon(packageName: String, appName: String) {
                 bitmap = icon,
                 contentDescription = appName,
                 modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(9.dp)),
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop
             )
         } else {
             Text(
                 text = appName.firstOrNull()?.uppercase() ?: "?",
                 color = WineAccent,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Black
+                fontFamily = LimitraDisplay,
+                fontSize = 20.sp
             )
         }
     }
 }
 
 @Composable
-private fun UsageEmptyState() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, BorderGray, RoundedCornerShape(18.dp)),
-        colors = CardDefaults.cardColors(containerColor = DarkCharcoal),
-        shape = RoundedCornerShape(18.dp)
-    ) {
+internal fun UsageEmptyState() {
+    LimitraCard(modifier = Modifier.fillMaxWidth(), elevated = false) {
         Column(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 26.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(CircleShape)
-                    .background(SoftCopper),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "—", color = CopperAccent, fontWeight = FontWeight.Black)
-            }
-            Spacer(modifier = Modifier.height(10.dp))
+            IconBadge(icon = LimitraIcons.Hourglass, tint = CopperAccent, size = 52.dp)
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = stringResource(R.string.usage_empty_title),
                 color = PureBlack,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = stringResource(R.string.usage_empty_desc),
                 color = MutedGray,
-                fontSize = 11.sp
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
             )
         }
     }

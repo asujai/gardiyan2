@@ -527,6 +527,60 @@
     <string name="perm_guidance_text">Toque en cada tarjeta de permiso, busque Limitra en la pantalla de configuración de Android que se abre y active el permiso requerido. Luego regrese para completar el siguiente paso.</string>
     <string name="profile_notifications_title">Notificaciones</string>
     <string name="profile_notifications_desc">Mostrar advertencias de límite y notificaciones de estado.</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">Logros</string>
+    <string name="achievements_subtitle">Marcos que ganas manteniendo tu racha intacta.</string>
+    <string name="achievements_current_streak">Racha actual</string>
+    <string name="achievements_best_streak">Mejor racha</string>
+    <string name="achievements_next">Siguiente: %1$s</string>
+    <string name="achievements_all_unlocked">Has ganado todos los marcos. Mantén viva la racha.</string>
+    <string name="achievements_unlocked">Ganado</string>
+    <string name="achievements_locked">Bloqueado</string>
+    <string name="achievements_equip">Usar este marco</string>
+    <string name="achievements_equipped">En uso</string>
+    <string name="achievements_count">%1$d de %2$d ganados</string>
+    <string name="achievements_entry_desc">Tu marco y tu próxima meta</string>
+    <string name="achievements_celebration_title">Nuevo marco ganado</string>
+    <string name="achievements_celebration_desc">%1$s ya es tuyo. Tu racha llegó a %2$d días.</string>
+    <string name="achievements_celebration_cta">Ponérmelo</string>
+    <string name="achievements_celebration_later">Más tarde</string>
+    <string name="achievements_rule_title">Cómo funciona</string>
+    <string name="achievements_rule_desc">Cada día que respetas tus límites suma un día a tu racha. Una infracción o eliminar una restricción reinicia la racha, pero los marcos ganados siguen siendo tuyos.</string>
+    <string name="frame_spark">Primera Chispa</string>
+    <string name="frame_spark_story">El primer día limpio. Toda racha larga empieza aquí.</string>
+    <string name="frame_bronze">Anillo de Bronce</string>
+    <string name="frame_bronze_story">Tres días seguidos. El hábito toma forma.</string>
+    <string name="frame_silver_laurel">Laurel de Plata</string>
+    <string name="frame_silver_laurel_story">Una semana entera de control. Los antiguos coronaban a sus vencedores con laurel.</string>
+    <string name="frame_gold_seal">Sello de Oro</string>
+    <string name="frame_gold_seal_story">Quince días. La promesa que te hiciste ahora lleva un sello.</string>
+    <string name="frame_moonstone">Piedra Lunar</string>
+    <string name="frame_moonstone_story">Un mes entero: un ciclo lunar completo de enfoque.</string>
+    <string name="frame_obsidian_crown">Corona de Obsidiana</string>
+    <string name="frame_obsidian_crown_story">Sesenta días. Pocas personas alcanzan este dominio de sí mismas.</string>
+    <string name="frame_century_flame">Llama Centenaria</string>
+    <string name="frame_century_flame_story">Cien días. El fuego que encendiste el primer día sigue ardiendo.</string>
+    <string name="frame_aurora">Aurora</string>
+    <string name="frame_aurora_story">Medio año. Algo raro y hermoso de ver.</string>
+    <string name="frame_stoic">El Estoico</string>
+    <string name="frame_stoic_story">Un año entero. Eres dueño de tu propia atención.</string>
+    <string name="dashboard_today_clean">Hoy vas limpio por ahora</string>
+    <string name="dashboard_today_violated">Hoy se superó un límite</string>
+    <string name="dashboard_today_idle">Aún no hay protección activa</string>
+    <string name="greeting_morning">Buenos días</string>
+    <string name="greeting_afternoon">Buenas tardes</string>
+    <string name="greeting_evening">Buenas noches</string>
+    <plurals name="achievements_days">
+        <item quantity="one">%d día</item>
+        <item quantity="other">%d días</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="one">Falta %d día</item>
+        <item quantity="other">Faltan %d días</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="one">Se desbloquea con una racha de %d día</item>
+        <item quantity="other">Se desbloquea con una racha de %d días</item>
+    </plurals>
 </resources>
-
-

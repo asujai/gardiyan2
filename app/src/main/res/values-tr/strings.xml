@@ -547,6 +547,60 @@
     <string name="perm_guidance_text">Her izin kartına dokunun, açılan Android ayarları ekranında Limitra\'yı bulun ve gerekli izni etkinleştirin. Ardından bir sonraki adımı tamamlamak için geri dönün.</string>
     <string name="profile_notifications_title">Bildirimler</string>
     <string name="profile_notifications_desc">Limit uyarılarını ve durum bildirimlerini göster.</string>
+
+    <!-- Başarılar ve ana ekran (UI yenileme) -->
+    <string name="achievements_title">Başarılar</string>
+    <string name="achievements_subtitle">Serini bozmadan ilerledikçe kazandığın çerçeveler.</string>
+    <string name="achievements_current_streak">Güncel seri</string>
+    <string name="achievements_best_streak">En uzun seri</string>
+    <string name="achievements_next">Sıradaki: %1$s</string>
+    <string name="achievements_all_unlocked">Tüm çerçeveleri kazandın. Seriyi canlı tut.</string>
+    <string name="achievements_unlocked">Kazanıldı</string>
+    <string name="achievements_locked">Kilitli</string>
+    <string name="achievements_equip">Bu çerçeveyi kullan</string>
+    <string name="achievements_equipped">Kullanılıyor</string>
+    <string name="achievements_count">%2$d çerçeveden %1$d tanesi kazanıldı</string>
+    <string name="achievements_entry_desc">Çerçeven ve bir sonraki hedefin</string>
+    <string name="achievements_celebration_title">Yeni çerçeve kazandın</string>
+    <string name="achievements_celebration_desc">%1$s artık senin. Serin %2$d güne ulaştı.</string>
+    <string name="achievements_celebration_cta">Çerçeveyi tak</string>
+    <string name="achievements_celebration_later">Sonra</string>
+    <string name="achievements_rule_title">Nasıl kazanılır?</string>
+    <string name="achievements_rule_desc">Limitlerine uyduğun her gün serine bir gün ekler. İhlal veya kısıtlama kaldırma seriyi sıfırlar; ama kazandığın çerçeveler sende kalır.</string>
+    <string name="frame_spark">İlk Kıvılcım</string>
+    <string name="frame_spark_story">İlk temiz gün. Her uzun seri burada başlar.</string>
+    <string name="frame_bronze">Bronz Halka</string>
+    <string name="frame_bronze_story">Üst üste üç gün. Alışkanlık şekilleniyor.</string>
+    <string name="frame_silver_laurel">Gümüş Defne</string>
+    <string name="frame_silver_laurel_story">Tam bir hafta kontrol. Antik çağda kazananlar defneyle taçlandırılırdı.</string>
+    <string name="frame_gold_seal">Altın Mühür</string>
+    <string name="frame_gold_seal_story">On beş gün. Kendine verdiğin söz artık mühürlü.</string>
+    <string name="frame_moonstone">Ay Taşı</string>
+    <string name="frame_moonstone_story">Koca bir ay: bir ay döngüsü boyunca odak.</string>
+    <string name="frame_obsidian_crown">Obsidyen Taç</string>
+    <string name="frame_obsidian_crown_story">Altmış gün. Kendine hükmetmenin bu seviyesine az kişi ulaşır.</string>
+    <string name="frame_century_flame">Yüz Gün Alevi</string>
+    <string name="frame_century_flame_story">Yüz gün. İlk gün yaktığın ateş hâlâ yanıyor.</string>
+    <string name="frame_aurora">Kuzey Işığı</string>
+    <string name="frame_aurora_story">Yarım yıl. Nadir ve görmeye değer.</string>
+    <string name="frame_stoic">Stoacı</string>
+    <string name="frame_stoic_story">Tam bir yıl. Dikkatinin efendisi artık sensin.</string>
+    <string name="dashboard_today_clean">Bugün şimdilik temiz</string>
+    <string name="dashboard_today_violated">Bugün bir limit aşıldı</string>
+    <string name="dashboard_today_idle">Henüz aktif koruma yok</string>
+    <string name="greeting_morning">Günaydın</string>
+    <string name="greeting_afternoon">İyi günler</string>
+    <string name="greeting_evening">İyi akşamlar</string>
+    <plurals name="achievements_days">
+        <item quantity="one">%d gün</item>
+        <item quantity="other">%d gün</item>
+    </plurals>
+    <plurals name="achievements_days_left">
+        <item quantity="one">%d gün kaldı</item>
+        <item quantity="other">%d gün kaldı</item>
+    </plurals>
+    <plurals name="achievements_unlock_at">
+        <item quantity="one">%d günlük seride açılır</item>
+        <item quantity="other">%d günlük seride açılır</item>
+    </plurals>
 </resources>
-
-

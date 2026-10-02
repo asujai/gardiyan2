@@ -2,7 +2,13 @@ package com.gardiyan.app.ui.components
 
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import com.gardiyan.app.ui.theme.CopperAccent
+import com.gardiyan.app.ui.theme.LimitraSans
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,13 +47,18 @@ fun WheelPicker(
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState)
     val midOffset = visibleItemsCount / 2
+    val haptic = LocalHapticFeedback.current
 
     // Emit selected item when scrolling stops or active item changes
     LaunchedEffect(lazyListState) {
+        var first = true
         snapshotFlow { lazyListState.firstVisibleItemIndex }
             .distinctUntilChanged()
             .collect { index ->
                 if (index in items.indices) {
+                    // Her yeni değerde saat kurma koluna benzeyen hafif bir tık.
+                    if (!first) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    first = false
                     onItemSelected(index)
                 }
             }
@@ -62,15 +73,16 @@ fun WheelPicker(
     Box(
         modifier = modifier
             .height(itemHeight * visibleItemsCount)
-            .clip(RoundedCornerShape(12.dp)),
+            .clip(RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
-        // Highlight middle element
+        // Seçili satır: yumuşak accent zemin
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(itemHeight)
-                .background(Color.Black.copy(alpha = 0.03f), RoundedCornerShape(8.dp))
+                .background(CopperAccent.copy(alpha = 0.10f), RoundedCornerShape(14.dp))
+                .border(1.dp, CopperAccent.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
         )
 
         LazyColumn(
@@ -82,8 +94,8 @@ fun WheelPicker(
         ) {
             items(items.size) { index ->
                 val isSelected = remember { derivedStateOf { lazyListState.firstVisibleItemIndex == index } }.value
-                val scale = if (isSelected) 1.15f else 0.9f
-                val alpha = if (isSelected) 1f else 0.4f
+                val scale by animateFloatAsState(if (isSelected) 1.15f else 0.9f, label = "wheelScale")
+                val alpha by animateFloatAsState(if (isSelected) 1f else 0.4f, label = "wheelAlpha")
 
                 Box(
                     modifier = Modifier
@@ -95,7 +107,7 @@ fun WheelPicker(
                         text = items[index],
                         fontSize = (15 * scale).sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        fontFamily = FontFamily.SansSerif,
+                        fontFamily = LimitraSans,
                         color = if (isSelected) selectedTextColor else unselectedTextColor,
                         modifier = Modifier.alpha(alpha),
                         textAlign = TextAlign.Center
