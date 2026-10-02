@@ -1,3 +1,12 @@
+## [2026-10-02 19:40] - Antigravity teslim denetimi ve düzeltmeler
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` app/src/main/res/values-pt/strings.xml, values-tr/strings.xml, tools/generate_store_v3.py, tools/store_copy_v3.json, store_assets/{hi-IN,th,ar,ru-RU}-v3/play/**
+* **Yapılan İşlem:** Antigravity çıktısı (a5fd84f) denetlendi. Bulunan ve düzeltilen: (1) pt `protected_group_app_count` = `%1 aplicativos` (geçersiz biçim, çalışma anında çökme riski) → `%1$d`; (2) tr `profile_level_label` "LEVEL" → "SEVİYE"; (3) üretici: hi/th mühür halka yazısı başından kırpılıyordu (yol alttan başlayan tam daire yapıldı), ar kart 3'te ızgara başlığı kesiliyordu (RTL'de tüm genişlikte aranıyor); (4) ru kart 4 başlığındaki tek başına düşen tire (metin kısaltıldı). hi, th, ar, ru kartları yeniden üretildi. Emülatörde Antigravity'nin devre dışı bıraktığı Google arama paketi yeniden etkinleştirildi.
+* **Doğrulama:** `check_l10n.py` 10 dilde 0/0; biçim denetimi (yer tutucu/kaçış) 0 hata, mojibake 0, 577 anahtar 10 dilde; `lintDebug` 0 hata (yalnız es/fr/pt "many" çoğul uyarısı); `testDebugUnitTest` 155/155; `validate_store_v3.py` 11 dilde OK; 9 dilin 6 kaynak ekranı ve 8+4+4+1 kartı gözle incelendi; kod/imza/sürüm dosyalarında değişiklik yok.
+* **Bilinen Sorunlar:** Çeviri kalitesi örneklendi (mağaza metinleri, sürüm notları, sözler), ana dili konuşan biri incelemedi. ar kart 1'deki « » tırnak yönü bidi ile gösteriliyor, ana dil kontrolü önerilir.
+* **Sonraki Öneri:** versionCode 21, imzalı AAB, Play taslağı, 10 dilin görsel+metin yüklemesi, push (Claude, kullanıcı onayıyla).
+
 ## [2026-10-02 18:35] - Mağaza kartları ve uygulama çevirileri 9 dile çıkarıldı (v3)
 
 * **Model:** Antigravity

@@ -122,18 +122,18 @@ def auto_top(src_dir, src, margin=45):
     return max(0, 90 + (box[1] if box else 160) - margin)
 
 
-def auto_top_grid(src_dir, src, margin=70):
+def auto_top_grid(src_dir, src, margin=70, rtl=False):
     """Başarılar ekranında kaydırma dile göre ±birkaç satır oynar: ızgara başlığının margin px üstünden kırp."""
     blue = Image.open(src_dir / src).convert("RGB").split()[2]   # krem metin parlak, altın ilerleme çubuğu (B~90) değil
-    box = blue.crop((0, 130, 700, 700)).point(lambda v: 255 if v > 170 else 0).getbbox()
+    box = blue.crop((0, 130, 1080 if rtl else 700, 700)).point(lambda v: 255 if v > 170 else 0).getbbox()
     return max(0, 130 + (box[1] if box else 110) - margin)
 
 
-def phone(src_dir, src, x, y, w, top=0, bottom=None, radius=60, h=None):
+def phone(src_dir, src, x, y, w, top=0, bottom=None, radius=60, h=None, rtl=False):
     if top == "auto":
         top = auto_top(src_dir, src)
     elif top == "auto_grid":
-        top = auto_top_grid(src_dir, src)
+        top = auto_top_grid(src_dir, src, rtl=rtl)
     sw, sh = Image.open(src_dir / src).size
     sc = w / sw
     ch = ((bottom or sh) - top) * sc
@@ -190,11 +190,14 @@ def ledger_and_seal(L, W, H, u, rtl, lang):
         pts.append(f"{r * math.cos(a):.1f},{r * math.sin(a):.1f}")
     ring_font = serif if lang in NO_ITALIC else sans
     # Arap/Hint/Tay yazılarında harf aralığı bozulmasın: tam halka yerine üst yay ortalanır.
-    ring_attrs = "startOffset='25%' text-anchor='middle'" if lang in NO_ITALIC else "textLength='1790' lengthAdjust='spacing'"
+    ring_attrs = "startOffset='50%' text-anchor='middle'" if lang in NO_ITALIC else "textLength='1790' lengthAdjust='spacing'"
+    # NO_ITALIC: yol alttan (6 o'clock) başlar; metin üstte ortalanır ve tüm daireyi kullanabilir (başı/sonu kırpılmaz)
+    ring_path = ("M 0,292 a 292,292 0 1,1 0,-584 a 292,292 0 1,1 0,584" if lang in NO_ITALIC
+                 else "M -292,0 a 292,292 0 1,1 584,0 a 292,292 0 1,1 -584,0")
     seal = f"""<svg class='seal' viewBox='-420 -420 840 840' xmlns='http://www.w3.org/2000/svg'>
 <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
   <stop offset='0' stop-color='#F3D08F'/><stop offset='.5' stop-color='#D9A55B'/><stop offset='1' stop-color='#9A6B2B'/></linearGradient>
- <path id='ring' d='M -292,0 a 292,292 0 1,1 584,0 a 292,292 0 1,1 -584,0'/></defs>
+ <path id='ring' d='{ring_path}'/></defs>
 <polygon points='{" ".join(pts)}' fill='url(#g)'/>
 <circle r='340' fill='#12100D' stroke='url(#g)' stroke-width='6'/>
 <circle r='246' fill='none' stroke='rgba(217,165,91,.35)' stroke-width='3'/>
@@ -223,7 +226,7 @@ def phone_cards(L, src_dir, lang, rtl):
             ("06-on-record", "06", "timeline.png", 96)]
     for name, k, img, top in spec:
         cards[name] = page(W, H, u,
-            copy_block(X, 118, CW, C[k], 134, 40, rtl) + phone(src_dir, img, 90, 660, 900, top=top),
+            copy_block(X, 118, CW, C[k], 134, 40, rtl) + phone(src_dir, img, 90, 660, 900, top=top, rtl=rtl),
             lang, rtl, gy="96%", limit=630)
     cards.update(ledger_and_seal(L, W, H, u, rtl, lang))
     return cards, W, H
@@ -263,7 +266,7 @@ def tablet_cards(L, src_dir, lang, rtl, W, H):
     for name, kk, img, top in [("02-set-it-once", "02", "setup_limit.png", 96), ("03-clean-days", "03", "ach_grid.png", "auto_grid"),
                                ("04-whats-left", "04", "trackers.png", 96)]:
         cards[name] = page(W, H, u,
-            copy_block(X, 118 * k, CW, C[kk], fs, subfs, rtl) + phone(src_dir, img, px, 660 * k, pw, top=top),
+            copy_block(X, 118 * k, CW, C[kk], fs, subfs, rtl) + phone(src_dir, img, px, 660 * k, pw, top=top, rtl=rtl),
             lang, rtl, gy="96%", limit=630 * k)
     return cards, W, H
 

@@ -140,7 +140,7 @@
     <string name="profile_android_version">Android Sürümü:</string>
     <string name="profile_developer_contact">Geliştirici İletişim:</string>
     <string name="profile_timeline">ZAMAN TÜNELİ</string>
-    <string name="profile_level_label">LEVEL %1$d</string>
+    <string name="profile_level_label">SEVİYE %1$d</string>
     <string name="profile_today_status">BUGÜNÜN DURUMU</string>
     <string name="profile_streak_label">ARDIŞIK SERİ</string>
     <string name="profile_streak_days">%1$d Gün</string>
