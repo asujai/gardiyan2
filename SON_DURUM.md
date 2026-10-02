@@ -8,7 +8,12 @@
 - **Mağaza Varlıkları:** 11 dil × 18 varlık = 198 görsel Play Store'da canlı ve doğrulanmış
 - **Son Çalışma:** Claude — premium arayüz yenilemesi + Başarılar (çerçeve) bölümü (2 Ekim 2026). v1.3.0 (code 20) olarak GitHub'a push edildi ve Play'e taslak yüklendi.
 
-## Son İşlem — Premium Arayüz Yenilemesi ve Başarılar (Claude, 2 Ekim 2026)
+## Son İşlem — en-US Mağaza Kartları v3 (Claude, 2 Ekim 2026)
+
+- **Durum:** Hazır, Play'e yüklenmedi. Dosyalar `store_assets/en-US-v3/play/` (Play klasör yapısında: phone 8, 7" 4, 10" 4, feature, icon); metinler `metadata/en-US/`; sürüm notu `store_assets/en-US-v3/release_notes_en-US.txt`. Üretici: `tools/generate_store_en_v3.py`.
+- **Sonraki adım:** Onayla yükle, ardından diğer diller.
+
+## Önceki İşlem — Premium Arayüz Yenilemesi ve Başarılar (Claude, 2 Ekim 2026)
 
 - **Durum:** Yerelde tamamlandı ve emülatörde (Pixel API 34) doğrulandı. GitHub değişiklikten önce 25ec471'e eşitlendi; bu iş **push edilmedi** — kullanıcı "şimdilik GitHub'a dokunma" dedi.
 - **Tasarım sistemi:** Newsreader (başlık/rakam) + Manrope (arayüz) fontları `res/font` içine eklendi. 4 palet × açık/koyu yeniden ayarlandı (`Color.kt`), M3 renk şeması tamamlandı, durum çubuğu ikonları temaya uyuyor. Ortak bileşenler: `ui/components/Premium.kt` (yaylı basma + titreşim, kart, birincil düğme, ekran başlığı, alttan açılan animasyonlu sayfa, giriş animasyonu), `LimitraIcons` (Lucide ince çizgi), `LimitraBottomBar` (kayan gösterge). `.clickable` satırlar tema üzerinden basınca hafifçe küçülür (`Motion.kt`).

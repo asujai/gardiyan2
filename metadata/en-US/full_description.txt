@@ -1,49 +1,47 @@
-Limitra: Screen Time, Focus & Smart App Blocker
+“Just five more minutes” — and an hour is gone. Limitra App Block stops that loop.
 
-Tired of recurring monthly and yearly subscriptions? Reclaim control of your digital life with Limitra — a 100% offline, privacy-first, distraction-free app blocker with zero subscriptions and lifetime ownership.
+Choose the apps that pull you in, set a daily time limit, and Limitra locks them the moment your time is up. No account, no ads, no subscription. You pay once and it works fully offline.
 
-Do you spend countless hours mindlessly scrolling short videos (Reels, TikTok, Shorts), checking feeds, or losing track of time in mobile games? Limitra App Block is engineered to break dopamine-driven phone addiction, foster Deep Work, and boost your daily productivity.
+HOW IT WORKS
+1. Pick the apps you want to limit: social media, short-video apps, games, anything.
+2. Set a daily limit, the days it applies and, if you like, active hours such as work or study time.
+3. When time is up, a calm lock screen replaces the app, with a short quote to help you pause.
 
-🌟 WHY CHOOSE LIMITRA?
+WHAT YOU GET
+• Daily limits for each app, with optional active hours and protection days
+• A lock screen with Stoic quotes (Seneca, Marcus Aurelius, Epictetus and more) or your own
+• Streaks and 9 animated achievement frames, from day 1 to day 365
+• Six discipline levels, from Rookie to Full Control
+• A private timeline of every lock and every completed day
+• Four colour themes in light and dark, in 11 languages
 
-1. NO SUBSCRIPTIONS – PAY ONCE, OWN FOREVER
-Unlike mainstream apps that lock core features behind costly annual plans, Limitra gives you lifetime access with a single, transparent purchase. No renewals, no paywalls, no hidden fees.
+PRIVATE BY DESIGN
+• No account, no ads, no trackers
+• Limitra does not request internet permission, so your usage data never leaves your phone
+• Everything works offline
 
-2. 100% OFFLINE & ABSOLUTE PRIVACY
-Zero trackers, zero ads, zero remote analytics. Limitra does not even request Internet permission. Your usage data and block lists remain strictly on your device.
+PAY ONCE
+One purchase includes every feature. No subscription, no renewals, no upsells.
 
-3. STRICT & UNCOMPROMISING APP BLOCKING
-Take back your focus from Instagram, YouTube, TikTok, X (Twitter), Reddit, or games. When your daily limit is reached, access is locked immediately to prevent impulse browsing.
+MADE FOR
+• Students preparing for exams who need uninterrupted study time
+• Developers, writers and anyone who needs deep focus
+• Anyone cutting back on endless scrolling, especially late at night
 
-4. STOIC LOCK SCREEN WITH TIMELESS WISDOM
-When your limit expires, you aren't greeted by a generic block screen. Instead, Limitra presents profound reflections from ancient Stoic philosophers like Seneca, Marcus Aurelius, and Epictetus. This mindful pause interrupts dopamine loops and returns you to what matters.
+PERMISSIONS: WHY LIMITRA ASKS
+• Usage access: calculates how long you use each chosen app, on your device, to enforce the limit.
+• Accessibility service: detects when a limited app opens so the lock screen can appear. Limitra does not read, store or send your messages, passwords or any personal data.
+• Display over other apps: shows the lock screen on top of a limited app.
+• Battery optimization exemption: helps protection keep running reliably in the background.
 
-5. FOCUS STREAKS & LEVEL PROGRESSION
-Turn digital detox into an inspiring journey. Keep your daily focus streak alive. Level up from Rookie to Stoic and Zen Master as your screen discipline matures.
+FAQ
+Does Limitra work without internet?
+Yes. It has no internet permission and runs entirely on your device.
 
-6. PRIVATE ON-DEVICE TIMELINE
-Review your protection events, limits triggered, and saved hours in a clean, chronological timeline — completely on-device without an account or login.
+Will I be charged again?
+No. One purchase, no renewals.
 
-🎯 PERFECT FOR
-• Students preparing for exams (SAT, GRE, GMAT, MCAT, university entrance) needing undistracted study sessions
-• Software engineers, writers, and knowledge workers who rely on uninterrupted Deep Work
-• Anyone striving to curb social media overuse and reclaim quality time
-• Individuals seeking better sleep hygiene by eliminating late-night doomscrolling
+Can I use my own quote on the lock screen?
+Yes. Add your own quote in Settings and show it always or mixed with the defaults.
 
-🔒 PERMISSIONS & FULL TRANSPARENCY
-Limitra operates with complete transparency:
-• Usage Stats Access: Required strictly to calculate daily screen time for chosen apps on-device and enforce limits.
-• Accessibility Service API: Used solely to detect when a restricted app opens and display the protective block screen. Limitra NEVER reads, logs, stores, or transmits private messages, keystrokes, passwords, or personal data.
-• Display Over Other Apps: Enables displaying the philosophical Stoic lock screen over blocked apps.
-• Battery Optimization Exemption: Keeps protection continuous and reliable throughout the day.
-
-❓ FREQUENTLY ASKED QUESTIONS
-• Does Limitra work without Internet?
-Yes! Limitra is entirely offline. All blocking and streak calculations run locally.
-
-• Will I ever be charged again?
-Never. No subscriptions, no renewals. One purchase grants lifetime ownership.
-
-Your attention is your most valuable asset. Stop surrendering it to algorithm feeds. Download Limitra and keep your time!
-
-Website: https://limitra.online — FAQ, pricing, changelog and comparisons with StayFree, AppBlock, YourHour, Digital Wellbeing and Forest.
+Website: https://limitra.online (FAQ, pricing, changelog and comparisons with StayFree, AppBlock, YourHour, Digital Wellbeing and Forest).

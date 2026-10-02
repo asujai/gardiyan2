@@ -1,3 +1,12 @@
+## [2026-10-02 16:30] - en-US Mağaza Kartları ve Metinleri Yeniden Hazırlandı (v3)
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[YENİ]` tools/generate_store_en_v3.py, store_assets/en-US-v3/ (source, html, fonts, play, release_notes_en-US.txt); `[GÜNCELLENDİ]` metadata/en-US/short_description.txt, metadata/en-US/full_description.txt, SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Mağaza denetimi (6/10 → eski HTML maket, sahte Pro/48 saat iade kartı, kanıtsız sayılar) sonrası en-US seti sıfırdan yapıldı. Emülatörde (Premium Dark, demo veri, temiz durum çubuğu) gerçek ekranlar çekildi; Newsreader + Manrope tipografisiyle 8 telefon kartı, 4 adet 7", 4 adet 10" kart ve 1024x500 öne çıkan grafik üretildi. Hikâye: kilit ekranı (“Just five more minutes. Not today.”) → limit kurma → Başarı çerçeveleri → kalan süre → saat aralığı → zaman tüneli → gizlilik → tek ödeme (iki son kart illüstratif, UI yok). Pro/iade/pil/tasarruf iddiaları kaldırıldı. Kısa/uzun açıklama yeniden yazıldı (eski seviye adları “Stoic/Zen Master” düzeltildi; “Limitra App Block” adı korundu). 'Yenilikler' notu `store_assets/en-US-v3/release_notes_en-US.txt`.
+* **Doğrulama:** Tüm PNG'ler RGB, boyutlar 1080x1920 / 1200x1920 / 1600x2560 / 1024x500, her biri <1 MB. Gizlilik iddiaları: birleştirilmiş APK'da INTERNET izni yok (aapt2), reklam/analitik bağımlılığı yok. Kartlar tek tek gözle kontrol edildi. Short 78, full 2334 karakter.
+* **Bilinen Sorunlar:** Play'e YÜKLENMEDİ (kullanıcı onayı bekliyor); canlı mağaza hâlâ eski görselleri gösteriyor. v1.3.0 taslağındaki en-US sürüm notu Console'da elle girilmeli (CLI tr-TR notunu ezer). Ekranlar demo veriyle (64 gün seri) çekildi; başka dillerin kartları henüz yok.
+* **Sonraki Öneri:** Kullanıcı onayıyla `gpc images` + `gpc listings update` ile en-US yükleme; ardından diğer 10 dil için aynı şablon (`tools/generate_store_en_v3.py` metinleri çevrilerek). Model: Claude.
+
 ## [2026-10-02 14:10] - v1.3.0 (Code 20): GitHub Push ve Play Production Taslağı
 
 * **Model:** Claude

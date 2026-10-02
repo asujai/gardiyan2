@@ -1,0 +1,4 @@
+• Completely redesigned look: refined typography, four colour themes in light and dark, smoother animations.
+• New Achievements: keep your streak to earn 9 animated frames, from day 1 to day 365.
+• The lock screen now matches your theme.
+• The daily usage list now resets correctly at midnight, and limit-edit warnings appear instantly.
