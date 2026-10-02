@@ -1,0 +1,76 @@
+<en-US>
+• Completely redesigned look: refined typography, four colour themes in light and dark, smoother animations.
+• New Achievements: keep your streak to earn 9 animated frames, from day 1 to day 365.
+• The lock screen now matches your theme.
+• The daily usage list now resets correctly at midnight, and limit-edit warnings appear instantly.
+</en-US>
+
+<tr-TR>
+• Tamamen yenilenen görünüm: yeni yazı tipleri, açık ve koyu modda dört renk teması, akıcı animasyonlar.
+• Yeni Başarılar: serini koru, 1. günden 365. güne 9 animasyonlu çerçeve kazan.
+• Kilit ekranı artık temana uyuyor.
+• Günlük kullanım listesi gece yarısı doğru sıfırlanıyor; limit düzenleme uyarıları anında görünüyor.
+</tr-TR>
+
+<de-DE>
+• Komplett überarbeitetes Design: verfeinerte Typografie, vier Farbthemen in Hell und Dunkel, flüssigere Animationen.
+• Neue Erfolge: Halte deine Serie, um 9 animierte Rahmen von Tag 1 bis Tag 365 freizuschalten.
+• Der Sperrbildschirm passt sich jetzt deinem Design an.
+• Die tägliche Nutzungsliste wird um Mitternacht zuverlässig zurückgesetzt; Limit-Warnungen erscheinen sofort.
+</de-DE>
+
+<es-ES>
+• Diseño completamente renovado: tipografía refinada, cuatro temas de color en claro y oscuro, animaciones más fluidas.
+• Nuevos logros: mantén tu racha para ganar 9 marcos animados, del día 1 al 365.
+• La pantalla de bloqueo ahora coincide con tu tema.
+• La lista de uso diario se reinicia a medianoche y los avisos de edición de límites aparecen al instante.
+</es-ES>
+
+<fr-FR>
+• Design entièrement repensé : typographie soignée, quatre thèmes en mode clair et sombre, animations plus fluides.
+• Nouveaux succès : gardez votre série pour débloquer 9 cadres animés, du 1er au 365e jour.
+• L'écran de verrouillage s'adapte désormais à votre thème.
+• Réinitialisation précise de l'utilisation à minuit et alertes instantanées lors des modifications.
+</fr-FR>
+
+<pt-BR>
+• Visual totalmente reformulado: tipografia refinada, quatro temas de cores no claro e escuro, animações mais fluidas.
+• Novas conquistas: mantenha sua sequência para desbloquear 9 molduras animadas, do dia 1 ao 365.
+• A tela de bloqueio agora acompanha o seu tema.
+• O uso diário é zerado pontualmente à meia-noite e os avisos de alteração de limites aparecem na hora.
+</pt-BR>
+
+<id>
+• Tampilan baru sepenuhnya: tipografi lebih halus, empat tema warna terang dan gelap, animasi lebih mulus.
+• Pencapaian Baru: pertahankan streak untuk meraih 9 bingkai animasi, dari hari ke-1 hingga ke-365.
+• Layar kunci kini menyesuaikan dengan tema pilihanmu.
+• Penggunaan harian kini tereset tepat tengah malam dan peringatan ubah limit muncul seketika.
+</id>
+
+<ru-RU>
+• Полностью обновлённый дизайн: утончённая типографика, 4 цветовые темы (светлая и тёмная), плавные анимации.
+• Новые достижения: удерживайте серию и открывайте 9 анимированных рамок от 1 до 365 дня.
+• Экран блокировки теперь оформлен в выбранной теме.
+• Список использования точно сбрасывается в полночь; предупреждения об изменении лимитов появляются мгновенно.
+</ru-RU>
+
+<hi-IN>
+• पूरी तरह से नया डिज़ाइन: परिष्कृत टाइपोग्राफी, लाइट और डार्क में चार रंगीन थीम, सहज एनिमेशन।
+• नई उपलब्धियां: दिन 1 से 365 तक 9 एनिमेटेड फ्रेम अनलॉक करने के लिए अपनी स्ट्रीक बनाए रखें।
+• लॉक स्क्रीन अब आपकी थीम से मेल खाती है।
+• दैनिक उपयोग सूची आधी रात को सही ढंग से रीसेट होती है; सीमा संपादन चेतावनियां तुरंत दिखाई देती हैं।
+</hi-IN>
+
+<th>
+• ดีไซน์ใหม่ทั้งหมด: ตัวอักษรประณีตยิ่งขึ้น 4 ธีมสีทั้งโหมดสว่างและมืด แอนิเมชันลื่นไหลกว่าเดิม
+• ความสำเร็จใหม่: รักษาความต่อเนื่องเพื่อรับ 9 กรอบภาพเคลื่อนไหว ตั้งแต่วันที่ 1 ถึง 365
+• หน้าจอล็อกเปลี่ยนสีและสไตล์ตามธีมของคุณแล้ว
+• รีเซ็ตสถิติรายวันอย่างถูกต้องตอนเที่ยงคืน พร้อมการแจ้งเตือนแก้ไขลิมิตทันที
+</th>
+
+<ar>
+• مظهر جديد كلياً: خطوط مصقولة، 4 سمات ألوان بالوضعين الفاتح والداكن، حركات أكثر سلاسة.
+• إنجازات جديدة: حافظ على سلسلتك لتحصل على 9 إطارات متحركة من اليوم 1 حتى 365.
+• شاشة القفل الآن تتطابق تماماً مع السمة المختارة.
+• يُعاد ضبط قائمة الاستخدام بدقة عند منتصف الليل، وتظهر تنبيهات تعديل الحدود فوراً.
+</ar>

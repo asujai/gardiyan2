@@ -1,3 +1,12 @@
+## [2026-10-02 20:30] - v1.3.0 (Code 21): Play taslağı, 11 dilin görsel ve metin yüklemesi
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` app/build.gradle.kts (versionCode 21), SON_DURUM.md, ISLEM_GECMISI.md; `[YENİ]` store_assets/store-v3-handoff/PLAY_SURUM_NOTLARI.txt
+* **Yapılan İşlem:** Antigravity çevirileri ve düzeltmelerle imzalı AAB (5.85 MB, sha256 730a078d…) üretildi, Play'e yüklendi, Production'da **taslak** (code 20 taslağının yerini aldı; tr-TR notu CLI ile girildi). 10 dilin görselleri (dil başına 8+4+4+1) dil dil `gpc images sync` ile yüklendi (tek seferde 60 sn zaman aşımı; `--timeout 900s` ve dil başına çalıştırma gerekti, hi-IN'de bir 503 sonrası tekrar). 10 dilin kısa/uzun açıklaması `gpc listings update` ile yüklendi; başlıklara dokunulmadı. 11 dilin sürüm notları Console'a yapıştırılmak üzere `PLAY_SURUM_NOTLARI.txt` içinde (<dil>...</dil> biçimi).
+* **Doğrulama:** Canlı görsel sha256 = yerel dosyalar, 11 dilde 8/4/4/1 hepsi eşleşti; canlı başlık/kısa/uzun açıklama = metadata dosyaları (11/11); `gpc tracks list`: production [21] draft; jarsigner doğrulandı; testDebugUnitTest 155/155, lintDebug 0 hata (önceki adımda).
+* **Bilinen Sorunlar:** Gerçek cihazda test edilmedi; çeviriler ana dil konuşuruna gösterilmedi; ar tırnak yönü kontrol bekliyor. Yayın ve sürüm notlarının Console'a girilmesi kullanıcıda.
+* **Sonraki Öneri:** Kullanıcı notları yapıştırıp incelemeye gönderir; yayınlanınca `gpc tracks list` ile completed teyidi.
+
 ## [2026-10-02 19:40] - Antigravity teslim denetimi ve düzeltmeler
 
 * **Model:** Claude
