@@ -1,3 +1,12 @@
+## [2026-10-02 17:50] - en-US Play'e yüklendi; çok dilli kart hattı ve Antigravity görev raporu
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[YENİ]` tools/generate_store_v3.py, tools/capture_store_screens.py, tools/check_l10n.py, tools/validate_store_v3.py, tools/store_copy_v3.json, store_assets/store-v3-handoff/ANTIGRAVITY_GOREV.md, store_assets/store-v3-shared/, store_assets/tr-TR-v3/ (source, play, release_notes.txt); `[GÜNCELLENDİ]` metadata/tr-TR/short_description.txt, full_description.txt, .gitignore; `[SİLİNDİ]` tools/generate_store_en_v3.py (yerini generate_store_v3.py aldı)
+* **Yapılan İşlem:** Kullanıcı onayıyla en-US görselleri (8 telefon, 4 adet 7", 4 adet 10", öne çıkan grafik) ve metinleri Play'e yüklendi; canlıdaki dosyaların SHA-256'sı yerel dosyalarla birebir eşleşti. Diğer diller için üretim hattı kuruldu: çok dilli üretici (RTL, Devanagari/Tay/Arap yazı yığınları, otomatik metin küçültme), emülatör çekim betiği (dil değiştirir, kilit sözünü sabitler), çeviri denetçisi, teslim doğrulayıcısı. tr-TR pilot olarak baştan sona üretildi (ekranlar, kartlar, mağaza metni, sürüm notu), Play'e yüklenmedi. Antigravity için adım adım görev raporu yazıldı.
+* **Doğrulama:** `gpc images list` canlı sha256 = yerel (8/8, 4/4, 4/4, 1/1); `listings get` ile en-US metin doğrulandı. Çekim hattı tr, ar, id, hi, th, ru dillerinde denendi. `validate_store_v3.py en-US tr-TR` [OK].
+* **Bilinen Sorunlar:** ÖNEMLİ ÜRÜN BULGUSU: ar, de, es, fr, hi, id, pt, ru, th dillerinde 21 anahtar hiç çevrilmemiş (İngilizceye düşüyor); sekiz dilde (th hariç) 54 Stoacı sözün tamamı İngilizce, ayrıca HOUR/MINUTE gibi etiketler. Düzeltme Antigravity görevinin Adım A'sında; çeviriler gelince yeni sürüm (versionCode 21) gerekecek. Play'deki v1.3.0 (code 20) taslağı eksik çevirilerle çıkacaktı.
+* **Sonraki Öneri:** Antigravity görevi tamamlayınca Claude denetimi → versionCode 21, AAB, Play taslağı, 10 dilin görsel+metin yüklemesi, push.
+
 ## [2026-10-02 16:30] - en-US Mağaza Kartları ve Metinleri Yeniden Hazırlandı (v3)
 
 * **Model:** Claude

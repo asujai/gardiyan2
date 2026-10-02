@@ -1,49 +1,47 @@
-Limitra: Odaklanma, Ekran Süresi ve Uygulama Engelleyici
+“Sadece beş dakika daha” derken bir saat geçiyor. Limitra App Block bu döngüyü durdurur.
 
-Aylık ve yıllık aboneliklerden bıktınız mı? Tek seferlik ödemeyle ömür boyu sahip olacağınız, %100 çevrimdışı, gizlilik odaklı ve tavizsiz dijital detoks yardımcınız Limitra ile kontrolü yeniden elinize alın.
+Seni içine çeken uygulamaları seç, günlük süre limiti koy; süre dolduğu anda Limitra o uygulamaları kilitler. Hesap yok, reklam yok, abonelik yok. Bir kez ödersin ve tamamen çevrimdışı çalışır.
 
-Gününüzün saatlerini sosyal medyada sonsuz kaydırma yaparak, kısa videolar (Reels, Shorts, TikTok) izleyerek veya mobil oyunlarda farkında olmadan harcamaktan yoruldunuz mu? Limitra, ekran bağımlılığını kırmak, derin odak (Deep Work) geliştirmek ve üretkenliğinizi zirveye taşımak için özel olarak tasarlandı.
+NASIL ÇALIŞIR
+1. Sınırlamak istediğin uygulamaları seç: sosyal medya, kısa video uygulamaları, oyunlar, ne olursa.
+2. Günlük limiti, geçerli olduğu günleri ve istersen çalışma ya da ders saati gibi aktif saat aralığını belirle.
+3. Süre dolunca uygulamanın yerine sakin bir kilit ekranı gelir; duraklamana yardım eden kısa bir söz eşlik eder.
 
-🌟 NEDEN LIMITRA?
+NELER VAR
+• Her uygulama için günlük limit; isteğe bağlı aktif saatler ve koruma günleri
+• Stoacı sözlerle (Seneca, Marcus Aurelius, Epiktetos ve daha fazlası) ya da kendi yazdığın sözle kilit ekranı
+• Seri takibi ve 1. günden 365. güne 9 animasyonlu başarı çerçevesi
+• Çaylak'tan Tam Kontrol'e altı disiplin seviyesi
+• Her kilidin ve tamamlanan günün özel zaman tüneli
+• Açık ve koyu modda dört renk teması, 11 dil
 
-1. SIFIR ABONELİK – TEK ÖDEME, ÖMÜR BOYU ERİŞİM
-Limitra sizden asla her ay düzenli ücret talep etmez. Tek bir ödemeyle tüm özelliklere ömür boyu sınırsız erişirsiniz. Gizli ücret veya yenilenen abonelikler yoktur.
+TASARIMI GEREĞİ ÖZEL
+• Hesap yok, reklam yok, takip aracı yok
+• Limitra internet izni istemez; kullanım verilerin telefonundan çıkmaz
+• Her şey çevrimdışı çalışır
 
-2. %100 ÇEVRİMDİŞİ VE TAM GİZLİLİK
-Uzak sunucu yok, reklam yok, veri takibi yok! İnternet izni istemez. Tüm istatistikleriniz ve kilitleriniz yalnızca telefonunuzda güvenle saklanır.
+TEK ÖDEME
+Tek satın alma tüm özellikleri içerir. Abonelik yok, yenileme yok, ek satış yok.
 
-3. TAVİZSİZ AKILLI UYGULAMA ENGELLEYİCİ
-Instagram, TikTok, YouTube, X veya dikkat dağıtan oyunlar... Belirlediğiniz günlük süre dolduğu anda uygulama tavizsiz engellenir. Kolay geçilemeyen koruma ile dürtüsel açma alışkanlığını kırarsınız.
+KİMLER İÇİN
+• Sınavlara hazırlanan, kesintisiz ders çalışma süresine ihtiyaç duyan öğrenciler
+• Yazılımcılar, yazarlar ve derin odaklanma isteyen herkes
+• Sonsuz kaydırmayı, özellikle geceleri, azaltmak isteyenler
 
-4. STOACI KİLİT EKRANI (STOIC LOCK SCREEN)
-Süreniz dolduğunda karşınıza soğuk bir hata ekranı değil; Seneca, Marcus Aurelius ve Epiktetos gibi Stoacı düşünürlerin bilgece sözleri çıkar. Bu felsefi mola, dürtüsel açma isteğini durdurur ve dikkatinizi anın değerine çevirir.
+İZİNLER: LİMİTRA NEDEN İSTER
+• Kullanım erişimi: Seçtiğin uygulamaları ne kadar kullandığını cihazında hesaplayıp limiti uygulamak için.
+• Erişilebilirlik hizmeti: Limitli bir uygulama açıldığında kilit ekranını gösterebilmek için. Limitra mesajlarını, şifrelerini veya kişisel verilerini okumaz, saklamaz, göndermez.
+• Diğer uygulamaların üzerinde görüntüleme: Limitli uygulamanın üstünde kilit ekranını göstermek için.
+• Pil optimizasyonu muafiyeti: Korumanın arka planda güvenilir şekilde sürmesine yardımcı olur.
 
-5. ALIŞKANLIK VE SERİ SİSTEMİ (STREAK & SEVİYELER)
-Günlük odak hedeflerinize uydukça zinciri kırmayın (Streak). Çaylak seviyesinden Stoacı ve Zen Ustası derecelerine yükselerek dijital iradenizi güçlendirin.
+SIK SORULAN SORULAR
+Limitra internetsiz çalışır mı?
+Evet. İnternet izni yoktur ve tamamen cihazında çalışır.
 
-6. CİHAZ İÇİ ŞEFFAF ZAMAN AKIŞI
-Hesap açmadan gün boyunca hangi saatlerde ne kadar koruma sağlandığını şeffaf bir zaman akışında inceleyin.
+Tekrar ödeme yapacak mıyım?
+Hayır. Tek satın alma, yenileme yok.
 
-🎯 KİMLER İÇİN İDEAL?
-• YKS, KPSS, ALES, TUS ve sınavlara hazırlanan, derse odaklanmak isteyen öğrenciler
-• Yazılımcı, tasarımcı ve derin odak (Deep Work) arayan profesyoneller
-• Sosyal medya ve video bağımlılığını azaltıp kendine vakit ayırmak isteyenler
-• Gece doomscrolling alışkanlığını bitirip kaliteli uyumak isteyenler
+Kilit ekranında kendi sözümü kullanabilir miyim?
+Evet. Ayarlar'dan kendi sözünü ekle; her zaman ya da varsayılanlarla karışık göster.
 
-🔒 İZİNLER VE ŞEFFAFLIK POLİTİKASI
-Limitra tam şeffaflık ilkesini benimser:
-• Kullanım Erişimi: Uygulamaların günlük kullanım süresini yerel olarak hesaplamak ve limiti tespit etmek için kullanılır.
-• Erişilebilirlik Hizmeti (Accessibility Service API): Sınır koyduğunuz uygulamanın açıldığını algılayıp koruyucu kilit ekranını göstermek için kullanılır. Özel mesajlarınız, şifreleriniz veya kişisel verileriniz KESİNLİKLE okunmaz, kaydedilmez ve paylaşılamaz.
-• Diğer Uygulamaların Üzerinde Görüntüleme: Limit dolduğunda koruma ekranını göstermek için kullanılır.
-• Pil Optimizasyonu Muafiyeti: Arka planda korumanın kesintisiz sürmesini sağlar.
-
-❓ SIKÇA SORULAN SORULAR
-• İnternetsiz çalışır mı?
-Evet, Limitra %100 çevrimdışıdır. İnternet olmadan tüm koruma aktif kalır.
-
-• Tekrar ödeme yapacak mıyım?
-Hayır. Tek seferlik satın alımla ömür boyu kullanırsınız.
-
-Zamanınız en değerli varlığınızdır. Kontrolü Limitra ile geri kazanın!
-
-Web sitesi: https://limitra.online — SSS, fiyatlandırma, değişiklik günlüğü ve StayFree, AppBlock, YourHour, Digital Wellbeing, Forest karşılaştırmaları.
+Web sitesi: https://limitra.online (SSS, fiyatlandırma, değişiklik günlüğü ve StayFree, AppBlock, YourHour, Digital Wellbeing ve Forest karşılaştırmaları).

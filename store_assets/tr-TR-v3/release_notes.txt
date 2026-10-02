@@ -1,0 +1,4 @@
+• Tamamen yenilenen görünüm: yeni yazı tipleri, açık ve koyu modda dört renk teması, akıcı animasyonlar.
+• Yeni Başarılar: serini koru, 1. günden 365. güne 9 animasyonlu çerçeve kazan.
+• Kilit ekranı artık temana uyuyor.
+• Günlük kullanım listesi gece yarısı doğru sıfırlanıyor; limit düzenleme uyarıları anında görünüyor.

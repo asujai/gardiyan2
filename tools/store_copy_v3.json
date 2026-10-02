@@ -1,0 +1,595 @@
+{
+ "_readme": "Her dil: lang, rtl, cards(01-08), feature. h1/sub içinde <br> satır kırar, <em>…</em> altın vurgudur. _status alanı 'TODO' ile başlıyorsa üretici çalışmaz; çeviriyi bitirince bu alanı sil. Ayrıntı: store_assets/store-v3-handoff/ANTIGRAVITY_GOREV.md",
+ "en-US": {
+  "lang": "en",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  }
+ },
+ "tr-TR": {
+  "lang": "tr",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Sadece beş<br>dakika daha.”<br><em>Bugün olmaz.</em>",
+    "sub": "Günlük limit koy. Süre dolunca Limitra uygulamayı kilitler."
+   },
+   "02": {
+    "h1": "Bir kez ayarla.<br><em>Sözünde dur.</em>",
+    "sub": "Uygulamaları, günlük limiti ve geçerli günleri seç."
+   },
+   "03": {
+    "h1": "Her temiz gün<br><em>sayılsın.</em>",
+    "sub": "Serini sürdür; 1. günden 365. güne dokuz animasyonlu çerçeve kazan."
+   },
+   "04": {
+    "h1": "Ne kaldığını<br><em>tek bakışta gör.</em>",
+    "sub": "Korunan her uygulamanın kalan süresi tek yerde."
+   },
+   "05": {
+    "h1": "Yalnızca<br><em>gerektiğinde.</em>",
+    "sub": "Uygulamaları seçtiğin saat ve günlerde sınırla."
+   },
+   "06": {
+    "h1": "İlerlemen,<br><em>kayıt altında.</em>",
+    "sub": "Her kilidin ve tamamlanan günün özel zaman tüneli."
+   },
+   "07": {
+    "h1": "Hiçbir şey<br><em>telefonundan çıkmaz.</em>",
+    "sub": "Limitra tamamen çevrimdışı çalışır. Kullanım verilerin bu cihazda kalır.",
+    "rows": [
+     "Hesap",
+     "Reklam",
+     "Takip araçları",
+     "İnternet izni"
+    ],
+    "none": "Yok",
+    "pill": "İnternet olmadan da çalışır"
+   },
+   "08": {
+    "h1": "Bir kez öde.<br><em>Her ay değil.</em>",
+    "sub": "Tek satın alma, tüm özellikler. İptal edilecek abonelik yok.",
+    "seal_ring": "TEK SEFERLİK ÖDEME · ABONELİK YOK · REKLAM YOK · EK SATIŞ YOK ·",
+    "seal_big": "1×",
+    "seal_small": "ÖDEME"
+   }
+  },
+  "feature": {
+   "h1": "“Sadece beş<br>dakika daha.” <em>Bugün olmaz.</em>",
+   "sub": "Gerçekten kilitleyen günlük uygulama limitleri.<br>Tek ödeme. Abonelik yok."
+  }
+ },
+ "de-DE": {
+  "lang": "de",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  },
+  "_status": "TODO: İngilizce metin, çevrilmeli"
+ },
+ "es-ES": {
+  "lang": "es",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  },
+  "_status": "TODO: İngilizce metin, çevrilmeli"
+ },
+ "fr-FR": {
+  "lang": "fr",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  },
+  "_status": "TODO: İngilizce metin, çevrilmeli"
+ },
+ "pt-BR": {
+  "lang": "pt",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  },
+  "_status": "TODO: İngilizce metin, çevrilmeli"
+ },
+ "id": {
+  "lang": "id",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  },
+  "_status": "TODO: İngilizce metin, çevrilmeli"
+ },
+ "ru-RU": {
+  "lang": "ru",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  },
+  "_status": "TODO: İngilizce metin, çevrilmeli"
+ },
+ "hi-IN": {
+  "lang": "hi",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  },
+  "_status": "TODO: İngilizce metin, çevrilmeli"
+ },
+ "th": {
+  "lang": "th",
+  "rtl": false,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  },
+  "_status": "TODO: İngilizce metin, çevrilmeli"
+ },
+ "ar": {
+  "lang": "ar",
+  "rtl": true,
+  "cards": {
+   "01": {
+    "h1": "“Just five<br>more minutes.”<br><em>Not today.</em>",
+    "sub": "Set a daily limit. When time is up, Limitra locks the app."
+   },
+   "02": {
+    "h1": "Set it once.<br><em>Keep your word.</em>",
+    "sub": "Pick the apps, a daily limit and the days that count."
+   },
+   "03": {
+    "h1": "Make every<br>clean day <em>count.</em>",
+    "sub": "Keep your streak and earn nine animated frames, from day 1 to day 365."
+   },
+   "04": {
+    "h1": "See what is left<br><em>at a glance.</em>",
+    "sub": "Time left for every protected app, in one place."
+   },
+   "05": {
+    "h1": "Only when<br><em>it matters.</em>",
+    "sub": "Limit apps during the hours and days you choose."
+   },
+   "06": {
+    "h1": "Your progress,<br><em>on record.</em>",
+    "sub": "A private timeline of every lock and every completed day."
+   },
+   "07": {
+    "h1": "Nothing leaves<br><em>your phone.</em>",
+    "sub": "Limitra works fully offline. Your usage data stays on this device.",
+    "rows": [
+     "Accounts",
+     "Ads",
+     "Trackers",
+     "Internet permission"
+    ],
+    "none": "None",
+    "pill": "Works with no internet at all"
+   },
+   "08": {
+    "h1": "Pay once.<br><em>Not every month.</em>",
+    "sub": "One purchase, every feature. No subscription to cancel.",
+    "seal_ring": "ONE PURCHASE · NO SUBSCRIPTION · NO ADS · NO UPSELLS ·",
+    "seal_big": "1×",
+    "seal_small": "PAYMENT"
+   }
+  },
+  "feature": {
+   "h1": "“Just five more<br>minutes.” <em>Not today.</em>",
+   "sub": "Daily app limits that really lock.<br>One purchase. No subscription."
+  },
+  "_status": "TODO: İngilizce metin, çevrilmeli"
+ }
+}

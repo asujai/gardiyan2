@@ -8,7 +8,13 @@
 - **Mağaza Varlıkları:** 11 dil × 18 varlık = 198 görsel Play Store'da canlı ve doğrulanmış
 - **Son Çalışma:** Claude — premium arayüz yenilemesi + Başarılar (çerçeve) bölümü (2 Ekim 2026). v1.3.0 (code 20) olarak GitHub'a push edildi ve Play'e taslak yüklendi.
 
-## Son İşlem — en-US Mağaza Kartları v3 (Claude, 2 Ekim 2026)
+## Son İşlem — en-US Yüklendi, Çok Dilli Hat Hazır (Claude, 2 Ekim 2026)
+
+- **Durum:** en-US görsel + metin Play'de canlı. tr-TR hazır ama yüklenmedi. Diğer 9 dil için **Antigravity görevi hazır:** `store_assets/store-v3-handoff/ANTIGRAVITY_GOREV.md`.
+- **Ürün bulgusu:** 9 dilde uygulama çevirisi eksik (21 anahtar yok, 8 dilde 54 söz İngilizce). Düzeltme görevin Adım A'sında; sonra sürüm 21 şart. Play'deki code 20 taslağı bu eksiklerle çıkmamalı.
+- **Sonraki adım:** Antigravity bitirince Claude denetler (§11 listesi) → sürüm 21, taslak, yükleme, push.
+
+## Önceki — en-US Mağaza Kartları v3 (Claude, 2 Ekim 2026)
 
 - **Durum:** Hazır, Play'e yüklenmedi. Dosyalar `store_assets/en-US-v3/play/` (Play klasör yapısında: phone 8, 7" 4, 10" 4, feature, icon); metinler `metadata/en-US/`; sürüm notu `store_assets/en-US-v3/release_notes_en-US.txt`. Üretici: `tools/generate_store_en_v3.py`.
 - **Sonraki adım:** Onayla yükle, ardından diğer diller.
