@@ -1,3 +1,12 @@
+## [2026-10-02 14:10] - v1.3.0 (Code 20): GitHub Push ve Play Production Taslağı
+
+* **Model:** Claude
+* **Etkilenen Dosyalar:** `[GÜNCELLENDİ]` app/build.gradle.kts (versionCode 20, versionName 1.3.0), SON_DURUM.md, ISLEM_GECMISI.md
+* **Yapılan İşlem:** Kullanıcı yeni arayüzü beğendi, push ve Play yayını istedi. Sürüm yükseltildi, imzalı AAB üretildi (5.8 MB, sha256 e4d92f05…), `origin/main`'e push edildi, Play'e yüklenip Production'da **taslak** yapıldı (rollout 0; yayın Console'dan kullanıcı tarafından). Code 19 taslağının yerini aldı.
+* **Doğrulama:** `bundleRelease` temiz, jarsigner doğrulandı; testler önceki işte 155/155. Play durumu için `gpc tracks list` sonucu SON_DURUM'da.
+* **Bilinen Sorunlar:** Gerçek cihazda henüz denenmedi. Sürüm notu CLI ile tek dil girilir; diğer dillerin notu Console'da eklenmeli.
+* **Sonraki Öneri:** Kullanıcı Console'da notları kontrol edip "Yayınla"; sonra `gpc tracks list` ile completed teyidi (Claude).
+
 ## [2026-10-02 13:45] - Premium Arayüz Yenilemesi ve Başarılar (Çerçeve) Bölümü
 
 * **Model:** Claude

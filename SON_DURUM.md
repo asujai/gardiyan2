@@ -4,9 +4,9 @@
 - **Proje:** Limitra: AppBlock (Gardiyan) - Android Uygulama Kontrol ve Zaman Sınırı Yöneticisi
 - **Paket Adı:** `com.gardiyan.app`
 - **Yayındaki Sürüm:** Version Code 18 (v1.2.1) - Production `%100`, durum `completed`
-- **Bekleyen Sürüm:** Version Code 19 (v1.2.2) - Production **taslak**, kullanıcı Console'dan yayınlayacak
+- **Bekleyen Sürüm:** Version Code 20 (v1.3.0, premium arayüz + Başarılar) - Production **taslak**, kullanıcı Console'dan yayınlayacak. Code 19 (v1.2.2) taslağının yerini aldı; düzeltmeleri de içeriyor.
 - **Mağaza Varlıkları:** 11 dil × 18 varlık = 198 görsel Play Store'da canlı ve doğrulanmış
-- **Son Çalışma:** Claude — premium arayüz yenilemesi + Başarılar (çerçeve) bölümü (2 Ekim 2026). Yalnız yerel commit; GitHub'a push edilmedi (kullanıcı isteği).
+- **Son Çalışma:** Claude — premium arayüz yenilemesi + Başarılar (çerçeve) bölümü (2 Ekim 2026). v1.3.0 (code 20) olarak GitHub'a push edildi ve Play'e taslak yüklendi.
 
 ## Son İşlem — Premium Arayüz Yenilemesi ve Başarılar (Claude, 2 Ekim 2026)
 
