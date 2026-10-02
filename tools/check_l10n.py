@@ -52,6 +52,8 @@ def analyse(lang):
             continue
         if any(r.match(k) for r in ALLOW_RE) and lang not in NON_LATIN:
             continue
+        if lang == "tr" and k in {"profile_level_label", "usage_limit_prefix"}:
+            continue  # Claude'un konusu (ANTIGRAVITY_GOREV.md §A5)
         untranslated.append(k)
     return base, missing, untranslated
 

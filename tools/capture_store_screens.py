@@ -19,6 +19,13 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from xml.sax.saxutils import escape
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
+    except Exception:
+        pass
+
 ROOT = Path(__file__).resolve().parent.parent
 PKG = "com.gardiyan.app"
 A11Y = f"{PKG}/{PKG}.service.AppBlockAccessibilityService"
@@ -111,10 +118,12 @@ def push_prefs(name, xml):
 
 
 def restart_app():
+    sh("am force-stop com.limitra.cleanscan")
+    sh("input keyevent 3")
     sh(f"am force-stop {PKG}")
     sh(f"settings put secure enabled_accessibility_services {A11Y}")  # force-stop izni düşürür
     sh("settings put secure accessibility_enabled 1")
-    sh(f"am start -n {PKG}/.MainActivity")
+    sh(f"am start -W -n {PKG}/.MainActivity")
     time.sleep(4)
 
 
@@ -147,6 +156,7 @@ def prepare(lang):
     sh(f"appops set {PKG} SYSTEM_ALERT_WINDOW allow")
     sh(f"dumpsys deviceidle whitelist +{PKG}")
     sh(f"pm revoke {PKG} android.permission.POST_NOTIFICATIONS")   # 'koruma aktif değil' bildirimi ekrana düşmesin
+    sh("pm disable-user --user 0 com.google.android.googlequicksearchbox 2>/dev/null || true")
     sh(f"am force-stop {PKG}")
     push_prefs("gardiyan_settings", f"""<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>

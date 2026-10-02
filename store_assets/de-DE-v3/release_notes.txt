@@ -1,0 +1,4 @@
+• Komplett überarbeitetes Design: verfeinerte Typografie, vier Farbthemen in Hell und Dunkel, flüssigere Animationen.
+• Neue Erfolge: Halte deine Serie, um 9 animierte Rahmen von Tag 1 bis Tag 365 freizuschalten.
+• Der Sperrbildschirm passt sich jetzt deinem Design an.
+• Die tägliche Nutzungsliste wird um Mitternacht zuverlässig zurückgesetzt; Limit-Warnungen erscheinen sofort.

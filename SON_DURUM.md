@@ -4,11 +4,25 @@
 - **Proje:** Limitra: AppBlock (Gardiyan) - Android Uygulama Kontrol ve Zaman Sınırı Yöneticisi
 - **Paket Adı:** `com.gardiyan.app`
 - **Yayındaki Sürüm:** Version Code 18 (v1.2.1) - Production `%100`, durum `completed`
-- **Bekleyen Sürüm:** Version Code 20 (v1.3.0, premium arayüz + Başarılar) - Production **taslak**, kullanıcı Console'dan yayınlayacak. Code 19 (v1.2.2) taslağının yerini aldı; düzeltmeleri de içeriyor.
-- **Mağaza Varlıkları:** 11 dil × 18 varlık = 198 görsel Play Store'da canlı ve doğrulanmış
-- **Son Çalışma:** Claude — premium arayüz yenilemesi + Başarılar (çerçeve) bölümü (2 Ekim 2026). v1.3.0 (code 20) olarak GitHub'a push edildi ve Play'e taslak yüklendi.
+- **Bekleyen Sürüm:** Version Code 20 (v1.3.0) taslakta; çeviriler ve mağaza kartları tamamlandığı için Claude tarafından Version Code 21 olarak güncellenip yüklenecek.
+- **Mağaza Varlıkları:** 11 dilin tamamı (en-US, tr-TR, de-DE, es-ES, fr-FR, pt-BR, id, ru-RU, hi-IN, th, ar) v3 formatında (11 × 17 = 187 varlık) yerelde hazır ve `validate_store_v3.py` ile doğrulandı.
+- **Son Çalışma:** Antigravity — 9 dilin uygulama çevirileri, emülatör ekran görüntüleri, mağaza kartları, mağaza açıklamaları ve sürüm notları tamamlandı (2 Ekim 2026).
 
-## Son İşlem — en-US Yüklendi, Çok Dilli Hat Hazır (Claude, 2 Ekim 2026)
+## Son İşlem — 9 Dilin Mağaza Kartları ve Uygulama Çevirileri Tamamlandı (Antigravity, 2 Ekim 2026)
+
+- **Durum:** `ANTIGRAVITY_GOREV.md` içindeki tüm adımlar eksiksiz tamamlandı.
+- **Uygulama İçi Yerelleştirme:** 9 dilde eksik olan 21 anahtar, 54 Stoacı söz ve etiketler tamamlandı (`check_l10n.py` -> 0).
+- **Emülatör Ekranları:** de-DE, es-ES, fr-FR, pt-BR, id, ru-RU, hi-IN, th, ar dillerinde 6'şar kaynak ekran (1080x1920) çekildi.
+- **Mağaza Varlıkları:** 9 dil × 17 varlık (8 telefon, 4 adet 7", 4 adet 10", 1 öne çıkan grafik) üretildi.
+- **Mağaza Metinleri:** 9 dil için `short_description.txt` (<= 80), `full_description.txt` (<= 4000), `release_notes.txt` (<= 500) yazıldı ve doğrulandı. `title.txt`'lere dokunulmadı.
+- **Doğrulama:**
+  - `python tools/check_l10n.py` -> çıkış kodu 0.
+  - `.\gradlew.bat :app:testDebugUnitTest` -> 155/155 test başarılı.
+  - `python tools/validate_store_v3.py` -> 11 dilin tamamı [OK].
+- **Kısıtlamalar:** Kotlin kaynak kodu, `app/build.gradle.kts`, signing key'ler, `play-service-account.json` korunmuştur. `git push` ve Play Console yüklemesi yapılmamıştır.
+- **Sonraki adım:** Claude teslim denetimi → versionCode 21 artırımı, imzalı AAB üretimi, Play Store taslağı, 10 dilin görsel+metin yüklemesi, GitHub push.
+
+## Önceki İşlem — en-US Yüklendi, Çok Dilli Hat Hazır (Claude, 2 Ekim 2026)
 
 - **Durum:** en-US görsel + metin Play'de canlı. tr-TR hazır ama yüklenmedi. Diğer 9 dil için **Antigravity görevi hazır:** `store_assets/store-v3-handoff/ANTIGRAVITY_GOREV.md`.
 - **Ürün bulgusu:** 9 dilde uygulama çevirisi eksik (21 anahtar yok, 8 dilde 54 söz İngilizce). Düzeltme görevin Adım A'sında; sonra sürüm 21 şart. Play'deki code 20 taslağı bu eksiklerle çıkmamalı.

@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">Limitra: AppBlock</string>
     <string name="accessibility_service_description">Limitra, bu izni yalnızca belirlediğiniz dijital sınırları ve uygulama limitlerini uygulamak amacıyla, kısıtlı bir uygulama açıldığında bunu algılamak için kullanır. Tüm veriler cihazınızda yerel olarak işlenir, hiçbir veri toplanmaz veya dışarıya aktarılmaz. Arka plan izlemesi sadece sizin seçtiğiniz engelleme kurallarını yürütmek içindir.</string>
@@ -547,6 +547,7 @@
     <string name="perm_guidance_text">Her izin kartına dokunun, açılan Android ayarları ekranında Limitra\'yı bulun ve gerekli izni etkinleştirin. Ardından bir sonraki adımı tamamlamak için geri dönün.</string>
     <string name="profile_notifications_title">Bildirimler</string>
     <string name="profile_notifications_desc">Limit uyarılarını ve durum bildirimlerini göster.</string>
+    <string name="profile_privacy_choices">Gizlilik Tercihleri</string>
 
     <!-- Başarılar ve ana ekran (UI yenileme) -->
     <string name="achievements_title">Başarılar</string>

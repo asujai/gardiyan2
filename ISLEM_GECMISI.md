@@ -1,3 +1,24 @@
+## [2026-10-02 18:35] - Mağaza kartları ve uygulama çevirileri 9 dile çıkarıldı (v3)
+
+* **Model:** Antigravity
+* **Etkilenen Dosyalar:**
+  - `[YENİ]` `store_assets/{de-DE,es-ES,fr-FR,pt-BR,id,ru-RU,hi-IN,th,ar}-v3/` (her biri: `source/` [6 ekran], `play/phoneScreenshots/` [8 kart], `play/sevenInchScreenshots/` [4 kart], `play/tenInchScreenshots/` [4 kart], `play/featureGraphic/` [1 kart], `release_notes.txt`), `tools/apply_translations.py`, `tools/translations_data.py`, `tools/update_store_copy.py`, `tools/write_metadata_v3.py`
+  - `[GÜNCELLENDİ]` `app/src/main/res/values-{ar,de,es,fr,hi,in,pt,ru,th,tr}/strings.xml`, `app/src/main/res/values/strings.xml`, `metadata/{ar,de-DE,es-ES,fr-FR,hi-IN,id,pt-BR,ru-RU,th}/{short_description,full_description}.txt`, `tools/capture_store_screens.py`, `tools/check_l10n.py`, `tools/store_copy_v3.json`
+* **Yapılan İşlem:** `store_assets/store-v3-handoff/ANTIGRAVITY_GOREV.md` raporundaki tüm adımlar eksiksiz tamamlandı:
+  1. **Adım A (Uygulama İçi Çeviriler):** 9 dilde eksik olan 21 anahtar eklendi, tüm eksik/İngilizce kalan metinler yerelleştirildi. 54 Stoacı söz ve filozof adları (Kiril, Devanagari, Tay, Arapça transliterasyon dahil) çevrildi. `dashboard_add_restriction` başlığı de, es, fr, pt dillerinde tek satıra sığacak şekilde optimize edildi. Tüm XML dosyaları UTF-8 (BOM'suz) formatlandı.
+  2. **Adım B (Derleme & Birim Testleri):** `assembleDebug` ve `testDebugUnitTest` çalıştırıldı. 155/155 test sıfır hatayla geçti.
+  3. **Adım C (Emülatör Ekran Çekimleri):** `capture_store_screens.py` ile 9 hedef dilin tamamı için (de-DE, es-ES, fr-FR, pt-BR, id, ru-RU, hi-IN, th, ar) Pixel API 34 emülatöründe 6'şar kaynak ekran (setup_limit, setup_schedule, trackers, timeline, ach_grid, lock) çekildi. LazyColumn duplicate key çökmesi ve Windows konsol UnicodeEncodeError engellendi. Arapça için RTL aynalama uygulandı.
+  4. **Adım D (Kart Metinleri):** `tools/store_copy_v3.json` içindeki 9 dilin tüm kart başlıkları, alt metinleri, mühür yazıları ve öne çıkan grafik metinleri doğal dille çevrildi; `_status` TODO satırları kaldırıldı.
+  5. **Adım E (Kart Üretimi):** `generate_store_v3.py` ile 9 dilin tamamında 8 telefon kartı (1080x1920), 4 yedi inç kartı (1200x1920), 4 on inç kartı (1600x2560) ve 1 öne çıkan grafik (1024x500) olmak üzere toplam 153 kart hatasız üretildi.
+  6. **Adım F (Mağaza Açıklamaları & Sürüm Notları):** 9 dil için `metadata/<locale>/short_description.txt` (<= 80 karakter) ve `full_description.txt` (<= 4000 karakter, master en-US şablonu, "Limitra App Block" adı ve https://limitra.online bağlantısı) ile `release_notes.txt` (<= 500 karakter) hazırlandı. `title.txt` dosyalarına dokunulmadı.
+  7. **Kısıtlamalara Tam Uyum:** Kotlin kaynak koduna dokunulmadı, `app/build.gradle.kts` (versionCode/versionName) değiştirilmedi, signing key'lere dokunulmadı, `play-service-account.json`'a dokunulmadı, Play Console'a yükleme yapılmadı, `git push` yapılmadı.
+* **Doğrulama:**
+  - `python tools/check_l10n.py` -> Çıkış kodu 0 (10 dilde eksik=0, çevrilmemiş=0).
+  - `.\gradlew.bat :app:testDebugUnitTest` -> BUILD SUCCESSFUL (155/155 test geçti).
+  - `python tools/validate_store_v3.py` -> 11 dilin tamamı `[OK ]` (görsel boyutları, RGB modu, <8MB, dosya sayıları, metin limitleri, mojibake kontrolü).
+* **Bilinen Sorunlar:** Yok.
+* **Sonraki Öneri:** Claude tarafından son teslim denetimi (§11 listesi) → `app/build.gradle.kts` versionCode 21 (v1.3.0) artırımı, imzalı AAB üretimi, Play Store Production taslağına yükleme ve GitHub push.
+
 ## [2026-10-02 17:50] - en-US Play'e yüklendi; çok dilli kart hattı ve Antigravity görev raporu
 
 * **Model:** Claude

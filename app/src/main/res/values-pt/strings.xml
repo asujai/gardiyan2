@@ -1,586 +1,1214 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
+
 <resources>
+
     <string name="accessibility_health_notification_title">A proteção do Limitra não está ativa</string>
+
     <string name="accessibility_health_notification_desc">A permissão de acessibilidade parece estar ativada, mas o serviço de rastreamento não está em execução. Desative e ative novamente a Acessibilidade do Limitra nas configurações do Android.</string>
+
     <string name="accessibility_health_log_reenable">A permissão de acessibilidade parece estar ativada, mas o sinal de atividade do serviço de rastreamento está ausente ou desatualizado. Desative e ative novamente a Acessibilidade do Limitra.</string>
+
     <string name="perm_state_reenable">REATIVAR</string>
+
+    <string name="perm_state_failsafe">BACKUP ATIVO</string>
+
     <string name="perm_accessibility_reenable_desc">A permissão aparece como ativada, mas o serviço de rastreamento está inativo. Desative e ative novamente a Acessibilidade.</string>
+
+    <string name="perm_accessibility_failsafe_desc">O serviço principal de rastreamento está inativo, mas a proteção de backup está aplicando os limites com o Acesso de uso. Desative e ative a Acessibilidade novamente para detecção instantânea.</string>
+
     <string name="accessibility_reenable_warning">A permissão de acessibilidade parece estar ativada, mas o Limitra não consegue confirmar que o serviço de rastreamento está em execução. Desative e ative novamente a Acessibilidade do Limitra.</string>
+
+    <string name="accessibility_failsafe_warning">O rastreamento de acessibilidade precisa ser reativado. A proteção de backup está ativa e ainda aplicará limites, mas a detecção instantânea é reduzida até que a Acessibilidade seja desativada e reativada.</string>
+
     <string name="accessibility_reenable_dialog_desc">A permissão de Acessibilidade do Limitra parece estar ativada, mas o sinal de atividade do serviço está ausente ou desatualizado. Nas configurações do Android, desative a permissão de Acessibilidade do Limitra e ative-a novamente para que o rastreamento de tempo possa reiniciar.</string>
+
     <string name="app_name">Limitra: AppBlock</string>
+
     <string name="accessibility_service_description">O Limitra usa esta permissão apenas para detectar quando um aplicativo restrito é aberto, a fim de aplicar seus limites diários e barreiras digitais. Todos os dados son processados localmente no seu dispositivo; nenhum dado é coletado ou exportado. O rastreamento em segundo plano serve exclusivamente para executar as regras de bloqueio escolhidas.</string>
+
     <string name="notification_channel_service">Serviço de Proteção Limitra</string>
+
     <string name="notification_channel_service_desc">Funciona para manter a proteção ativa e aplicar localmente os limites definidos. Seus dados permanecem totalmente no seu dispositivo.</string>
+
     <string name="overlay_limit_over">Seu limite para hoje foi atingido.</string>
+
     <string name="overlay_protected_by_gardiyan">O Limitra mantém este aplicativo sob proteção.</string>
+
     <string name="overlay_return_to_home">Volte para a tela inicial para continuar.</string>
+
     <string name="overlay_return_home_button">Voltar para a tela inicial</string>
+
     <string name="overlay_explanation">Esta tela é exibida para proteger o limite que você definiu.</string>
+
     <string name="perm_usage_access_title">Acesso de Uso</string>
+
     <string name="perm_usage_access_desc">Necessário para calcular localmente quanto tempo você passa nos aplicativos selecionados e verificar os limites.</string>
+
     <string name="perm_accessibility_title">Serviço de Acessibilidade</string>
+
     <string name="perm_accessibility_desc">Usado para detectar instantaneamente quando um aplicativo restrito é aberto e aplicar os limites digitais definidos.</string>
+
     <string name="perm_overlay_title">Exibir sobre outros aplicativos</string>
+
     <string name="perm_overlay_desc">Necessário para exibir a tela de proteção sobre o aplicativo quando o limite diário for atingido.</string>
+
     <string name="perm_battery_title">Isenção de Otimização de Bateria</string>
+
     <string name="perm_battery_desc">Necessário para que o motor de proteção do Limitra funcione com segurança em segundo plano sem ser encerrado pelo sistema.</string>
+
     <string name="perm_notification_title">Permissão de Notificação</string>
+
     <string name="perm_notification_desc">Usado para exibir uma notificação de status persistente mostrando que o motor de proteção está ativo e funcionando.</string>
+
     <string name="disclosure_overlay_title">Permissão de Tela de Bloqueio Necessária</string>
+
     <string name="disclosure_overlay_desc">O aplicativo Limitra usa a permissão \"Exibir sobre outros aplicativos\" para impedir você de abrir aplicativos bloqueados durante seu tempo de foco e exibir uma \"Tela de Bloqueio\" (escudo). Esta permissão é necessária apenas para mantê-lo na tela de bloqueio.</string>
+
     <string name="disclosure_accessibility_title">Serviço de Acessibilidade Necessário</string>
+
     <string name="disclosure_accessibility_desc">O aplicativo Limitra usa a API do Serviço de Acessibilidade para detectar qual aplicativo você abre durante suas sessões de foco e fechá-lo instantaneamente se um aplicativo bloqueado for aberto.\n\nIMPORTANTE: Este serviço monitora as interações de tela no seu dispositivo, mas não coleta, salva ou compartilha nenhum dos seus dados pessoais ou confidenciais (senhas, mensagens, etc.) com terceiros.</string>
+
     <string name="btn_accept_disclosure">Eu Entendo e Aceito</string>
+
     <string name="btn_deny_disclosure">Recusar</string>
+
     <string name="disclosure_battery_title">Proteção Ininterrompuda</string>
+
     <string name="disclosure_battery_desc">Para garantir que o aplicativo Limitra funcione perfeitamente em segundo plano, suas sessões de foco não sejam interrompidas e os bloqueios não sejam interrompidos pelo sistema, as restrições de otimização da bateria devem ser removidas.</string>
+
     <string name="dashboard_title">LIMITRA</string>
+
     <string name="dashboard_subtitle">Hoje o controle é seu.</string>
+
     <string name="dashboard_summary_title">RESUMO DE HOJE</string>
+
     <string name="dashboard_today_gain">Tempo ganho hoje</string>
+
     <string name="dashboard_no_gain">Sem ganho ainda</string>
+
     <string name="dashboard_no_gain_desc">Os limites são calculados no final do dia</string>
+
     <string name="dashboard_active_protection">Proteção ativa</string>
+
     <string name="dashboard_active_protection_val">%1$d aplicativos</string>
+
     <string name="dashboard_limit_status">Status de limite</string>
+
     <string name="dashboard_no_exceed">Nenhum limite excedido</string>
+
     <string name="dashboard_exceeded_val">%1$d excedido</string>
+
     <string name="dashboard_exceeded_warning">Há aplicativos que excederam o limite. Você pode verificá-los na lista.</string>
-    <string name="dashboard_add_restriction">Adicionar Nova Restrição</string>
+
+    <string name="dashboard_add_restriction">Nova restrição</string>
+
     <string name="dashboard_discipline_summary">Resumo de Disciplina</string>
-    <string name="dashboard_rank">Rank</string>
+
+    <string name="dashboard_rank">Classificação</string>
+
     <string name="dashboard_streak">Série</string>
+
     <string name="dashboard_streak_val">%1$d dias</string>
+
     <string name="dashboard_protected">Protegido</string>
+
     <string name="dashboard_protected_val">%1$d alvos</string>
+
     <string name="level_rookie">Novato</string>
+
     <string name="level_disciplined">Disciplinado</string>
+
     <string name="level_master">Mestre</string>
+
     <string name="duration_saved_hours_mins">%1$dh %2$dm ganhos</string>
+
     <string name="duration_saved_mins">%1$dm ganhos</string>
+
     <string name="hold_to_cancel_shields_down">Proteções desativadas.</string>
+
     <string name="hold_to_cancel_title">IGNORAR SEGURANÇA</string>
+
     <string name="hold_to_cancel_instruction">Mantenha o botão pressionado por 5 minutos para remover todas as restrições.</string>
+
     <string name="hold_to_cancel_penalty">Como penalidade, o nível será rebaixado e a medalha vermelha será aplicada.</string>
+
     <string name="protected_apps_title">Controle de Limites</string>
+
     <string name="protected_apps_desc">Acompanhe os aplicativos para os quais definiu limites de tempo.</string>
+
     <string name="protected_apps_empty">Nenhum aplicativo protegido ainda.</string>
+
     <string name="protected_apps_empty_desc">Use o cartão \"Adicionar Nova Restrição\" na Tela Inicial para adicionar seu primeiro aplicativo.</string>
+
     <string name="protected_apps_mgmt">GERENCIAMENTO DE RESTRIÇÕES</string>
+
     <string name="protected_apps_remaining_time">Tempo Restante</string>
+
     <string name="protected_apps_limit_reached">Limite Atingido</string>
+
     <string name="protected_apps_discipline_process">Processo de Equilíbrio</string>
+
     <string name="protected_apps_hours">%1$d horas</string>
+
     <string name="protected_apps_minutes">%1$d minutos</string>
+
     <string name="protected_apps_hour">%1$d hora</string>
+
     <string name="protected_apps_minute">%1$d minuto</string>
+
     <string name="protected_apps_daily_limit">Limite Diário</string>
+
     <string name="protected_apps_active_days">Dias Ativos</string>
+
     <string name="protected_apps_limit_error">Você não pode aumentar o limite diário acima da duração atual.</string>
+
     <string name="protected_apps_save_success">Alterações salvas com sucesso.</string>
+
     <string name="protected_apps_save_btn">SALVAR ALTERAÇÕES</string>
+
     <string name="protected_apps_settings">CONFIGURAÇÕES DE PROTEÇÃO</string>
+
     <string name="protected_apps_remove_btn">REMOVER RESTRIÇÃO (SEGURAR 5m)</string>
+
     <string name="protected_apps_removed">✓ REMOVIDO</string>
+
     <string name="protected_apps_dont_release">NÃO SOLTE · %1$ds</string>
+
     <string name="protected_apps_remove_instruction">Mantenha o botão pressionado por 5 minutos para remover a restrição deste aplicativo.</string>
+
     <string name="setup_target_test_10s">Teste (10s)</string>
-    <string name="setup_target_15m">15 Min</string>
-    <string name="setup_target_30m">30 Min</string>
+
+    <string name="setup_target_15m">15 min</string>
+
+    <string name="setup_target_30m">30 min</string>
+
     <string name="setup_target_1h">1 Hora</string>
+
     <string name="setup_target_2h">2 Horas</string>
+
     <string name="setup_target_add">ADICIONAR RESTRIÇÃO</string>
+
+    <string name="setup_target_restriction_name">NOME DA RESTRIÇÃO</string>
+
+    <string name="setup_target_restriction_name_optional">NOME DA RESTRIÇÃO (OPCIONAL)</string>
+
+    <string name="setup_target_restriction_name_placeholder">ex.: Redes sociais à noite</string>
+
+    <string name="setup_target_error_no_name">Insira um nome para a restrição</string>
+
+    <string name="protected_apps_time_left">restam %1$s</string>
+
+    <string name="protected_apps_usage_progress">%1$d%% restante</string>
+
     <string name="setup_target_select_app_title">SELECIONAR APP</string>
+
     <string name="setup_target_select_app_placeholder">Selecione aplicativos para proteger…</string>
+
     <string name="setup_target_daily_limit">LIMITE DE USO DIÁRIO</string>
+
     <string name="setup_target_custom_limit">Insira o limite de minutos personalizado</string>
+
     <string name="setup_target_days">DIAS DE PROTEÇÃO</string>
+
+    <string name="setup_target_active_window">INTERVALO DE TEMPO ATIVO</string>
+
+    <string name="setup_target_active_window_desc">Restrinja os apps selecionados apenas durante horários específicos.</string>
+
+    <string name="setup_target_active_window_toggle">Ativar horários agendados</string>
+
+    <string name="setup_target_start_time">INÍCIO</string>
+
+    <string name="setup_target_end_time">FIM</string>
+
+    <string name="protected_group_apps">APPS PROTEGIDOS</string>
+
+    <string name="protected_group_app_count">%1 aplicativos</string>
+
+    <string name="protected_group_active">Ativo</string>
+
+    <string name="protected_group_scheduled">Agendado</string>
+
+    <string name="protected_group_all_day">Dia todo</string>
+
+    <string name="protected_group_every_day">Todos os dias</string>
+
     <string name="setup_target_error_no_app">Selecione pelo menos um aplicativo primeiro</string>
+
     <string name="setup_target_error_no_day">Por favor, selecione pelo menos um dia</string>
+
     <string name="setup_target_error_zero_duration">Selecione um limite maior que 0 minutos</string>
+
     <string name="setup_target_toast_test_start">Teste rápido iniciado para %1$d aplicativos!</string>
+
     <string name="setup_target_toast_added">%1$d aplicativos adicionados às restrições</string>
+
     <string name="setup_target_btn_test">INICIAR TESTE RÁPIDO (10s)</string>
+
     <string name="setup_target_btn_activate">ATIVAR RESTRIÇÕES</string>
+
     <string name="setup_target_btn_complete">CONCLUIR E ATIVAR PROTEÇÃO</string>
+
     <string name="setup_target_search_placeholder">Buscar nome do aplicativo ou pacote…</string>
+
     <string name="setup_target_no_match">Nenhum Aplicativo Correspondente</string>
+
     <string name="setup_target_no_match_desc">Nenhum aplicativo instalado correspondente a \"%1$s\" foi encontrado.</string>
+
     <string name="setup_target_confirm_selection">CONFIRMAR SELEÇÃO (%1$d APLICATIVOS)</string>
+
     <string name="profile_support">Suporte e Feedback</string>
+
     <string name="profile_support_desc">Relatar um problema ou sugerir um recurso.</string>
+
     <string name="profile_browser_error">Navegador de internet não encontrado.</string>
+
     <string name="profile_privacy">Política de Privacidade</string>
+
     <string name="profile_privacy_desc">Revise as regras de uso de dados e a política de privacidade.</string>
+
     <string name="profile_clear_data">Limpar Meus Dados</string>
+
     <string name="profile_clear_data_desc">Redefinir histórico de restrições, limites de tempo e registros.</string>
+
     <string name="profile_clear_confirm_title">Limpar dados?</string>
+
     <string name="profile_clear_confirm_desc">O histórico de restrições, estatísticas de uso e preferências do aplicativo serão limpos. Esta ação não pode ser desfeita.</string>
+
     <string name="profile_clear_success">Dados limpos.</string>
+
     <string name="profile_data_usage_privacy">Uso de Dados e Privacidade</string>
+
     <string name="profile_data_usage_desc1">• O Limitra usa o acesso de uso para calcular quanto tempo você passa nos aplicativos selecionados.\n\n</string>
+
     <string name="profile_data_usage_desc2">• As informações do aplicativo selecionado são usadas para mostrar a tela de bloqueio (via acessibilidade e sobreposição) quando o limite de tempo é atingido.\n\n</string>
+
     <string name="profile_data_usage_desc3">• Todos os seus dados são armazenados e processados localmente no seu dispositivo. Não são enviados para um servidor nem compartilhados externamente.\n\n</string>
+
     <string name="profile_data_usage_desc4">• Você pode limpar todo o seu histórico a qualquer momento usando a opção \'Limpar Meus Dados\'.</string>
+
     <string name="profile_app_name">Nome do Aplicativo:</string>
+
     <string name="profile_version">Versão (Version Name):</string>
+
     <string name="profile_version_code">Código de Versão:</string>
+
     <string name="profile_android_version">Versão do Android:</string>
+
     <string name="profile_developer_contact">Contato do Desenvolvedor:</string>
+
     <string name="profile_timeline">LINHA DO TEMPO</string>
+
     <string name="profile_level_label">NÍVEL %1$d</string>
+
     <string name="profile_today_status">ESTADO DE HOJE</string>
+
     <string name="profile_streak_label">SÉRIE CONSECUTIVA</string>
+
     <string name="profile_streak_days">%1$d Dias</string>
+
     <string name="profile_total_success">SUCESSO TOTAL</string>
+
     <string name="profile_total_success_days">%1$d Sucessos</string>
+
     <string name="profile_protected_target">ALVO PROTEGIDO</string>
+
     <string name="profile_protected_apps">%1$d Aplicativos</string>
+
     <string name="profile_stat_details">DETALHES DAS ESTATÍSTICAS</string>
+
     <string name="profile_last_success">Último Dia de Sucesso:</string>
+
     <string name="profile_last_violation">Última Violação / Bloqueio:</string>
+
     <string name="profile_theme_settings">Configurações do Tema</string>
+
     <string name="profile_theme_view_mode">MODO DE VISUALIZAÇÃO</string>
+
     <string name="profile_theme_system_default">Padrão do sistema</string>
+
     <string name="profile_theme_light">Tema claro</string>
+
     <string name="profile_theme_dark">Tema escuro</string>
+
     <string name="profile_theme_color">TEMA DE COR</string>
+
     <string name="profile_theme_blue">Tema Azul</string>
+
     <string name="profile_theme_bw">Preto &amp; Branco</string>
+
     <string name="profile_theme_red">Tema Vermelho</string>
+
     <string name="profile_theme_premium">Escuro Premium</string>
+
     <string name="profile_mail_subject">Limitra Suporte e Sugestão</string>
+
     <string name="profile_mail_body">Olá equipe Limitra,\n\nMeu problema / sugestão:</string>
+
     <string name="profile_mail_error">Nenhum aplicativo de e-mail encontrado.</string>
+
     <string name="profile_timeline_empty">Nenhum registro na linha do tempo ainda.</string>
+
     <string name="profile_timeline_filter_empty">Nenhum registro encontrado para este filtro.</string>
+
     <string name="perm_status">Status das Permissões</string>
+
     <string name="perm_btn_grant">Conceder</string>
+
     <string name="log_filter_all">Tudo</string>
+
     <string name="log_filter_restrictions">Alterações de Restrição</string>
+
     <string name="log_filter_locks">Eventos de Bloqueio / Tela</string>
+
     <string name="log_filter_bypasses">Tentativas de Ignorar / Excluir</string>
+
     <string name="keep_alive_notification_title">Aviso de Proteção Ininterrompuda</string>
+
     <string name="keep_alive_notification_desc">Remova as restrições de otimização da bateria para manter a proteção ativa.</string>
+
     <string name="keep_alive_notification_long">O motor de proteção pode ter sido interrompido em segundo plano porque a isenção de otimização da bateria não foi concedida.</string>
+
     <string name="overlay_restricted_app">Aplicativo Restrito</string>
+
     <string name="overlay_active">Limitra ativo</string>
+
     <string name="overlay_desc">Os limites do seu aplicativo selecionado estão protegidos.</string>
+
     <string name="log_type_restriction_added">Restrição Adicionada</string>
+
     <string name="log_type_restriction_removed">Restrição Removida</string>
+
     <string name="log_type_restriction_deleted">Restrição Excluída</string>
+
     <string name="log_type_test_started">Teste Rápido Iniciado</string>
+
     <string name="log_type_counter_reset">Restrição Redefinida</string>
+
     <string name="log_type_all_cleared">Todas as Restrições Removidas</string>
+
     <string name="log_type_violation">Violação de Restrição</string>
+
     <string name="log_type_day_success">Dia Concluído com Sucesso</string>
+
     <string name="log_type_limit_changed">Limite Alterado</string>
+
     <string name="log_type_days_changed">Dias Ativos Alterados</string>
+
     <string name="log_type_app_locked">Aplicativo Bloqueado</string>
+
     <string name="log_type_engine_started">Proteção Iniciada</string>
+
     <string name="log_type_engine_restarted">Proteção Reiniciada</string>
+
     <string name="log_type_engine_stopped">Proteção Interrompida</string>
+
     <string name="log_type_engine_fast">Verificação de Proteção Acelerada</string>
+
     <string name="log_type_engine_sync">Proteção Sincronizada</string>
+
     <string name="log_type_app_entry">Entrada de Aplicativo Detectada</string>
+
     <string name="log_type_fallback_check">Verificação do Motor de Respaldo</string>
+
     <string name="log_type_session_started">Sessão Iniciada</string>
+
     <string name="log_type_session_updated">Sessão Atualizada</string>
+
     <string name="log_type_session_closed">Sessão Encerrada</string>
+
     <string name="log_type_stale_cleaned">Sessão Obsoleta Limpa</string>
+
     <string name="log_type_usage_processed">Duração do Uso Processada</string>
+
     <string name="log_type_critical_start">Ação Crítica Iniciada</string>
+
     <string name="log_type_critical_complete">Ação Crítica Concluída</string>
+
     <string name="log_type_system_permission">Alteração de Permissão do Sistema</string>
+
     <string name="log_desc_restriction_added">Restrição de limite diário adicionada para %1$s.</string>
+
     <string name="log_desc_restriction_removed">A restrição de %1$s foi removida.</string>
+
     <string name="log_desc_restriction_deleted">A restrição de %1$s foi totalmente excluída.</string>
+
     <string name="log_desc_test_started">Teste rápido de proteção iniciado para %1$s.</string>
+
     <string name="log_desc_counter_reset">Contador diário redefinido para %1$s.</string>
+
     <string name="log_desc_all_cleared">Todas as restrições foram removidas segurando por 5 minutos.</string>
+
     <string name="log_desc_violation">A tela de bloqueio foi aberta porque o limite de restrição de %1$s foi excedido.</string>
+
     <string name="log_desc_day_success">O objetivo de hoje foi concluído com sucesso. Seu rank foi mantido!</string>
+
     <string name="log_desc_limit_changed">O limite diário de %1$s foi atualizado.</string>
+
     <string name="log_desc_days_changed">Os dias ativos de %1$s foram atualizados.</string>
+
     <string name="log_desc_app_locked">%1$s bloqueado, tela de bloqueio exibida.</string>
+
     <string name="log_desc_engine_started">O motor de proteção Limitra foi iniciado com sucesso.</string>
+
     <string name="log_desc_engine_restarted">O motor de proteção Limitra foi reiniciado.</string>
+
     <string name="log_desc_engine_stopped">O motor de proteção Limitra foi interrompido.</string>
+
     <string name="log_desc_engine_fast">Estado suspeito detectado, verificação do motor de proteção acelerada.</string>
+
     <string name="log_desc_engine_sync">Estado del motor de proteção sincronizado. Retornado ao modo normal.</string>
+
     <string name="log_desc_app_entry">Entrada do aplicativo %1$s detectada pelo serviço de acessibilidade.</string>
+
     <string name="log_desc_fallback_check">Motor de verificação de backup: verificação em primeiro plano concluída para %1$s.</string>
+
     <string name="log_desc_session_started">Sessão de proteção %1$s iniciada.</string>
+
     <string name="log_desc_session_updated">Sessão de proteção %1$s atualizada.</string>
+
     <string name="log_desc_session_closed">Sessão de proteção %1$s encerrada.</string>
+
     <string name="log_desc_stale_cleaned">Sessão obsoleta %1$s limpa.</string>
+
     <string name="log_desc_usage_processed">Duração de uso processada para %1$s.</string>
+
     <string name="log_desc_critical_start">A exclusão de %1$s começou segurando.</string>
+
     <string name="log_desc_critical_complete">Exclusão de %1$s confirmada.</string>
+
     <string name="disclosure_usage_title">Acesso de uso necessário</string>
+
     <string name="disclosure_usage_desc">O Limitra precisa de acesso de uso para calcular quanto tempo você gasta nos aplicativos selecionados.</string>
+
     <string name="perm_title_header">PERMISSÕES DO SISTEMA</string>
+
     <string name="perm_desc_header">Ative as seguintes permissões para que o Limitra funcione corretamente.</string>
+
     <string name="btn_start_protection">INICIAR</string>
+
     <string name="btn_cancel">Cancelar</string>
+
     <string name="perm_state_active">ATIVO</string>
+
     <string name="perm_state_grant">CONCEDER PERMISSÃO</string>
+
     <string name="timeline_today">Hoje</string>
+
     <string name="timeline_yesterday">Ontem</string>
+
     <string name="timeline_this_week">Esta Semana</string>
+
     <string name="timeline_older">Mais Antigo</string>
+
     <string name="today_status_no_restrictions">Sem Restrições</string>
+
     <string name="today_status_violated">Violado</string>
+
     <string name="today_status_active">Ativo</string>
+
     <string name="no_records">Sem registros</string>
+
     <string name="motivation_red_badge">Cada obstáculo é uma oportunidade para fortalecer a sua vontade. Mantenha-se comprometido com a reparação do escudo!</string>
+
     <string name="motivation_violated">Você caiu hoje, mas não desista. Amanhã é um novo dia, reúna as suas forças novamente.</string>
+
     <string name="motivation_level_master">Parabéns Mestre! A sua força de vontade digital está no nível mais alto. Você inspira os novatos. 👑</string>
+
     <string name="motivation_level_disciplined">Você está indo muito bem! A sua disciplina está dando frutos. Quase um Mestre. 🥈</string>
+
     <string name="motivation_level_rookie">Primeiro passo dado! À medida que atinge as metas diárias, a sua proteção ficará mais forte. 🛡️</string>
+
     <string name="redemption_progress_label">Progresso de Reparação do Escudo</string>
+
     <string name="redemption_progress_text">Reparação: %1$d/%2$d Dias</string>
+
     <string name="rank_progress_label">Progresso de Rango</string>
+
     <string name="rank_progress_text_rookie">Série: %1$d/3 Dias</string>
+
     <string name="rank_progress_text_disciplined">Série: %1$d/7 Dias</string>
+
     <string name="rank_progress_max">Rango Máximo</string>
+
     <string name="profile_settings">CONFIGURAÇÕES</string>
+
     <string name="profile_title">MEU PROGRESSO</string>
+
     <string name="profile_about_title">SOBRE</string>
+
     <string name="profile_about_desc">Limitra é um aplicativo de bem-estar digital que ajuda você a definir limites saudáveis para os aplicativos selecionados.</string>
+
     <string name="btn_close">Fechar</string>
+
     <string name="btn_clean">Limpar</string>
+
     <string name="profile_details">Detalhes</string>
+
     <string name="filter_limit_reached">Limite atingido</string>
+
     <string name="status_protected">Protegido</string>
+
     <string name="day_mon">Seg</string>
+
     <string name="day_tue">Ter</string>
+
     <string name="day_wed">Qua</string>
+
     <string name="day_thu">Qui</string>
+
     <string name="day_fri">Sex</string>
+
     <string name="day_sat">Sáb</string>
+
     <string name="day_sun">Dom</string>
+
     <string name="profile_language_settings">Configurações de idioma</string>
+
     <string name="nav_home">Início</string>
+
     <string name="nav_protected">Protegido</string>
+
     <string name="nav_profile">Progresso</string>
+
     <string name="usage_ranking_title">Ranking de uso</string>
+
     <string name="usage_ranking_desc">Acompanhe os aplicativos em que você passa mais tempo.</string>
+
     <string name="usage_see_all">Ver tudo</string>
+
     <string name="usage_limit_prefix">Limite: %1$s</string>
+
     <string name="usage_limit_not_set">Nenhum limite definido</string>
+
     <string name="usage_limit_exceeded">Limite excedido</string>
+
     <string name="usage_empty_title">Ainda não há dados de uso hoje.</string>
+
     <string name="usage_empty_desc">Seu ranking aparecerá aqui conforme você usa os aplicativos.</string>
+
     <string name="period_daily">Diário</string>
+
     <string name="period_weekly">Semanal</string>
+
     <string name="period_monthly">Mensal</string>
+
     <string name="period_average">Média</string>
+
     <string name="unit_hour">h</string>
+
     <string name="unit_minute">min</string>
+
     <string name="log_desc_system_permission">O status das permissões do sistema foi alterado.</string>
+
     <string name="profile_terms">Termos de Uso</string>
+
     <string name="profile_terms_desc">Consulte os termos de uso e o contrato do usuário.</string>
-    <string name="perm_privacy_msg">Your privacy is protected. Limitra does not share your usage data with third parties or send it to the internet; data is processed locally only on your device.</string>
+
+    <string name="perm_privacy_msg">Sua privacidade está protegida. O Limitra não compartilha seus dados de uso com terceiros nem os envia para a internet; os dados são processados apenas localmente no seu dispositivo.</string>
+
     <string name="settings_quote_title">Citação da tela de proteção</string>
+
     <string name="settings_quote_dialog_title">Configurações de citação personalizada</string>
+
     <string name="settings_quote_dialog_desc">Adicione sua própria citação filosófica ou motivacional para exibir quando o limite de uso de um aplicativo for atingido.</string>
+
     <string name="settings_quote_text_label">Texto da citação</string>
+
     <string name="settings_quote_author_label">Autor da citação (opcional)</string>
+
     <string name="settings_quote_pref_label">Preferência de exibição</string>
+
     <string name="settings_quote_pref_always">Sempre exibir minha citação</string>
+
     <string name="settings_quote_pref_mix">Misturar minha citação com as citações padrão</string>
+
     <string name="settings_quote_empty_error">O texto da citação não pode ficar vazio.</string>
-    <string name="btn_save">Save</string>
-    <string name="btn_delete">Delete</string>
-    <string name="quote_text_1">We cannot say that the life given to us is short, only that we waste most of it.</string>
+
+    <string name="btn_save">Salvar</string>
+
+    <string name="btn_delete">Excluir</string>
+
+    <string name="quote_text_1">Não podemos dizer que a vida que nos é dada seja curta, mas sim que desperdiçamos a maior parte dela.</string>
+
     <string name="quote_author_1">Seneca</string>
-    <string name="quote_text_2">People are extremely stingy in protecting their personal property; yet when it comes to wasting time, they are extremely wasteful of the one thing in which it is right to be stingy.</string>
+
+    <string name="quote_text_2">As pessoas são extremamente mesquinhas ao proteger suas propriedades; contudo, quando se trata de perder tempo, são esbanjadoras da única coisa na qual seria justo ser avarento.</string>
+
     <string name="quote_author_2">Seneca</string>
-    <string name="quote_text_3">If you want to find peace, do less. Or rather, do only what is necessary. Ask yourself at every moment: \'Is this really necessary?\'</string>
+
+    <string name="quote_text_3">Se você quer encontrar paz, faça menos. Ou melhor, faça apenas o que é necessário. Pergunte-se a cada momento: \'Isso é realmente necessário?\'</string>
+
     <string name="quote_author_3">Marcus Aurelius</string>
-    <string name="quote_text_4">What a person has in himself, what accompanies him when he is alone, is far more important than what others think of him.</string>
+
+    <string name="quote_text_4">O que uma pessoa tem em si mesma, o que a acompanha quando está sozinha, é muito mais importante do que aquilo que os outros pensam dela.</string>
+
     <string name="quote_author_4">Arthur Schopenhauer</string>
-    <string name="quote_text_5">Running from place to place and constantly distracting your attention is a sign of a diseased mind.</string>
+
+    <string name="quote_text_5">Correr de um lugar para outro e distrair constantemente sua atenção é sinal de uma mente doente.</string>
+
     <string name="quote_author_5">Seneca</string>
-    <string name="quote_text_6">My experience is what I agree to attend to.</string>
+
+    <string name="quote_text_6">Minha experiência é aquilo a que concordo em prestar atenção.</string>
+
     <string name="quote_author_6">William James</string>
-    <string name="quote_text_7">Your soul is dyed by the color of your thoughts.</string>
+
+    <string name="quote_text_7">A alma é tingida pela cor dos seus pensamentos.</string>
+
     <string name="quote_author_7">Marcus Aurelius</string>
-    <string name="quote_text_8">Of all ridiculous things, the most ridiculous seems to me to be busy—to be a man who is always busy with work and hustle.</string>
+
+    <string name="quote_text_8">De todas as coisas ridículas, a mais ridícula me parece ser ocupado: ser um homem que está sempre ocupado com trabalho e pressa.</string>
+
     <string name="quote_author_8">Søren Kierkegaard</string>
-    <string name="quote_text_9">Nothing we have is ours; nature has only entrusted us with this slippery and volatile thing we call time.</string>
+
+    <string name="quote_text_9">Nada do que temos é nosso; a natureza apenas nos confiou esta coisa fugidia e volátil que chamamos de tempo.</string>
+
     <string name="quote_author_9">Seneca</string>
-    <string name="quote_text_10">All sins are attempts to fill the voids within us.</string>
+
+    <string name="quote_text_10">Todos os pecados são tentativas de preencher os vazios dentro de nós.</string>
+
     <string name="quote_author_10">Simone Weil</string>
-    <string name="quote_text_11">He who has a \'why\' to live for can bear almost any \'how\'.</string>
+
+    <string name="quote_text_11">Aquele que tem um \'porquê\' para viver pode suportar quase qualquer \'como\'.</string>
+
     <string name="quote_author_11">Friedrich Nietzsche</string>
-    <string name="quote_text_12">The value of your attention to any action should be in direct proportion to the importance of that action.</string>
+
+    <string name="quote_text_12">O valor da sua atenção a qualquer ação deve ser diretamente proporcional à importância dessa ação.</string>
+
     <string name="quote_author_12">Marcus Aurelius</string>
-    <string name="quote_text_13">The unhappy man is always absent from himself; he can never exist within himself, he is always missing in the moment.</string>
+
+    <string name="quote_text_13">O homem infeliz está sempre ausente de si mesmo; ele nunca pode existir dentro de si, sempre falta no momento presente.</string>
+
     <string name="quote_author_13">Søren Kierkegaard</string>
-    <string name="quote_text_14">The life of the busy man is filled with everything but living.</string>
+
+    <string name="quote_text_14">A vida do homem ocupado está cheia de tudo, exceto de viver.</string>
+
     <string name="quote_author_14">Seneca</string>
-    <string name="quote_text_15">A man can be himself only so long as he is alone; if he does not love solitude, he will not love freedom; for it is only when he is alone that he is really free.</string>
+
+    <string name="quote_text_15">Quanto tempo ganha aquele que não olha para o que o vizinho diz, faz ou pensa, mas apenas para o que ele mesmo faz.</string>
+
     <string name="quote_author_15">Arthur Schopenhauer</string>
-    <string name="quote_text_16">You live as if you were destined to live forever, no thought of your mortality ever enters your head; you pay no attention to how much time you waste.</string>
+
+    <string name="quote_text_16">Primeiro diga a si mesmo o que você gostaria de ser; e então faça o que tem de fazer.</string>
+
     <string name="quote_author_16">Seneca</string>
-    <string name="quote_text_17">Things outside our minds do not affect us directly. It is how our mind judges those things that shapes our feelings.</string>
+
+    <string name="quote_text_17">Não é que tenhamos pouco tempo para viver, mas sim que desperdiçamos muito dele.</string>
+
     <string name="quote_author_17">Epictetus</string>
-    <string name="quote_text_18">We are what we repeatedly do. Excellence, then, is not an act, but a habit.</string>
+
+    <string name="quote_text_18">Você tem poder sobre a sua mente — não sobre os acontecimentos externos. Perceba isso e encontrará força.</string>
+
     <string name="quote_author_18">Will Durant</string>
-    <string name="quote_text_19">Every habit and faculty is confirmed and strengthened by the corresponding actions; walking by walking, running by running.</string>
+
+    <string name="quote_text_19">Todo hábito e faculdade se confirma e se fortalece pelas ações correspondentes; andar andando, correr correndo.</string>
+
     <string name="quote_author_19">Epictetus</string>
-    <string name="quote_text_20">If you do not wish to do something, refrain from doing it and learn to make something else a habit instead.</string>
+
+    <string name="quote_text_20">Se você não deseja fazer algo, abstenha-se disso e aprenda a criar outro hábito em seu lugar.</string>
+
     <string name="quote_author_20">Epictetus</string>
-    <string name="quote_text_21">We are spinning our own fates, good or evil, never to be undone. Every smallest stroke of virtue or of vice leaves its never-so-little scar on our nerve cells.</string>
+
+    <string name="quote_text_21">Estamos tecendo nosso próprio destino, bom ou mau, para nunca ser desfeito. O menor traço de virtude ou vício deixa uma marca permanente em nossas células nervosas.</string>
+
     <string name="quote_author_21">William James</string>
-    <string name="quote_text_22">The faculty of voluntarily bringing back a wandering attention over and over again is the very root of judgment, character, and will.</string>
+
+    <string name="quote_text_22">A faculdade de trazer voluntariamente de volta a atenção dispersa várias e várias vezes é a própria raiz do discernimento, do caráter e da vontade.</string>
+
     <string name="quote_author_22">William James</string>
-    <string name="quote_text_23">Do every day a very little but difficult thing you do not want to do, simply for the sake of training your will; so that when a moment of great difficulty approaches, you are not caught unprepared.</string>
+
+    <string name="quote_text_23">Estar em toda parte é não estar em lugar nenhum.</string>
+
     <string name="quote_author_23">William James</string>
-    <string name="quote_text_24">No man is free who is not master of himself.</string>
+
+    <string name="quote_text_24">Não perca mais tempo discutindo sobre o que um homem bom deve ser. Seja um.</string>
+
     <string name="quote_author_24">Epictetus</string>
-    <string name="quote_text_25">We cannot cure our mistakes by sheer willpower and gritting our teeth, but only by giving them our full attention.</string>
+
+    <string name="quote_text_25">Nenhuma grande coisa é criada de repente, assim como um cacho de uvas ou um figo.</string>
+
     <string name="quote_author_25">Simone Weil</string>
-    <string name="quote_text_26">Virtues are formed in man only by actually practicing them.</string>
+
+    <string name="quote_text_26">Comece a viver agora mesmo e conte cada dia como uma vida separada.</string>
+
     <string name="quote_author_26">Aristotle</string>
-    <string name="quote_text_27">When you are captivated by the allure of a promised pleasure, guard yourself from being swept away by it.</string>
+
+    <string name="quote_text_27">Comprar livros seria uma boa coisa se também comprássemos o tempo para lê-los; mas em geral a compra de livros é confundida com a apropriação de seu conteúdo.</string>
+
     <string name="quote_author_27">Epictetus</string>
-    <string name="quote_text_28">It is surprising to see how quickly an unfed desire dies.</string>
+
+    <string name="quote_text_28">É surpreendente ver como um desejo não alimentado morre rapidamente.</string>
+
     <string name="quote_author_28">William James</string>
-    <string name="quote_text_29">It is not of small importance whether we form habits of one kind or another from our youth; it is very important, or rather, all-important.</string>
+
+    <string name="quote_text_29">Não é de pouca importância formar hábitos de um tipo ou de outro desde a juventude; é muito importante, ou melhor, de suprema importância.</string>
+
     <string name="quote_author_29">Aristotle</string>
-    <string name="quote_text_30">Freedom is secured not by the fulfilling of desires, but by the removal of desire.</string>
+
+    <string name="quote_text_30">A liberdade é conquistada não pela satisfação dos desejos, mas pela eliminação do desejo.</string>
+
     <string name="quote_author_30">Epictetus</string>
-    <string name="quote_text_31">Addiction is the greatest producer of illusions; only those who can rid themselves of addictions can reach reality.</string>
+
+    <string name="quote_text_31">O vício é o maior produtor de ilusões; somente aqueles que conseguem se livrar dos vícios podem alcançar a realidade.</string>
+
     <string name="quote_author_31">Simone Weil</string>
-    <string name="quote_text_32">Concentrate every minute like a Roman—on doing the job in front of you with perfect and simple dignity, affection, and justice; free yourself from all other distractions.</string>
+
+    <string name="quote_text_32">Concentre-se a cada minuto como um romano em fazer a tarefa diante de você com dignidade simples, afeto e justiça; liberte-se de todas as outras distrações.</string>
+
     <string name="quote_author_32">Marcus Aurelius</string>
-    <string name="quote_text_33">People who labor all their lives but have no purpose to direct all their thoughts and impulses waste their time, even if they work hard.</string>
+
+    <string name="quote_text_33">As pessoas que trabalham a vida toda, mas não têm um propósito para orientar seus pensamentos e impulsos, perdem seu tempo, mesmo que trabalhem duro.</string>
+
     <string name="quote_author_33">Marcus Aurelius</string>
-    <string name="quote_text_34">By abstaining from pleasures we become temperate, and once we have become temperate we are most able to abstain from them.</string>
+
+    <string name="quote_text_34">Ao nos abstetermos dos prazeres nos tornamos moderados, e uma vez moderados somos mais capazes de nos abster deles.</string>
+
     <string name="quote_author_34">Aristotle</string>
-    <string name="quote_text_35">The body must be treated more rigorously, so that it does not disobey the mind.</string>
+
+    <string name="quote_text_35">O corpo deve ser tratado com rigor para que não desobedeça à mente.</string>
+
     <string name="quote_author_35">Seneca</string>
-    <string name="quote_text_36">The hours are flowing by, and they are all charged to our account.</string>
+
+    <string name="quote_text_36">As horas estão escorrendo, e todas são debitadas de nossa conta.</string>
+
     <string name="quote_author_36">Martial</string>
-    <string name="quote_text_37">How much longer will you delay demanding the best for yourself and refusing to break the rules of right reason?</string>
+
+    <string name="quote_text_37">Por quanto tempo mais você adiará a exigência do melhor de si mesmo e o respeito à reta razão?</string>
+
     <string name="quote_author_37">Epictetus</string>
-    <string name="quote_text_38">Now is the time to accept everything that is best for you as a law that you will never break.</string>
+
+    <string name="quote_text_38">Agora é a hora de aceitar tudo o que é melhor para você como uma lei inviolável.</string>
+
     <string name="quote_author_38">Epictetus</string>
-    <string name="quote_text_39">While we waste our time hesitating and procrastinating, life goes on.</string>
+
+    <string name="quote_text_39">Enquanto hesitamos e adiamos, a vida vai passando.</string>
+
     <string name="quote_author_39">Seneca</string>
-    <string name="quote_text_40">Do not say \'I will live tomorrow\'; tomorrow\'s life is too late; live today.</string>
+
+    <string name="quote_text_40">Não diga: \'Viverei amanhã\'; viver amanhã é tarde demais; viva hoje.</string>
+
     <string name="quote_author_40">Martial</string>
-    <string name="quote_text_41">Remember that there is a limit to the time allotted to you to free yourself, and if you do not use it, it will fly away, never to return.</string>
+
+    <string name="quote_text_41">Lembre-se de que há um limite para o tempo que lhe foi concedido para se libertar; se você não o usar, ele se esvairá para nunca mais voltar.</string>
+
     <string name="quote_author_41">Marcus Aurelius</string>
-    <string name="quote_text_42">No one can build you the bridge upon which you must cross the river of life, except you yourself alone.</string>
+
+    <string name="quote_text_42">Ninguém pode construir a ponte pela qual você deve atravessar o rio da vida, exceto você mesmo, sozinho.</string>
+
     <string name="quote_author_42">Friedrich Nietzsche</string>
-    <string name="quote_text_43">We are responsible to ourselves only for our own existence; therefore, we want to be the real pilots of this existence, we cannot let it resemble a thoughtless accident.</string>
+
+    <string name="quote_text_43">Somos responsáveis por nossa existência apenas perante nós mesmos; portanto, queremos ser os verdadeiros comandantes desta vida, sem permitir que pareça um acidente irrefletido.</string>
+
     <string name="quote_author_43">Friedrich Nietzsche</string>
-    <string name="quote_text_44">Think of yourself as dead. You have lived your life. Now take what\'s left and live it properly.</string>
+
+    <string name="quote_text_44">Se você quer progredir, contente-se em ser considerado tolo e insensato.</string>
+
     <string name="quote_author_44">Marcus Aurelius</string>
-    <string name="quote_text_45">The greatest obstacle to living is expectancy, which hangs upon tomorrow and wastes today. You are arranging what lies in Fortune\'s control, and abandoning what lies in yours.</string>
+
+    <string name="quote_text_45">É necessário muito pouco para se ter uma vida feliz; tudo está dentro de você, na sua maneira de pensar.</string>
+
     <string name="quote_author_45">Seneca</string>
-    <string name="quote_text_46">Whenever you say, \'I will let it go today, I will pay attention tomorrow,\' know that you have said this: \'Today I will be shameless, impudent, and base; today I will be angry and a slave to others.\' See what evil you present to yourself!</string>
+
+    <string name="quote_text_46">Aquele que sofre antes do necessário, sofre mais do que o necessário.</string>
+
     <string name="quote_author_46">Epictetus</string>
-    <string name="quote_text_47">Look back and remember: How many people plundered your life without you even realizing… When you see how little is left of your time, you will realize you are dying untimely.</string>
+
+    <string name="quote_text_47">Adquira a cada dia algo que o fortaleça contra a pobreza, contra a morte e contra outras adversidades.</string>
+
     <string name="quote_author_47">Seneca</string>
-    <string name="quote_text_48">Losing oneself in the multiplicity of choices is the nature of aesthetic choice; whereas unless a person chooses himself absolutely, he only makes momentary and temporary decisions.</string>
+
+    <string name="quote_text_48">Conviva com pessoas capazes de melhorar você. Acolha aqueles que você for capaz de melhorar.</string>
+
     <string name="quote_author_48">Søren Kierkegaard</string>
-    <string name="quote_text_49">He who lives longest and he who will die soonest lose the same thing: Only the present moment. For you possess only it, and you cannot lose what you do not have.</string>
+
+    <string name="quote_text_49">Perdem o dia na expectativa da noite, e a noite no medo da alvorada.</string>
+
     <string name="quote_author_49">Marcus Aurelius</string>
-    <string name="quote_text_50">It is terrifying to be left alone with oneself as both judge and executioner of the law one has set.</string>
+
+    <string name="quote_text_50">Medite na beleza da vida. Observe as estrelas e veja-se correndo junto a elas.</string>
+
     <string name="quote_author_50">Friedrich Nietzsche</string>
-    <string name="quote_text_51">Imagination continually fills up all the cracks so that reality cannot enter.</string>
+
+    <string name="quote_text_51">A riqueza não consiste em ter grandes posses, mas em ter poucos desejos.</string>
+
     <string name="quote_author_51">Simone Weil</string>
-    <string name="quote_text_52">The life of those who forget the past, neglect the present, and fear the future is extremely short and full of anxiety.</string>
+
+    <string name="quote_text_52">Nós somos aquilo que fazemos repetidamente. A excelência, portanto, não é um ato, mas um hábito.</string>
+
     <string name="quote_author_52">Seneca</string>
-    <string name="quote_text_53">It is disgraceful to deal with difficult but trivial things; and labor spent on childish matters is foolishness.</string>
+
+    <string name="quote_text_53">Considero mais corajoso aquele que vence seus desejos do que aquele que conquista seus inimigos; pois a vitória mais difícil é sobre si mesmo.</string>
+
     <string name="quote_author_53">Martial</string>
-    <string name="quote_text_54">The contest has begun; you are now at the Olympic Games, you have no option to delay any longer, and a single defeat can ruin all your progress.</string>
+
+    <string name="quote_text_54">A atenção, levada ao seu mais alto grau, é a mesma coisa que a oração. Ela pressupõe fé e amor.</string>
+
     <string name="quote_author_54">Epictetus</string>
-    <string name="notif_half_limit_message">You’ve used half of today’s limit for %1$s.</string>
-    <string name="notif_five_minutes_message">Only 5 minutes remain today for %1$s.</string>
+
+    <string name="notif_half_limit_message">Você usou metade do limite de hoje para %1$s.</string>
+
+    <string name="notif_five_minutes_message">Restam apenas 5 minutos hoje para %1$s.</string>
+
     <string name="profile_appearance">Aparência</string>
-    <string name="discipline_summary_days_ago">Last 21 Days</string>
-    <string name="discipline_summary_success">Success</string>
-    <string name="discipline_summary_failure">Failure</string>
-    <string name="setup_target_hour_label">HOUR</string>
-    <string name="setup_target_minute_label">MINUTE</string>
-    <string name="setup_target_hour_inc_desc">Increase Hours</string>
-    <string name="setup_target_hour_dec_desc">Decrease Hours</string>
-    <string name="setup_target_minute_inc_desc">Increase Minutes</string>
-    <string name="setup_target_minute_dec_desc">Decrease Minutes</string>
+
+    <string name="discipline_summary_days_ago">Últimos 21 dias</string>
+
+    <string name="discipline_summary_success">Sucesso</string>
+
+    <string name="discipline_summary_failure">Falha</string>
+
+    <string name="setup_target_hour_label">HORA</string>
+
+    <string name="setup_target_minute_label">MINUTO</string>
+
+    <string name="setup_target_hour_inc_desc">Aumentar horas</string>
+
+    <string name="setup_target_hour_dec_desc">Diminuir horas</string>
+
+    <string name="setup_target_minute_inc_desc">Aumentar minutos</string>
+
+    <string name="setup_target_minute_dec_desc">Diminuir minutos</string>
+
     <string name="profile_streak_dialog_title">Sequência de sucesso</string>
+
     <string name="profile_streak_dialog_desc">Dias consecutivos sem violar as regras de restrição: %1$d dias.\n\nEnquanto você mantiver seu equilíbrio digital, essa sequência aumentará todos os dias. Ela volta a zero se as regras forem violadas ou as restrições forem contornadas.</string>
+
     <string name="profile_saved_time_dialog_title">Tempo Diário Protegido Estimado</string>
+
     <string name="profile_saved_time_dialog_desc">Tempo diário estimado protegido pelos seus limites atuais: %1$s.\n\nÉ a diferença entre o uso diário médio histórico dos apps atualmente restritos e seus limites diários; não é um total acumulado.</string>
+
     <string name="profile_saved_time_no_data">Ainda não há dados</string>
+
     <string name="profile_active_apps_dialog_title">Restrições ativas</string>
+
     <string name="profile_active_apps_dialog_empty">Não há aplicativos com restrição ativa.</string>
+
     <string name="profile_active_apps_dialog_desc">Aplicativos protegidos no momento:\n\n%1$s</string>
+
     <string name="profile_weekly_summary_dialog_title">Detalhes do resumo semanal</string>
+
     <string name="profile_weekly_summary_dialog_desc">Nesta semana, você cumpriu totalmente as regras de restrição por %1$d dias.\n\nConcluir metas semanais reforça sua disciplina digital e aumenta seu tempo de foco.</string>
+
     <string name="quote_author_anonymous">Anônimo</string>
+
     <string name="discipline_detail_title">Histórico de Disciplina</string>
+
     <string name="discipline_detail_completed_series">Séries Concluídas</string>
+
     <string name="discipline_detail_active_series">Série Ativa</string>
+
     <string name="discipline_detail_back_to_active">Retornar à Série Ativa</string>
+
     <string name="discipline_detail_series_label">Série %1$d</string>
 
+
+
     <!-- Saved Quotes Screen -->
+
     <string name="saved_quotes_title">Frases salvas</string>
+
     <string name="saved_quotes_add_title">Adicionar Nova Frase</string>
+
     <string name="saved_quotes_edit_title">Editar Frase</string>
+
     <string name="saved_quotes_btn_add">ADICIONAR</string>
+
     <string name="saved_quotes_btn_update">ATUALIZAR</string>
+
     <string name="saved_quotes_list_title_format">Frases Salvas (%1$d)</string>
+
     <string name="saved_quotes_empty">Nenhuma frase salva ainda.</string>
+
     <string name="btn_back_desc">Voltar</string>
+
     <string name="btn_delete_desc">Excluir</string>
 
+
+
     <!-- Profile Screen Info -->
+
     <string name="profile_level_detail_title">Detalhes do Nível Digital</string>
+
     <string name="profile_level_detail_desc">Seu nível atual: %1$s (Nível %2$d)\n\nNíveis e requisitos:\n• Nível 1: Iniciante\n• Nível 2: Ganhando Controle (3 dias de sucesso ininterrupto)\n• Nível 3: Focado (7 dias de sucesso ininterrupto)\n• Nível 4: Usuário Equilibrado (15 dias de sucesso ininterrupto)\n• Nível 5: Disciplina Digital (30 dias de sucesso ininterrupto)\n• Nível 6: Controle Total (60 dias de sucesso ininterrupto)\n\nCada dia de sucesso sem violar as restrições aumenta sua sequência e permite que você suba de nível.</string>
+
     <string name="profile_redemption_progress">Progreso de Redenção</string> <!-- Portuguese: "Progresso de Redenção" -->
+
     <string name="profile_next_level_progress">Progresso para o Próximo Nível</string>
+
     <string name="profile_custom_quote_always">Frase personalizada (Sempre)</string>
+
     <string name="profile_custom_quote_mix">Frase personalizada (Mista)</string>
+
     <string name="profile_default_quotes">Frases Padrão</string>
+
     <string name="profile_digital_control_progress">Progresso do Controle Digital</string>
+
     
+
     <string name="profile_theme_dialog_title">Configurações de Aparência</string>
+
     <string name="profile_theme_dialog_mode_section">Modo de Aparência</string>
+
     <string name="profile_theme_dialog_palette_section">Tema de Cores</string>
+
     
+
     <string name="profile_language_dialog_title">Seleção de Idioma</string>
+
     <string name="profile_support_dialog_title">Suporte e Feedback</string>
+
     <string name="profile_support_dialog_desc">Você pode entrar em contato conosco para relatar um problema ou sugerir um novo recurso.</string>
+
     
+
     <string name="profile_filter_dialog_title">Filtrar Histórico</string>
+
     <string name="profile_filter_dialog_date_section">Data</string>
+
     <string name="profile_filter_dialog_type_section">Tipo de Evento</string>
+
     <string name="profile_filter_btn_apply">Aplicar</string>
+
     <string name="profile_filter_btn_text">Filtrar</string>
+
     
+
     <!-- Timeline Filters -->
+
     <string name="filter_date_today">Hoje</string>
+
     <string name="filter_date_7_days">Últimos 7 dias</string>
+
     <string name="filter_date_30_days">Últimos 30 dias</string>
+
     <string name="filter_date_all">Todo o tempo</string>
+
     
+
     <string name="filter_type_all">Todos os eventos</string>
+
     <string name="filter_type_restrictions">Eventos de restrição</string>
+
     <string name="filter_type_limits">Eventos de limite</string>
+
     <string name="filter_type_permissions">Eventos de permissão</string>
+
     <string name="filter_type_data_actions">Ações de dados</string>
+
+
 
     <string name="profile_only_my_quotes">Mostrar apenas minhas frases</string>
 
+
+
     <!-- Levels -->
+
     <string name="level_name_1">Iniciante</string>
+
     <string name="level_name_2">Ganhando Controle</string>
+
     <string name="level_name_3">Focado</string>
+
     <string name="level_name_4">Usuário Equilibrado</string>
+
     <string name="level_name_5">Disciplina Digital</string>
+
     <string name="level_name_6">Controle Total</string>
+
     
+
     <string name="level_note_1">O Nível 2 (Ganhando Controle) requer 3 dias de sucesso ininterrupto.</string>
+
     <string name="level_note_2">O Nível 3 (Focado) requer 7 dias de sucesso ininterrupto.</string>
+
     <string name="level_note_3">O Nível 4 (Usuário Equilibrado) requer 15 dias de sucesso ininterrupto.</string>
+
     <string name="level_note_4">O Nível 5 (Disciplina Digital) requer 30 dias de sucesso ininterrupto.</string>
+
     <string name="level_note_5">O Nível 6 (Controle Total) requer 60 dias de sucesso ininterrupto.</string>
+
     <string name="level_note_max">Parabéns! Você está no nível de controle mais alto.</string>
 
+
+
     <string name="profile_permissions_all_active">Todas as permissões ativas</string>
+
     <string name="profile_permissions_missing">Permissões ausentes</string>
+
     <string name="profile_permission_state_ok">Ativo</string>
+
     <string name="profile_permission_state_missing">Ausente</string>
 
+
+
     <string name="profile_weekly_success_days_format">%1$d/7 Dias</string>
+
     <string name="profile_redemption_progress_format">%1$d / %2$d Dias</string>
+
     <string name="profile_level_format">NÍVEL %1$d</string>
+
     <string name="profile_streak_title">SEQUÊNCIA DE SUCESSO</string>
+
     <string name="profile_protected_apps_title">PROTEÇÃO ATIVA</string>
+
     <string name="profile_weekly_summary_title">RESUMEN SEMANAL</string> <!-- Portuguese: "RESUMO SEMANAL" -->
+
     <string name="btn_ok">OK</string>
+
     <string name="btn_info_desc">Informações</string>
+
     <string name="profile_saved_time_title">TEMPO DIÁRIO PROTEGIDO ESTIMADO</string>
+
     <string name="profile_section_summary">Resumo</string>
+
     <string name="profile_section_timeline">Linha do tempo</string>
+
     <string name="profile_section_settings">Configurações</string>
+
     <string name="settings_group_device_permissions">DISPOSITIVO E PERMISSÕES</string>
+
     <string name="settings_group_appearance_language">APARÊNCIA E IDIOMA</string>
+
     <string name="settings_group_notifications_content">NOTIFICAÇÕES E CONTEÚDO</string>
+
     <string name="settings_group_support_legal">SUPORTE E JURÍDICO</string>
+
     <string name="settings_group_data_management">GESTÃO DE DADOS</string>
+
     <string name="profile_clear_error">Não foi possível limpar os dados: %1$s</string>
+
     <string name="profile_unknown_error">Erro desconhecido</string>
+
     <string name="profile_version_format">Limitra v%1$s</string>
+
     <string name="profile_redemption_note">Conclua a sequência de reparo para remover o selo de aviso.</string>
+
     <string name="profile_restriction_log_limit">Limite diário: %1$d minutos</string>
+
     <string name="profile_restriction_log_group">Grupo: %1$s</string>
+
     <string name="protected_tab_active_format">%1$s ativo</string>
+
     <string name="protected_tab_reached_limit">Limite atingido</string>
+
     <string name="perm_guidance_text">Toque em cada cartão de permissão, encontre o Limitra na tela de configurações do Android que se abre e ative a permissão necessária. Depois, retorne para concluir a próxima etapa.</string>
+
     <string name="profile_notifications_title">Notificações</string>
+
     <string name="profile_notifications_desc">Mostrar avisos de limite e notificações de status.</string>
 
+    <string name="profile_privacy_choices">Opções de privacidade</string>
+
+
+
     <!-- Başarılar ve ana ekran (UI yenileme) -->
+
     <string name="achievements_title">Conquistas</string>
+
     <string name="achievements_subtitle">Molduras que você ganha mantendo sua sequência intacta.</string>
+
     <string name="achievements_current_streak">Sequência atual</string>
+
     <string name="achievements_best_streak">Melhor sequência</string>
+
     <string name="achievements_next">Próxima: %1$s</string>
+
     <string name="achievements_all_unlocked">Você ganhou todas as molduras. Mantenha a sequência viva.</string>
+
     <string name="achievements_unlocked">Conquistada</string>
+
     <string name="achievements_locked">Bloqueada</string>
+
     <string name="achievements_equip">Usar esta moldura</string>
+
     <string name="achievements_equipped">Em uso</string>
+
     <string name="achievements_count">%1$d de %2$d conquistadas</string>
+
     <string name="achievements_entry_desc">Sua moldura e sua próxima meta</string>
+
     <string name="achievements_celebration_title">Nova moldura conquistada</string>
+
     <string name="achievements_celebration_desc">%1$s agora é sua. Sua sequência chegou a %2$d dias.</string>
+
     <string name="achievements_celebration_cta">Usar agora</string>
+
     <string name="achievements_celebration_later">Depois</string>
+
     <string name="achievements_rule_title">Como funciona</string>
+
     <string name="achievements_rule_desc">Cada dia dentro dos seus limites soma um dia à sua sequência. Uma violação ou a remoção de uma restrição zera a sequência, mas as molduras conquistadas continuam suas.</string>
+
     <string name="frame_spark">Primeira Faísca</string>
+
     <string name="frame_spark_story">O primeiro dia limpo. Toda longa sequência começa aqui.</string>
+
     <string name="frame_bronze">Anel de Bronze</string>
+
     <string name="frame_bronze_story">Três dias seguidos. O hábito está tomando forma.</string>
+
     <string name="frame_silver_laurel">Louro de Prata</string>
+
     <string name="frame_silver_laurel_story">Uma semana inteira de controle. Os antigos coroavam seus vencedores com louros.</string>
+
     <string name="frame_gold_seal">Selo de Ouro</string>
+
     <string name="frame_gold_seal_story">Quinze dias. A promessa que você fez a si mesmo agora tem um selo.</string>
+
     <string name="frame_moonstone">Pedra da Lua</string>
+
     <string name="frame_moonstone_story">Um mês inteiro: um ciclo lunar completo de foco.</string>
+
     <string name="frame_obsidian_crown">Coroa de Obsidiana</string>
+
     <string name="frame_obsidian_crown_story">Sessenta dias. Poucas pessoas chegam a esse nível de autodomínio.</string>
+
     <string name="frame_century_flame">Chama Centenária</string>
+
     <string name="frame_century_flame_story">Cem dias. O fogo que você acendeu no primeiro dia ainda queima.</string>
-    <string name="frame_aurora">Aurora</string>
+
+    <string name="frame_aurora">Aurora boreal</string>
+
     <string name="frame_aurora_story">Meio ano. Raro e lindo de ver.</string>
+
     <string name="frame_stoic">O Estoico</string>
+
     <string name="frame_stoic_story">Um ano inteiro. Você é dono da sua própria atenção.</string>
+
     <string name="dashboard_today_clean">Hoje está limpo até agora</string>
+
     <string name="dashboard_today_violated">Um limite foi excedido hoje</string>
+
     <string name="dashboard_today_idle">Ainda não há proteção ativa</string>
+
     <string name="greeting_morning">Bom dia</string>
+
     <string name="greeting_afternoon">Boa tarde</string>
+
     <string name="greeting_evening">Boa noite</string>
+
     <plurals name="achievements_days">
+
         <item quantity="one">%d dia</item>
+
         <item quantity="other">%d dias</item>
+
     </plurals>
+
     <plurals name="achievements_days_left">
+
         <item quantity="one">Falta %d dia</item>
+
         <item quantity="other">Faltam %d dias</item>
+
     </plurals>
+
     <plurals name="achievements_unlock_at">
+
         <item quantity="one">Desbloqueia com %d dia de sequência</item>
+
         <item quantity="other">Desbloqueia com %d dias de sequência</item>
+
     </plurals>
+
 </resources>
+
